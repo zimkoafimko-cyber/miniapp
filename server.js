@@ -15,10 +15,15 @@ app.use(express.static(path.join(__dirname, "public")));
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "AlinaResseler";
 const CHANNEL_USERNAME = process.env.CHANNEL_USERNAME || "belcryptoo";
+const BOT_USERNAME = process.env.BOT_USERNAME || "";
 const PORT = Number(process.env.PORT || 3000);
 
-const db = new Database(path.join(__dirname, "data.sqlite"));
+const REFERRAL_REWARD = 2;
+const SUBSCRIBE_REWARD = 15;
+const DAILY_REWARD = 3;
+const MIN_WITHDRAWAL = 50;
 
+const db = new Database(path.join(__dirname, "data.sqlite"));
 db.pragma("journal_mode = WAL");
 
 db.exec(`
@@ -48,10 +53,6 @@ CREATE TABLE IF NOT EXISTS withdrawals (
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 `);
-
-try {
-  db.exec("ALTER TABLE users ADD COLUMN daily_bonus_at TEXT");
-} catch {}
 
 function verifyInitData(initData) {
   if (!initData || !BOT_TOKEN) return null;
@@ -159,14 +160,130 @@ async function telegram(method, body) {
   return response.json();
 }
 
-app.get("/api/config", (req, res) => {
+/*
+  Получаем username бота автоматически,
+  если BOT_USERNAME не задан в Render.
+*/
+let cachedBotUsername = BOT_USERNAME.replace(/^@/, "");
+
+async function getBotUsername() {
+  if (cachedBotUsername) {
+    return cachedBotUsername;
+  }
+
+  try {
+    const result = await telegram("getMe", {});
+
+    if (result.ok && result.result.username) {
+      cachedBotUsername = result.result.username;
+      return cachedBotUsername;
+    }
+  } catch (error) {
+    console.error("getMe error:", error);
+  }
+
+  return "";
+}
+
+/*
+  Регистрируем реферала.
+
+  ref_123456789
+  ^
+  Telegram ID пригласившего.
+*/
+function processReferral(tgUser, startParam) {
+  if (!startParam) return;
+
+  const match = String(startParam).match(/^ref_(\d+)$/);
+
+  if (!match) return;
+
+  const inviterId = Number(match[1]);
+  const inviteeId = Number(tgUser.id);
+
+  // Нельзя пригласить самого себя.
+  if (inviterId === inviteeId) return;
+
+  const inviter = db
+    .prepare("SELECT id FROM users WHERE id = ?")
+    .get(inviterId);
+
+  if (!inviter) return;
+
+  const invitee = db
+    .prepare(`
+      SELECT referred_by, referral_rewarded
+      FROM users
+      WHERE id = ?
+    `)
+    .get(inviteeId);
+
+  if (!invitee) return;
+
+  // Уже есть пригласивший — ничего не меняем.
+  if (invitee.referred_by) return;
+
+  const transaction = db.transaction(() => {
+    db.prepare(`
+      UPDATE users
+      SET referred_by = ?
+      WHERE id = ?
+    `).run(
+      inviterId,
+      inviteeId
+    );
+
+    const existingReferral = db
+      .prepare(`
+        SELECT invitee_id
+        FROM referrals
+        WHERE invitee_id = ?
+      `)
+      .get(inviteeId);
+
+    if (!existingReferral) {
+      db.prepare(`
+        INSERT INTO referrals
+        (inviter_id, invitee_id)
+        VALUES (?, ?)
+      `).run(
+        inviterId,
+        inviteeId
+      );
+
+      db.prepare(`
+        UPDATE users
+        SET stars = stars + ?
+        WHERE id = ?
+      `).run(
+        REFERRAL_REWARD,
+        inviterId
+      );
+
+      db.prepare(`
+        UPDATE users
+        SET referral_rewarded = 1
+        WHERE id = ?
+      `).run(inviteeId);
+    }
+  });
+
+  transaction();
+}
+
+app.get("/api/config", async (req, res) => {
+  const botUsername = await getBotUsername();
+
   res.json({
     channel: CHANNEL_USERNAME,
     admin: ADMIN_USERNAME,
-    minWithdrawal: 50,
+    botUsername,
+    minWithdrawal: MIN_WITHDRAWAL,
     rewards: {
-      subscribe: 15,
-      daily: 3
+      subscribe: SUBSCRIBE_REWARD,
+      daily: DAILY_REWARD,
+      referral: REFERRAL_REWARD
     }
   });
 });
@@ -180,13 +297,39 @@ app.get("/api/me", (req, res) => {
     });
   }
 
-  const user = createOrUpdateUser(tgUser);
+  const startParam =
+    req.headers["x-telegram-start-param"] || "";
+
+  createOrUpdateUser(tgUser);
+
+  processReferral(
+    tgUser,
+    startParam
+  );
+
+  const user = db
+    .prepare(`
+      SELECT *
+      FROM users
+      WHERE id = ?
+    `)
+    .get(tgUser.id);
+
+  const referralCount = db
+    .prepare(`
+      SELECT COUNT(*) AS count
+      FROM referrals
+      WHERE inviter_id = ?
+    `)
+    .get(tgUser.id).count;
 
   res.json({
     id: user.id,
     username: user.username,
     first_name: user.first_name,
-    stars: user.stars
+    stars: user.stars,
+    referralCount,
+    referralReward: REFERRAL_REWARD
   });
 });
 
@@ -223,19 +366,24 @@ app.post("/api/check-subscription", async (req, res) => {
       );
 
     if (isSubscribed) {
-      const user = db.prepare(`
-        SELECT subscribe_claimed
-        FROM users
-        WHERE id = ?
-      `).get(tgUser.id);
+      const user = db
+        .prepare(`
+          SELECT subscribe_claimed
+          FROM users
+          WHERE id = ?
+        `)
+        .get(tgUser.id);
 
       if (!user.subscribe_claimed) {
         db.prepare(`
           UPDATE users
-          SET stars = stars + 15,
+          SET stars = stars + ?,
               subscribe_claimed = 1
           WHERE id = ?
-        `).run(tgUser.id);
+        `).run(
+          SUBSCRIBE_REWARD,
+          tgUser.id
+        );
       }
     }
 
@@ -264,11 +412,13 @@ app.post("/api/daily-bonus", (req, res) => {
 
   createOrUpdateUser(tgUser);
 
-  const user = db.prepare(`
-    SELECT daily_bonus_at
-    FROM users
-    WHERE id = ?
-  `).get(tgUser.id);
+  const user = db
+    .prepare(`
+      SELECT daily_bonus_at
+      FROM users
+      WHERE id = ?
+    `)
+    .get(tgUser.id);
 
   const today = new Date()
     .toISOString()
@@ -286,17 +436,55 @@ app.post("/api/daily-bonus", (req, res) => {
 
   db.prepare(`
     UPDATE users
-    SET stars = stars + 3,
+    SET stars = stars + ?,
         daily_bonus_at = ?
     WHERE id = ?
   `).run(
+    DAILY_REWARD,
     new Date().toISOString(),
     tgUser.id
   );
 
   res.json({
     ok: true,
-    reward: 3
+    reward: DAILY_REWARD
+  });
+});
+
+app.get("/api/referral", async (req, res) => {
+  const tgUser = getTelegramUser(req);
+
+  if (!tgUser) {
+    return res.status(401).json({
+      error: "Unauthorized"
+    });
+  }
+
+  createOrUpdateUser(tgUser);
+
+  const botUsername = await getBotUsername();
+
+  if (!botUsername) {
+    return res.status(500).json({
+      error: "Не удалось определить username бота."
+    });
+  }
+
+  const referralLink =
+    `https://t.me/${botUsername}?start=ref_${tgUser.id}`;
+
+  const count = db
+    .prepare(`
+      SELECT COUNT(*) AS count
+      FROM referrals
+      WHERE inviter_id = ?
+    `)
+    .get(tgUser.id).count;
+
+  res.json({
+    link: referralLink,
+    count,
+    reward: REFERRAL_REWARD
   });
 });
 
@@ -311,11 +499,13 @@ app.post("/api/withdraw", (req, res) => {
 
   const user = createOrUpdateUser(tgUser);
 
-  if (user.stars < 50) {
+  if (user.stars < MIN_WITHDRAWAL) {
     return res.status(400).json({
-      error: "Минимальный вывод — 50 ⭐"
+      error: `Минимальный вывод — ${MIN_WITHDRAWAL} ⭐`
     });
   }
+
+  const amount = user.stars;
 
   db.prepare(`
     INSERT INTO withdrawals
@@ -323,11 +513,12 @@ app.post("/api/withdraw", (req, res) => {
     VALUES (?, ?)
   `).run(
     tgUser.id,
-    user.stars
+    amount
   );
 
   res.json({
     ok: true,
+    amount,
     contact:
       `https://t.me/${ADMIN_USERNAME.replace(/^@/, "")}`
   });
