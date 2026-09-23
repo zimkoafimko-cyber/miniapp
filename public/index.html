@@ -1,339 +1,440 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Stars Tasks</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<style>
-* {
-  box-sizing: border-box;
-}
-body {
-  margin: 0;
-  background: #f2f3f5;
-  color: #202124;
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
-.wrap {
-  max-width: 560px;
-  margin: auto;
-  padding: 22px 16px 40px;
-}
-.top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 18px;
-}
-.brand {
-  font-weight: 800;
-  font-size: 24px;
-}
-.balance {
-  background: #fff;
-  border: 1px solid #e2e4e8;
-  border-radius: 18px;
-  padding: 10px 14px;
-  font-weight: 800;
-}
-.hero {
-  background: #fff;
-  border-radius: 26px;
-  padding: 24px;
-  box-shadow: 0 8px 30px #0000000b;
-  margin-bottom: 16px;
-}
-.muted {
-  color: #74777d;
-}
-.big {
-  font-size: 38px;
-  font-weight: 850;
-  margin: 5px 0;
-}
-.card {
-  background: #fff;
-  border: 1px solid #e5e6e8;
-  border-radius: 22px;
-  padding: 18px;
-  margin: 12px 0;
-}
-.row {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-}
-.icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 15px;
-  background: #eef0f2;
-  display: grid;
-  place-items: center;
-  font-size: 22px;
-}
-.card h3 {
-  margin: 0 0 4px;
-  font-size: 17px;
-}
-.card p {
-  margin: 0;
-  color: #777;
-}
-.btn {
-  width: 100%;
-  border: 0;
-  border-radius: 15px;
-  padding: 14px;
-  margin-top: 14px;
-  font-size: 15px;
-  font-weight: 800;
-  background: #202124;
-  color: #fff;
-}
-.btn.light {
-  background: #eef0f2;
-  color: #202124;
-}
-.btn:disabled {
-  opacity: .45;
-}
-.progress {
-  height: 9px;
-  background: #eceef0;
-  border-radius: 99px;
-  overflow: hidden;
-  margin-top: 14px;
-}
-.bar {
-  height: 100%;
-  width: 0;
-  background: #202124;
-  border-radius: 99px;
-}
-.note {
-  font-size: 13px;
-  line-height: 1.4;
-  color: #85888e;
-  margin-top: 10px;
-}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Stars Tasks</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:#f3f4f6;
+      color:#171717;
+    }
+    .wrap{
+      max-width:520px;
+      margin:auto;
+      padding:18px 14px 35px;
+    }
+    .header{
+      background:#fff;
+      border-radius:22px;
+      padding:22px;
+      margin-bottom:14px;
+      box-shadow:0 4px 18px rgba(0,0,0,.06);
+    }
+    .title{
+      font-size:25px;
+      font-weight:800;
+      margin-bottom:5px;
+    }
+    .sub{
+      color:#777;
+      font-size:14px;
+    }
+    .balance{
+      margin-top:18px;
+      background:#f0f1f3;
+      border-radius:18px;
+      padding:17px;
+    }
+    .balance-label{
+      color:#777;
+      font-size:13px;
+    }
+    .stars{
+      font-size:32px;
+      font-weight:800;
+      margin-top:3px;
+    }
+    .refresh{
+      margin-top:12px;
+      width:100%;
+      border:0;
+      border-radius:13px;
+      padding:12px;
+      background:#e5e7eb;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .card{
+      background:#fff;
+      border-radius:20px;
+      padding:18px;
+      margin-bottom:12px;
+      box-shadow:0 4px 18px rgba(0,0,0,.05);
+    }
+    .row{
+      display:flex;
+      align-items:center;
+      gap:13px;
+    }
+    .icon{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      background:#f0f1f3;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:23px;
+      flex:none;
+    }
+    .name{
+      font-size:17px;
+      font-weight:750;
+    }
+    .desc{
+      color:#777;
+      font-size:13px;
+      margin-top:3px;
+      line-height:1.35;
+    }
+    .reward{
+      margin-left:auto;
+      font-weight:800;
+      white-space:nowrap;
+    }
+    button.action{
+      width:100%;
+      margin-top:15px;
+      border:0;
+      border-radius:14px;
+      padding:14px;
+      background:#171717;
+      color:#fff;
+      font-size:15px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    button.action:disabled{
+      opacity:.55;
+    }
+    .progress{
+      height:8px;
+      background:#e5e7eb;
+      border-radius:10px;
+      overflow:hidden;
+      margin-top:13px;
+    }
+    .progress > div{
+      height:100%;
+      width:0%;
+      background:#171717;
+      transition:.3s;
+    }
+    .small{
+      margin-top:8px;
+      color:#777;
+      font-size:12px;
+    }
+    .withdraw{
+      background:#171717;
+      color:#fff;
+    }
+    .withdraw .desc,
+    .withdraw .small{
+      color:#bbb;
+    }
+  </style>
 </head>
+
 <body>
 <div class="wrap">
-  <div class="top">
-    <div class="brand">Task Stars</div>
+
+  <div class="header">
+    <div class="title">⭐ Stars Tasks</div>
+    <div class="sub">Выполняй задания и получай Telegram Stars</div>
+
     <div class="balance">
-      ⭐ <span id="stars">0</span>
+      <div class="balance-label">Ваш баланс</div>
+      <div class="stars" id="balance">0 ⭐</div>
+      <button class="refresh" id="refreshBtn">↻ Обновить баланс</button>
     </div>
   </div>
-  <section class="hero">
-    <div class="muted">Ваш баланс</div>
-    <div class="big">
-      ⭐ <span id="heroStars">0</span>
-    </div>
-    <div class="muted">
-      Минимальный вывод: 50 ⭐
-    </div>
-  </section>
-  <!-- ЗАДАНИЕ 1 -->
+
   <div class="card">
     <div class="row">
       <div class="icon">📢</div>
       <div>
-        <h3>Подписаться на канал</h3>
-        <p>Награда: +15 ⭐</p>
+        <div class="name">Подписаться на канал</div>
+        <div class="desc">Подпишись на канал и проверь подписку</div>
       </div>
+      <div class="reward">+15 ⭐</div>
     </div>
-    <button class="btn" id="subBtn">
+
+    <button class="action" id="subscribeBtn">
       Подписаться
     </button>
-    <button class="btn light" id="checkSub">
+
+    <button class="action" id="checkBtn">
       Проверить подписку
     </button>
-    <div class="note">
-      Проверка выполняется через Telegram.
-      Бот должен быть администратором канала.
-    </div>
   </div>
-  <!-- ЗАДАНИЕ 2 -->
+
   <div class="card">
     <div class="row">
       <div class="icon">👥</div>
       <div>
-        <h3>Пригласить 5 друзей</h3>
-        <p>+2 ⭐ за каждого приглашённого</p>
+        <div class="name">Пригласить друзей</div>
+        <div class="desc">+2 ⭐ за каждого приглашённого друга</div>
       </div>
+      <div class="reward">+2 ⭐</div>
     </div>
+
     <div class="progress">
-      <div class="bar" id="bar"></div>
+      <div id="refProgress"></div>
     </div>
-    <p style="margin-top:10px">
-      <b>
-        <span id="refs">0</span>/5
-      </b>
-      приглашено
-    </p>
-    <button class="btn" id="inviteBtn">
+
+    <div class="small" id="refText">Приглашено: 0 / 5</div>
+
+    <button class="action" id="inviteBtn">
       Пригласить друзей
     </button>
   </div>
-  <!-- ЗАДАНИЕ 3 -->
+
   <div class="card">
     <div class="row">
       <div class="icon">📤</div>
       <div>
-        <h3>Отправить пост</h3>
-        <p>Награда: +5 ⭐</p>
+        <div class="name">Отправить пост</div>
+        <div class="desc">Поделись постом с друзьями</div>
       </div>
+      <div class="reward">+5 ⭐</div>
     </div>
-    <button class="btn" id="shareBtn">
+
+    <button class="action" id="shareBtn">
       Отправить пост
     </button>
-    <div class="note">
-      Откроется стандартное окно Telegram
-      для отправки поста.
-    </div>
   </div>
-  <!-- ВЫВОД -->
-  <div class="card">
+
+  <div class="card withdraw">
     <div class="row">
-      <div class="icon">💸</div>
+      <div class="icon">💰</div>
       <div>
-        <h3>Вывод</h3>
-        <p>От 50 ⭐</p>
+        <div class="name">Вывод ⭐</div>
+        <div class="desc">Минимальная сумма вывода — 50 ⭐</div>
       </div>
     </div>
-    <button class="btn" id="withdrawBtn" disabled>
-      Запросить вывод
+
+    <button class="action" id="withdrawBtn">
+      Вывести Stars
     </button>
-    <div class="note">
-      После запроса бот даст ссылку
-      на личный Telegram @AlinaResseler.
+
+    <div class="small">
+      После заявки напиши администратору @AlinaResseler
     </div>
   </div>
+
 </div>
+
 <script>
 const tg = window.Telegram.WebApp;
+
 tg.ready();
 tg.expand();
+
+const initData = tg.initData;
+
 const headers = {
-  "X-Telegram-Init-Data": tg.initData
+  "Content-Type": "application/json",
+  "X-Telegram-Init-Data": initData
 };
-let cfg;
-let me;
-const $ = id => document.getElementById(id);
-async function api(url, opts = {}) {
-  const r = await fetch(url, {
-    ...opts,
-    headers: {
-      ...headers,
-      "content-type": "application/json",
-      ...(opts.headers || {})
-    }
-  });
-  const data = await r.json();
-  if (!r.ok) {
-    throw new Error(data.error || "Ошибка");
-  }
-  return data;
-}
-async function refresh() {
-  me = await api("/api/me");
-  $("stars").textContent = me.stars;
-  $("heroStars").textContent = me.stars;
-  $("refs").textContent = me.referrals;
-  $("bar").style.width =
-    Math.min(me.referrals, 5) * 20 + "%";
-  $("withdrawBtn").disabled =
-    me.stars < 50;
-}
-/* ПОДПИСКА */
-$("subBtn").onclick = () => {
-  tg.openTelegramLink(
-    "https://t.me/" +
-    cfg.channel.replace(/^@/, "")
-  );
-};
-$("checkSub").onclick = async () => {
+
+let currentUser = null;
+
+async function loadUser() {
   try {
-    const x = await api(
-      "/api/check-subscription",
-      { method: "POST" }
-    );
-    tg.showAlert(
-      x.ok
-        ? "Подписка подтверждена! +15 ⭐"
-        : "Подписка не найдена."
-    );
-    await refresh();
+    const res = await fetch("/api/me", {
+      headers
+    });
+
+    if (!res.ok) {
+      throw new Error("Ошибка авторизации");
+    }
+
+    currentUser = await res.json();
+
+    document.getElementById("balance").textContent =
+      `${currentUser.stars} ⭐`;
+
+    const referrals = Number(currentUser.referrals || 0);
+    const progress = Math.min(referrals, 5);
+
+    document.getElementById("refText").textContent =
+      `Приглашено: ${referrals} / 5`;
+
+    document.getElementById("refProgress").style.width =
+      `${progress * 20}%`;
+
   } catch (e) {
-    tg.showAlert(e.message);
+    console.error(e);
+    tg.showAlert("Не удалось обновить баланс.");
   }
-};
-/* ПРИГЛАШЕНИЯ */
-$("inviteBtn").onclick = () => {
-  const u =
-    tg.initDataUnsafe?.user?.id;
+}
+
+document.getElementById("refreshBtn").addEventListener("click", async () => {
+  const btn = document.getElementById("refreshBtn");
+
+  btn.disabled = true;
+  btn.textContent = "Обновление...";
+
+  await loadUser();
+
+  btn.disabled = false;
+  btn.textContent = "↻ Обновить баланс";
+});
+
+document.getElementById("subscribeBtn").addEventListener("click", () => {
+  tg.openTelegramLink("https://t.me/belcryptoo");
+});
+
+document.getElementById("checkBtn").addEventListener("click", async () => {
+  const btn = document.getElementById("checkBtn");
+
+  btn.disabled = true;
+  btn.textContent = "Проверяем...";
+
+  try {
+    const res = await fetch("/api/check-subscription", {
+      method: "POST",
+      headers
+    });
+
+    const data = await res.json();
+
+    if (data.ok) {
+      tg.showAlert("Подписка подтверждена! +15 ⭐");
+    } else {
+      tg.showAlert("Подписка не найдена. Сначала подпишись на канал.");
+    }
+
+    await loadUser();
+
+  } catch (e) {
+    tg.showAlert("Ошибка проверки подписки.");
+  }
+
+  btn.disabled = false;
+  btn.textContent = "Проверить подписку";
+});
+
+document.getElementById("inviteBtn").addEventListener("click", async () => {
+  if (!currentUser) {
+    await loadUser();
+  }
+
+  const ref = currentUser.id;
+
   const link =
-    location.origin + "/?ref=" + u;
-  tg.openTelegramLink(
+    `${location.origin}/?ref=${ref}`;
+
+  const text =
+    "Заходи и получай Telegram Stars ⭐";
+
+  const shareUrl =
     "https://t.me/share/url?url=" +
     encodeURIComponent(link) +
     "&text=" +
-    encodeURIComponent(
-      "Присоединяйся и выполняй задания!"
-    )
-  );
-};
-/* ОТПРАВКА ПОСТА */
-$("shareBtn").onclick = () => {
-  const post =
-    "https://t.me/" +
-    cfg.channel.replace(/^@/, "");
-  tg.openTelegramLink(
+    encodeURIComponent(text);
+
+  tg.openTelegramLink(shareUrl);
+});
+
+document.getElementById("shareBtn").addEventListener("click", async () => {
+
+  const shareUrl =
     "https://t.me/share/url?url=" +
-    encodeURIComponent(post) +
+    encodeURIComponent("https://t.me/belcryptoo") +
     "&text=" +
-    encodeURIComponent(
-      "Посмотри этот канал!"
-    )
-  );
+    encodeURIComponent("Подпишись на канал ⭐");
+
+  tg.openTelegramLink(shareUrl);
+
   setTimeout(async () => {
     try {
-      await api(
-        "/api/share-complete",
-        { method: "POST" }
-      );
-      await refresh();
-    } catch {}
+      await fetch("/api/share-complete", {
+        method: "POST",
+        headers
+      });
+
+      await loadUser();
+
+      tg.showAlert("Готово! +5 ⭐");
+    } catch (e) {
+      console.error(e);
+    }
   }, 1200);
-};
-/* ВЫВОД */
-$("withdrawBtn").onclick = async () => {
+});
+
+document.getElementById("withdrawBtn").addEventListener("click", async () => {
+  if (!currentUser) {
+    await loadUser();
+  }
+
+  if (Number(currentUser.stars) < 50) {
+    tg.showAlert("Минимальный вывод — 50 ⭐");
+    return;
+  }
+
   try {
-    const x = await api(
-      "/api/withdraw",
-      { method: "POST" }
+    const res = await fetch("/api/withdraw", {
+      method: "POST",
+      headers
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      tg.showAlert(data.error || "Ошибка вывода.");
+      return;
+    }
+
+    tg.showAlert(
+      "Заявка на вывод создана. Сейчас откроется администратор."
     );
-    tg.openTelegramLink(x.contact);
+
+    tg.openTelegramLink(
+      "https://t.me/AlinaResseler"
+    );
+
   } catch (e) {
-    tg.showAlert(e.message);
+    tg.showAlert("Ошибка отправки заявки.");
   }
-};
-/* ЗАПУСК */
-(async () => {
+});
+
+async function processReferral() {
+  const params = new URLSearchParams(window.location.search);
+  const ref = Number(params.get("ref"));
+
+  if (!ref || !currentUser || ref === Number(currentUser.id)) {
+    return;
+  }
+
   try {
-    cfg =
-      await (
-        await fetch("/api/config")
-      ).json();
-    await refresh();
+    await fetch("/api/referral", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        inviter_id: ref
+      })
+    });
+
+    await loadUser();
   } catch (e) {
-    tg.showAlert(e.message);
+    console.error(e);
   }
+}
+
+(async () => {
+  await loadUser();
+  await processReferral();
 })();
 </script>
+
 </body>
 </html>
