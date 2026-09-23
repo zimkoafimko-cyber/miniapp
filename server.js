@@ -8,9 +8,9 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Использование новых файлов базы данных (автоматический сброс старых данных)
-const usersDb = Datastore.create({ filename: path.join(__dirname, 'users_v2.db'), autoload: true });
-const tasksDb = Datastore.create({ filename: path.join(__dirname, 'tasks_v2.db'), autoload: true });
+// Использование v3 файлов базы данных для полного сброса
+const usersDb = Datastore.create({ filename: path.join(__dirname, 'users_v3.db'), autoload: true });
+const tasksDb = Datastore.create({ filename: path.join(__dirname, 'tasks_v3.db'), autoload: true });
 
 const TASKS_CONFIG = {
   1: { reward: 15, title: 'Подписка на канал' },
@@ -65,7 +65,7 @@ app.post('/api/game/crash/play', async (req, res) => {
     // Снимаем ставку с баланса
     const newBalance = user.balance - betAmount;
     
-    // Генерация коэффициента взрыва (от 1.01 до 10.00x)
+    // Генерация коэффициента взрыва (от 1.01 до 6.00x)
     const crashPoint = +(1 + Math.random() * 5).toFixed(2);
 
     await usersDb.update({ telegram_id: userId }, { $set: { balance: newBalance } });
