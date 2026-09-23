@@ -513,9 +513,8 @@ app.post("/api/withdraw", (req, res) => {
   });
 });
 
-/* --- ЛОГИКА CRASH ИГРЫ (20% шанс) --- */
+/* --- ИГРА CRASH (Ставка от 1 до 100, 20% шанс) --- */
 
-// Начать игру (ставку 1 ⭐)
 app.post("/api/crash/play", (req, res) => {
   const tgUser = getTelegramUser(req);
 
@@ -523,26 +522,28 @@ app.post("/api/crash/play", (req, res) => {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  const user = createOrUpdateUser(tgUser);
-  const betAmount = 1;
+  const { bet } = req.body;
+  const betAmount = parseInt(bet, 10);
 
-  if (user.stars < betAmount) {
-    return res.status(400).json({ error: "Недостаточно ⭐ для ставки!" });
+  if (isNaN(betAmount) || betAmount < 1 || betAmount > 100) {
+    return res.status(400).json({ error: "Ставка должна быть от 1 до 100 ⭐" });
   }
 
-  // 20% шанс на выигрыш
+  const user = createOrUpdateUser(tgUser);
+
+  if (user.stars < betAmount) {
+    return res.status(400).json({ error: "Недостаточно ⭐ для этой ставки!" });
+  }
+
   const isWin = Math.random() < 0.20;
 
   let crashPoint;
   if (isWin) {
-    // В случае победы случайный коэффициент от 1.50x до 3.50x
     crashPoint = parseFloat((1.5 + Math.random() * 2.0).toFixed(2));
   } else {
-    // В случае поражения взрыв ровно на 1.00x
     crashPoint = 1.00;
   }
 
-  // Списываем ставку и записываем точку краша в БД
   db.prepare(`
     UPDATE users
     SET stars = stars - ?,
@@ -554,7 +555,6 @@ app.post("/api/crash/play", (req, res) => {
   res.json({ ok: true, crashPoint });
 });
 
-// Забрать выигрыш
 app.post("/api/crash/cashout", (req, res) => {
   const tgUser = getTelegramUser(req);
 
@@ -573,7 +573,6 @@ app.post("/api/crash/cashout", (req, res) => {
   }
 
   if (multiplier > user.active_crash_point) {
-    // Сбрасываем активную игру
     db.prepare(`
       UPDATE users
       SET active_crash_point = 0,
@@ -584,7 +583,6 @@ app.post("/api/crash/cashout", (req, res) => {
     return res.status(400).json({ error: "Ракета взорвалась раньше!" });
   }
 
-  // Считаем выигрыш и обновляем пользователя
   const winAmount = Math.floor(user.active_crash_bet * multiplier);
 
   db.prepare(`
