@@ -31,7 +31,7 @@
     <div class="glass-card balance-card glow">
       <div class="balance-title">Ваш баланс</div>
       <div class="balance-amount">
-        <span id="balanceVal">1 000</span> <span style="font-size: 32px;">⭐</span>
+        <span id="balanceVal">0</span> <span style="font-size: 32px;">⭐</span>
       </div>
       <div style="display: flex; gap: 10px; margin-top: 12px;">
         <button class="btn-main btn-secondary" style="padding: 10px; font-size: 13px;" onclick="switchTab('tasksTab')">Заработать ⭐</button>
@@ -58,19 +58,19 @@
 
         <!-- Управление ставкой -->
         <div class="bet-control-group">
-          <input type="number" id="betInput" class="input-styled" value="100" min="10" placeholder="Сумма ставки">
+          <input type="number" id="betInput" class="input-styled" value="5" min="1" placeholder="Сумма ставки">
           
           <div class="quick-bets">
-            <button class="btn-chip" onclick="setBet(50)">50</button>
-            <button class="btn-chip" onclick="setBet(100)">100</button>
-            <button class="btn-chip" onclick="setBet(500)">500</button>
+            <button class="btn-chip" onclick="setBet(1)">1</button>
+            <button class="btn-chip" onclick="setBet(5)">5</button>
+            <button class="btn-chip" onclick="setBet(10)">10</button>
             <button class="btn-chip" onclick="setMaxBet()">MAX</button>
           </div>
         </div>
 
         <!-- Главные кнопки игры -->
         <button id="btnStartGame" class="btn-main" onclick="startCrashGame()">ПОЛЕТЕЛИ 🚀</button>
-        <button id="btnCashout" class="btn-main btn-cashout" onclick="cashoutCrash()" style="display: none;">ZABRAT' (1.00x)</button>
+        <button id="btnCashout" class="btn-main btn-cashout" onclick="cashoutCrash()" style="display: none;">ЗАБРАТЬ (1.00x)</button>
       </div>
 
       <!-- История последних X раундов -->
@@ -97,10 +97,10 @@
             <div class="task-icon">📢</div>
             <div>
               <div style="font-size: 14px; font-weight: 700;">Подписка на канал</div>
-              <div style="font-size: 12px; color: var(--primary); font-weight: 700;">+250 ⭐</div>
+              <div style="font-size: 12px; color: var(--primary); font-weight: 700;">+15 ⭐</div>
             </div>
           </div>
-          <button class="btn-chip" onclick="completeTask(this, 250)">Выполнить</button>
+          <button class="btn-chip task-btn" onclick="completeTask(this, 15)">Выполнить</button>
         </div>
 
         <div class="task-item">
@@ -108,10 +108,10 @@
             <div class="task-icon">👥</div>
             <div>
               <div style="font-size: 14px; font-weight: 700;">Пригласи 3 друзей</div>
-              <div style="font-size: 12px; color: var(--primary); font-weight: 700;">+500 ⭐</div>
+              <div style="font-size: 12px; color: var(--primary); font-weight: 700;">+15 ⭐</div>
             </div>
           </div>
-          <button class="btn-chip" onclick="completeTask(this, 500)">Выполнить</button>
+          <button class="btn-chip task-btn" onclick="completeTask(this, 15)">Выполнить</button>
         </div>
 
         <div class="task-item">
@@ -119,10 +119,10 @@
             <div class="task-icon">🎁</div>
             <div>
               <div style="font-size: 14px; font-weight: 700;">Ежедневный бонус</div>
-              <div style="font-size: 12px; color: var(--primary); font-weight: 700;">+100 ⭐</div>
+              <div style="font-size: 12px; color: var(--primary); font-weight: 700;">+3 ⭐</div>
             </div>
           </div>
-          <button class="btn-chip" onclick="completeTask(this, 100)">Забрать</button>
+          <button class="btn-chip task-btn" onclick="completeTask(this, 3)">Забрать</button>
         </div>
       </div>
     </section>
@@ -133,7 +133,7 @@
         <div style="font-size: 40px; margin-bottom: 8px;">🤝</div>
         <h3>Реферальная система</h3>
         <p style="font-size: 13px; color: var(--text-muted); margin: 8px 0 16px 0;">
-          Получай 10% от каждого выигрыша твоих друзей навсегда!
+          Получай +2 ⭐ за каждого приглашенного друга!
         </p>
 
         <input type="text" id="refLinkInput" class="input-styled" style="font-size: 13px; padding: 12px;" readonly value="https://t.me/your_bot?start=ref12345">
@@ -146,15 +146,15 @@
       <div class="glass-card">
         <h3>Вывод средств</h3>
         <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
-          Минимальная сумма вывода: 1 000 ⭐
+          Минимальная сумма вывода: 50 ⭐
         </p>
 
         <div class="bet-control-group">
           <input type="text" class="input-styled" style="font-size: 14px; text-align: left;" placeholder="Кошелек TON / Карточка">
-          <input type="number" class="input-styled" style="font-size: 14px; text-align: left;" placeholder="Сумма звезд">
+          <input type="number" id="withdrawInput" class="input-styled" style="font-size: 14px; text-align: left;" placeholder="Сумма звезд (мин. 50)">
         </div>
 
-        <button class="btn-main" onclick="showToast('Заявка на вывод отправлена!')">Запросить вывод 💳</button>
+        <button class="btn-main" onclick="requestWithdrawal()">Запросить вывод 💳</button>
       </div>
     </section>
 
@@ -164,15 +164,15 @@
         <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 12px; font-size: 14px;">
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Всего игр:</span>
-            <span style="font-weight: 700;">42</span>
+            <span style="font-weight: 700;">0</span>
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Макс. коэффициент:</span>
-            <span style="font-weight: 700; color: var(--accent-green);">12.40x</span>
+            <span style="font-weight: 700; color: var(--accent-green);">1.00x</span>
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Заработано на рефералах:</span>
-            <span style="font-weight: 700; color: var(--primary);">1 500 ⭐</span>
+            <span style="font-weight: 700; color: var(--primary);">0 ⭐</span>
           </div>
         </div>
       </div>
@@ -200,7 +200,6 @@
     </div>
   </nav>
 
-  <!-- JS подключим в следующей части -->
   <script src="script.js"></script>
 </body>
 </html>
