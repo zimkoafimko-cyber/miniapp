@@ -322,6 +322,7 @@ app.get("/api/me", (req, res) => {
   });
 });
 
+/* Проверка подписки (ЕДИНОРАЗОВАЯ НАГРАДА) */
 app.post("/api/check-subscription", async (req, res) => {
   const tgUser = getTelegramUser(req);
 
@@ -363,21 +364,32 @@ app.post("/api/check-subscription", async (req, res) => {
         `)
         .get(tgUser.id);
 
-      if (!user.subscribe_claimed) {
-        db.prepare(`
-          UPDATE users
-          SET stars = stars + ?,
-              subscribe_claimed = 1
-          WHERE id = ?
-        `).run(
-          SUBSCRIBE_REWARD,
-          tgUser.id
-        );
+      // Проверка: если уже получал бонус за подписку — больше НЕ выдаем
+      if (user.subscribe_claimed) {
+        return res.status(400).json({
+          error: "Бонус за подписку уже был получен ранее!"
+        });
       }
+
+      db.prepare(`
+        UPDATE users
+        SET stars = stars + ?,
+            subscribe_claimed = 1
+        WHERE id = ?
+      `).run(
+        SUBSCRIBE_REWARD,
+        tgUser.id
+      );
+
+      return res.json({
+        ok: true,
+        status,
+        rewarded: true
+      });
     }
 
     res.json({
-      ok: isSubscribed,
+      ok: false,
       status
     });
 
@@ -390,6 +402,7 @@ app.post("/api/check-subscription", async (req, res) => {
   }
 });
 
+/* Ежедневный бонус (СТРОГО 1 РАЗ В 24 ЧАСА) */
 app.post("/api/daily-bonus", (req, res) => {
   const tgUser = getTelegramUser(req);
 
@@ -409,20 +422,25 @@ app.post("/api/daily-bonus", (req, res) => {
     `)
     .get(tgUser.id);
 
-  const today = new Date()
-    .toISOString()
-    .slice(0, 10);
+  const now = Date.now();
+  const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
 
-  const lastBonus = user.daily_bonus_at
-    ? String(user.daily_bonus_at).slice(0, 10)
-    : null;
+  if (user.daily_bonus_at) {
+    const lastBonusTime = new Date(user.daily_bonus_at).getTime();
+    
+    // Проверяем, прошло ли 24 часа (в миллисекундах)
+    if (now - lastBonusTime < TWENTY_FOUR_HOURS) {
+      const timeLeftMs = TWENTY_FOUR_HOURS - (now - lastBonusTime);
+      const hoursLeft = Math.floor(timeLeftMs / (1000 * 60 * 60));
+      const minutesLeft = Math.floor((timeLeftMs % (1000 * 60 * 60)) / (1000 * 60));
 
-  if (lastBonus === today) {
-    return res.status(400).json({
-      error: "Бонус уже получен сегодня."
-    });
+      return res.status(400).json({
+        error: `Следующий бонус будет доступен через ${hoursLeft} ч. ${minutesLeft} мин.`
+      });
+    }
   }
 
+  // Обновляем время получения на текущий ISO штамп
   db.prepare(`
     UPDATE users
     SET stars = stars + ?,
@@ -513,7 +531,7 @@ app.post("/api/withdraw", (req, res) => {
   });
 });
 
-/* --- ИГРА CRASH (Ставка от 1 до 100, 20% шанс) --- */
+/* --- ИГРА CRASH --- */
 
 app.post("/api/crash/play", (req, res) => {
   const tgUser = getTelegramUser(req);
