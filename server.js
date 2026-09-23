@@ -1,495 +1,440 @@
-import express from "express";
-import Database from "better-sqlite3";
-import crypto from "crypto";
-import path from "path";
-import { fileURLToPath } from "url";
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Stars Tasks</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+  <style>
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:#f3f4f6;
+      color:#171717;
+    }
+    .wrap{
+      max-width:520px;
+      margin:auto;
+      padding:18px 14px 35px;
+    }
+    .header{
+      background:#fff;
+      border-radius:22px;
+      padding:22px;
+      margin-bottom:14px;
+      box-shadow:0 4px 18px rgba(0,0,0,.06);
+    }
+    .title{
+      font-size:25px;
+      font-weight:800;
+      margin-bottom:5px;
+    }
+    .sub{
+      color:#777;
+      font-size:14px;
+    }
+    .balance{
+      margin-top:18px;
+      background:#f0f1f3;
+      border-radius:18px;
+      padding:17px;
+    }
+    .balance-label{
+      color:#777;
+      font-size:13px;
+    }
+    .stars{
+      font-size:32px;
+      font-weight:800;
+      margin-top:3px;
+    }
+    .refresh{
+      margin-top:12px;
+      width:100%;
+      border:0;
+      border-radius:13px;
+      padding:12px;
+      background:#e5e7eb;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .card{
+      background:#fff;
+      border-radius:20px;
+      padding:18px;
+      margin-bottom:12px;
+      box-shadow:0 4px 18px rgba(0,0,0,.05);
+    }
+    .row{
+      display:flex;
+      align-items:center;
+      gap:13px;
+    }
+    .icon{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      background:#f0f1f3;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:23px;
+      flex:none;
+    }
+    .name{
+      font-size:17px;
+      font-weight:750;
+    }
+    .desc{
+      color:#777;
+      font-size:13px;
+      margin-top:3px;
+      line-height:1.35;
+    }
+    .reward{
+      margin-left:auto;
+      font-weight:800;
+      white-space:nowrap;
+    }
+    button.action{
+      width:100%;
+      margin-top:15px;
+      border:0;
+      border-radius:14px;
+      padding:14px;
+      background:#171717;
+      color:#fff;
+      font-size:15px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    button.action:disabled{
+      opacity:.55;
+    }
+    .progress{
+      height:8px;
+      background:#e5e7eb;
+      border-radius:10px;
+      overflow:hidden;
+      margin-top:13px;
+    }
+    .progress > div{
+      height:100%;
+      width:0%;
+      background:#171717;
+      transition:.3s;
+    }
+    .small{
+      margin-top:8px;
+      color:#777;
+      font-size:12px;
+    }
+    .withdraw{
+      background:#171717;
+      color:#fff;
+    }
+    .withdraw .desc,
+    .withdraw .small{
+      color:#bbb;
+    }
+  </style>
+</head>
 
-const app = express();
+<body>
+<div class="wrap">
 
-app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
+  <div class="header">
+    <div class="title">⭐ Stars Tasks</div>
+    <div class="sub">Выполняй задания и получай Telegram Stars</div>
 
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "AlinaResseler";
-const CHANNEL_USERNAME = process.env.CHANNEL_USERNAME || "belcryptoo";
-const PORT = Number(process.env.PORT || 3000);
+    <div class="balance">
+      <div class="balance-label">Ваш баланс</div>
+      <div class="stars" id="balance">0 ⭐</div>
+      <button class="refresh" id="refreshBtn">↻ Обновить баланс</button>
+    </div>
+  </div>
 
-if (!BOT_TOKEN) {
-  console.warn("WARNING: BOT_TOKEN is not set");
+  <div class="card">
+    <div class="row">
+      <div class="icon">📢</div>
+      <div>
+        <div class="name">Подписаться на канал</div>
+        <div class="desc">Подпишись на канал и проверь подписку</div>
+      </div>
+      <div class="reward">+15 ⭐</div>
+    </div>
+
+    <button class="action" id="subscribeBtn">
+      Подписаться
+    </button>
+
+    <button class="action" id="checkBtn">
+      Проверить подписку
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div class="icon">👥</div>
+      <div>
+        <div class="name">Пригласить друзей</div>
+        <div class="desc">+2 ⭐ за каждого приглашённого друга</div>
+      </div>
+      <div class="reward">+2 ⭐</div>
+    </div>
+
+    <div class="progress">
+      <div id="refProgress"></div>
+    </div>
+
+    <div class="small" id="refText">Приглашено: 0 / 5</div>
+
+    <button class="action" id="inviteBtn">
+      Пригласить друзей
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div class="icon">📤</div>
+      <div>
+        <div class="name">Отправить пост</div>
+        <div class="desc">Поделись постом с друзьями</div>
+      </div>
+      <div class="reward">+5 ⭐</div>
+    </div>
+
+    <button class="action" id="shareBtn">
+      Отправить пост
+    </button>
+  </div>
+
+  <div class="card withdraw">
+    <div class="row">
+      <div class="icon">💰</div>
+      <div>
+        <div class="name">Вывод ⭐</div>
+        <div class="desc">Минимальная сумма вывода — 50 ⭐</div>
+      </div>
+    </div>
+
+    <button class="action" id="withdrawBtn">
+      Вывести Stars
+    </button>
+
+    <div class="small">
+      После заявки напиши администратору @AlinaResseler
+    </div>
+  </div>
+
+</div>
+
+<script>
+const tg = window.Telegram.WebApp;
+
+tg.ready();
+tg.expand();
+
+const initData = tg.initData;
+
+const headers = {
+  "Content-Type": "application/json",
+  "X-Telegram-Init-Data": initData
+};
+
+let currentUser = null;
+
+async function loadUser() {
+  try {
+    const res = await fetch("/api/me", {
+      headers
+    });
+
+    if (!res.ok) {
+      throw new Error("Ошибка авторизации");
+    }
+
+    currentUser = await res.json();
+
+    document.getElementById("balance").textContent =
+      `${currentUser.stars} ⭐`;
+
+    const referrals = Number(currentUser.referrals || 0);
+    const progress = Math.min(referrals, 5);
+
+    document.getElementById("refText").textContent =
+      `Приглашено: ${referrals} / 5`;
+
+    document.getElementById("refProgress").style.width =
+      `${progress * 20}%`;
+
+  } catch (e) {
+    console.error(e);
+    tg.showAlert("Не удалось обновить баланс.");
+  }
 }
 
-/* =========================
-   DATABASE
-========================= */
+document.getElementById("refreshBtn").addEventListener("click", async () => {
+  const btn = document.getElementById("refreshBtn");
 
-const db = new Database(path.join(__dirname, "data.sqlite"));
+  btn.disabled = true;
+  btn.textContent = "Обновление...";
 
-db.pragma("journal_mode = WAL");
+  await loadUser();
 
-db.exec(`
-CREATE TABLE IF NOT EXISTS users (
-  id INTEGER PRIMARY KEY,
-  username TEXT DEFAULT '',
-  first_name TEXT DEFAULT '',
-  stars INTEGER NOT NULL DEFAULT 0,
-  referred_by INTEGER,
-  referral_rewarded INTEGER NOT NULL DEFAULT 0,
-  subscribe_claimed INTEGER NOT NULL DEFAULT 0,
-  share_rewarded INTEGER NOT NULL DEFAULT 0,
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
+  btn.disabled = false;
+  btn.textContent = "↻ Обновить баланс";
+});
 
-CREATE TABLE IF NOT EXISTS referrals (
-  inviter_id INTEGER NOT NULL,
-  invitee_id INTEGER NOT NULL UNIQUE,
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
+document.getElementById("subscribeBtn").addEventListener("click", () => {
+  tg.openTelegramLink("https://t.me/belcryptoo");
+});
 
-CREATE TABLE IF NOT EXISTS withdrawals (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL,
-  amount INTEGER NOT NULL,
-  status TEXT NOT NULL DEFAULT 'pending',
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-`);
+document.getElementById("checkBtn").addEventListener("click", async () => {
+  const btn = document.getElementById("checkBtn");
 
-
-/* =========================
-   TELEGRAM INIT DATA
-========================= */
-
-function verifyInitData(initData) {
-  if (!initData || !BOT_TOKEN) {
-    return null;
-  }
-
-  const params = new URLSearchParams(initData);
-
-  const hash = params.get("hash");
-
-  if (!hash) {
-    return null;
-  }
-
-  params.delete("hash");
-
-  const dataCheckString = [...params.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, value]) => `${key}=${value}`)
-    .join("\n");
-
-  const secretKey = crypto
-    .createHmac("sha256", "WebAppData")
-    .update(BOT_TOKEN)
-    .digest();
-
-  const calculatedHash = crypto
-    .createHmac("sha256", secretKey)
-    .update(dataCheckString)
-    .digest("hex");
-
-  if (calculatedHash.length !== hash.length) {
-    return null;
-  }
-
-  if (
-    !crypto.timingSafeEqual(
-      Buffer.from(calculatedHash),
-      Buffer.from(hash)
-    )
-  ) {
-    return null;
-  }
-
-  const authDate = Number(params.get("auth_date") || 0);
-
-  if (!authDate) {
-    return null;
-  }
-
-  // initData не старше 24 часов
-  if (Date.now() / 1000 - authDate > 86400) {
-    return null;
-  }
+  btn.disabled = true;
+  btn.textContent = "Проверяем...";
 
   try {
-    return JSON.parse(params.get("user"));
-  } catch {
-    return null;
-  }
-}
-
-
-function getTelegramUser(req) {
-  return verifyInitData(
-    req.headers["x-telegram-init-data"]
-  );
-}
-
-
-/* =========================
-   USER
-========================= */
-
-function createOrUpdateUser(tgUser) {
-  let user = db
-    .prepare("SELECT * FROM users WHERE id = ?")
-    .get(tgUser.id);
-
-  if (!user) {
-    db.prepare(`
-      INSERT INTO users
-      (id, username, first_name)
-      VALUES (?, ?, ?)
-    `).run(
-      tgUser.id,
-      tgUser.username || "",
-      tgUser.first_name || ""
-    );
-
-    user = db
-      .prepare("SELECT * FROM users WHERE id = ?")
-      .get(tgUser.id);
-  } else {
-    db.prepare(`
-      UPDATE users
-      SET username = ?, first_name = ?
-      WHERE id = ?
-    `).run(
-      tgUser.username || "",
-      tgUser.first_name || "",
-      tgUser.id
-    );
-  }
-
-  return user;
-}
-
-
-/* =========================
-   TELEGRAM API
-========================= */
-
-async function telegram(method, body) {
-  const response = await fetch(
-    `https://api.telegram.org/bot${BOT_TOKEN}/${method}`,
-    {
+    const res = await fetch("/api/check-subscription", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(body)
+      headers
+    });
+
+    const data = await res.json();
+
+    if (data.ok) {
+      tg.showAlert("Подписка подтверждена! +15 ⭐");
+    } else {
+      tg.showAlert("Подписка не найдена. Сначала подпишись на канал.");
     }
-  );
 
-  return response.json();
-}
+    await loadUser();
 
+  } catch (e) {
+    tg.showAlert("Ошибка проверки подписки.");
+  }
 
-/* =========================
-   CONFIG
-========================= */
+  btn.disabled = false;
+  btn.textContent = "Проверить подписку";
+});
 
-app.get("/api/config", (req, res) => {
-  res.json({
-    channel: CHANNEL_USERNAME,
-    admin: ADMIN_USERNAME,
+document.getElementById("inviteBtn").addEventListener("click", async () => {
+  if (!currentUser) {
+    await loadUser();
+  }
 
-    minWithdrawal: 50,
+  const ref = currentUser.id;
 
-    rewards: {
-      subscribe: 15,
-      referral: 2,
-      share: 5
+  const link =
+    `${location.origin}/?ref=${ref}`;
+
+  const text =
+    "Заходи и получай Telegram Stars ⭐";
+
+  const shareUrl =
+    "https://t.me/share/url?url=" +
+    encodeURIComponent(link) +
+    "&text=" +
+    encodeURIComponent(text);
+
+  tg.openTelegramLink(shareUrl);
+});
+
+document.getElementById("shareBtn").addEventListener("click", async () => {
+
+  const shareUrl =
+    "https://t.me/share/url?url=" +
+    encodeURIComponent("https://t.me/belcryptoo") +
+    "&text=" +
+    encodeURIComponent("Подпишись на канал ⭐");
+
+  tg.openTelegramLink(shareUrl);
+
+  setTimeout(async () => {
+    try {
+      await fetch("/api/share-complete", {
+        method: "POST",
+        headers
+      });
+
+      await loadUser();
+
+      tg.showAlert("Готово! +5 ⭐");
+    } catch (e) {
+      console.error(e);
     }
-  });
+  }, 1200);
 });
 
-
-/* =========================
-   USER INFO
-========================= */
-
-app.get("/api/me", (req, res) => {
-  const tgUser = getTelegramUser(req);
-
-  if (!tgUser) {
-    return res.status(401).json({
-      error: "Telegram authorization required"
-    });
+document.getElementById("withdrawBtn").addEventListener("click", async () => {
+  if (!currentUser) {
+    await loadUser();
   }
 
-  const user = createOrUpdateUser(tgUser);
-
-  const referrals = db
-    .prepare(`
-      SELECT COUNT(*) AS count
-      FROM referrals
-      WHERE inviter_id = ?
-    `)
-    .get(tgUser.id).count;
-
-  res.json({
-    id: user.id,
-    username: user.username,
-    first_name: user.first_name,
-    stars: user.stars,
-    referrals
-  });
-});
-
-
-/* =========================
-   REFERRAL
-========================= */
-
-app.post("/api/referral", (req, res) => {
-  const tgUser = getTelegramUser(req);
-
-  if (!tgUser) {
-    return res.status(401).json({
-      error: "Unauthorized"
-    });
+  if (Number(currentUser.stars) < 50) {
+    tg.showAlert("Минимальный вывод — 50 ⭐");
+    return;
   }
-
-  const inviterId = Number(req.body.inviter_id);
-
-  if (!inviterId || inviterId === tgUser.id) {
-    return res.json({
-      ok: false
-    });
-  }
-
-  createOrUpdateUser(tgUser);
-
-  const inviter = db
-    .prepare("SELECT * FROM users WHERE id = ?")
-    .get(inviterId);
-
-  if (!inviter) {
-    return res.json({
-      ok: false
-    });
-  }
-
-  const alreadyReferred = db
-    .prepare(`
-      SELECT * FROM referrals
-      WHERE invitee_id = ?
-    `)
-    .get(tgUser.id);
-
-  if (alreadyReferred) {
-    return res.json({
-      ok: false
-    });
-  }
-
-  db.prepare(`
-    INSERT INTO referrals
-    (inviter_id, invitee_id)
-    VALUES (?, ?)
-  `).run(inviterId, tgUser.id);
-
-  db.prepare(`
-    UPDATE users
-    SET stars = stars + 2
-    WHERE id = ?
-  `).run(inviterId);
-
-  res.json({
-    ok: true
-  });
-});
-
-
-/* =========================
-   SUBSCRIPTION CHECK
-========================= */
-
-app.post("/api/check-subscription", async (req, res) => {
-  const tgUser = getTelegramUser(req);
-
-  if (!tgUser) {
-    return res.status(401).json({
-      error: "Unauthorized"
-    });
-  }
-
-  createOrUpdateUser(tgUser);
 
   try {
-    const result = await telegram(
-      "getChatMember",
-      {
-        chat_id: `@${CHANNEL_USERNAME.replace(/^@/, "")}`,
-        user_id: tgUser.id
-      }
+    const res = await fetch("/api/withdraw", {
+      method: "POST",
+      headers
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      tg.showAlert(data.error || "Ошибка вывода.");
+      return;
+    }
+
+    tg.showAlert(
+      "Заявка на вывод создана. Сейчас откроется администратор."
     );
 
-    if (!result.ok) {
-      return res.status(500).json({
-        error:
-          "Telegram не смог проверить подписку. Проверьте, что бот является администратором канала."
-      });
-    }
+    tg.openTelegramLink(
+      "https://t.me/AlinaResseler"
+    );
 
-    const status = result.result.status;
-
-    const isSubscribed =
-      ["creator", "administrator", "member"].includes(status) ||
-      (
-        status === "restricted" &&
-        result.result.is_member === true
-      );
-
-    if (isSubscribed) {
-      const user = db
-        .prepare(`
-          SELECT subscribe_claimed
-          FROM users
-          WHERE id = ?
-        `)
-        .get(tgUser.id);
-
-      if (!user.subscribe_claimed) {
-        db.prepare(`
-          UPDATE users
-          SET
-            stars = stars + 15,
-            subscribe_claimed = 1
-          WHERE id = ?
-        `).run(tgUser.id);
-      }
-    }
-
-    res.json({
-      ok: isSubscribed,
-      status
-    });
-
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      error:
-        "Ошибка проверки подписки. Убедитесь, что бот является администратором канала."
-    });
+  } catch (e) {
+    tg.showAlert("Ошибка отправки заявки.");
   }
 });
 
+async function processReferral() {
+  const params = new URLSearchParams(window.location.search);
+  const ref = Number(params.get("ref"));
 
-/* =========================
-   SHARE POST
-========================= */
+  if (!ref || !currentUser || ref === Number(currentUser.id)) {
+    return;
+  }
 
-app.post("/api/share-complete", (req, res) => {
-  const tgUser = getTelegramUser(req);
-
-  if (!tgUser) {
-    return res.status(401).json({
-      error: "Unauthorized"
+  try {
+    await fetch("/api/referral", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        inviter_id: ref
+      })
     });
+
+    await loadUser();
+  } catch (e) {
+    console.error(e);
   }
+}
 
-  createOrUpdateUser(tgUser);
+(async () => {
+  await loadUser();
+  await processReferral();
+})();
+</script>
 
-  const user = db
-    .prepare(`
-      SELECT share_rewarded
-      FROM users
-      WHERE id = ?
-    `)
-    .get(tgUser.id);
-
-  if (!user.share_rewarded) {
-    db.prepare(`
-      UPDATE users
-      SET
-        stars = stars + 5,
-        share_rewarded = 1
-      WHERE id = ?
-    `).run(tgUser.id);
-  }
-
-  res.json({
-    ok: true
-  });
-});
-
-
-/* =========================
-   WITHDRAWAL
-========================= */
-
-app.post("/api/withdraw", (req, res) => {
-  const tgUser = getTelegramUser(req);
-
-  if (!tgUser) {
-    return res.status(401).json({
-      error: "Unauthorized"
-    });
-  }
-
-  const user = createOrUpdateUser(tgUser);
-
-  if (user.stars < 50) {
-    return res.status(400).json({
-      error: "Минимальный вывод — 50 ⭐"
-    });
-  }
-
-  db.prepare(`
-    INSERT INTO withdrawals
-    (user_id, amount)
-    VALUES (?, ?)
-  `).run(
-    tgUser.id,
-    user.stars
-  );
-
-  res.json({
-    ok: true,
-    contact:
-      `https://t.me/${ADMIN_USERNAME.replace(/^@/, "")}`
-  });
-});
-
-
-/* =========================
-   HEALTH CHECK
-========================= */
-
-app.get("/health", (req, res) => {
-  res.send("OK");
-});
-
-
-/* =========================
-   MINI APP
-========================= */
-
-app.use((req, res) => {
-  res.sendFile(
-    path.join(
-      __dirname,
-      "public",
-      "index.html"
-    )
-  );
-});
-
-
-/* =========================
-   START SERVER
-========================= */
-
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(
-    `Server started on port ${PORT}`
-  );
-});
+</body>
+</html>
