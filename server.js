@@ -1,334 +1,231 @@
-import express from "express";
-import Database from "better-sqlite3";
-import crypto from "crypto";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const express = require('express');
+const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
+// Мидлварь для парсинга JSON и отдачи статических файлов (HTML, CSS, JS)
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, 'public')));
 
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "AlinaResseler";
-const CHANNEL_USERNAME = process.env.CHANNEL_USERNAME || "belcryptoo";
-const BOT_USERNAME = process.env.BOT_USERNAME || "";
-const PORT = Number(process.env.PORT || 3000);
-
-const REFERRAL_REWARD = 2;
-const SUBSCRIBE_REWARD = 15; 
-const DAILY_REWARD = 3;
-const FRIENDS_TASK_REWARD = 15;
-const MIN_WITHDRAWAL = 50;
-
-const db = new Database(path.join(__dirname, "data.sqlite"));
-db.pragma("journal_mode = WAL");
-
-db.exec(`
-CREATE TABLE IF NOT EXISTS users (
-  id INTEGER PRIMARY KEY,
-  username TEXT DEFAULT '',
-  first_name TEXT DEFAULT '',
-  stars INTEGER NOT NULL DEFAULT 0,
-  referred_by INTEGER,
-  referral_rewarded INTEGER NOT NULL DEFAULT 0,
-  subscribe_claimed INTEGER NOT NULL DEFAULT 0,
-  friends_task_claimed INTEGER NOT NULL DEFAULT 0,
-  daily_bonus_at TEXT,
-  active_crash_point REAL DEFAULT 0,
-  active_crash_bet INTEGER DEFAULT 0,
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS referrals (
-  inviter_id INTEGER NOT NULL,
-  invitee_id INTEGER NOT NULL UNIQUE,
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS withdrawals (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL,
-  amount INTEGER NOT NULL,
-  status TEXT NOT NULL DEFAULT 'pending',
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-`);
-
-function verifyInitData(initData) {
-  if (!initData || !BOT_TOKEN) return null;
-  const params = new URLSearchParams(initData);
-  const hash = params.get("hash");
-  if (!hash) return null;
-  params.delete("hash");
-
-  const dataCheckString = [...params.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, value]) => `${key}=${value}`)
-    .join("\n");
-
-  const secretKey = crypto.createHmac("sha256", "WebAppData").update(BOT_TOKEN).digest();
-  const calculatedHash = crypto.createHmac("sha256", secretKey).update(dataCheckString).digest("hex");
-
-  if (calculatedHash !== hash) return null;
-  const authDate = Number(params.get("auth_date") || 0);
-  if (!authDate || Date.now() / 1000 - authDate > 86400) return null;
-
-  try { return JSON.parse(params.get("user")); } catch { return null; }
-}
-
-function getTelegramUser(req) {
-  return verifyInitData(req.headers["x-telegram-init-data"]);
-}
-
-function createOrUpdateUser(tgUser) {
-  let user = db.prepare("SELECT * FROM users WHERE id = ?").get(tgUser.id);
-  if (!user) {
-    db.prepare(`
-      INSERT INTO users (id, username, first_name, stars)
-      VALUES (?, ?, ?, 0)
-    `).run(tgUser.id, tgUser.username || "", tgUser.first_name || "");
-    user = db.prepare("SELECT * FROM users WHERE id = ?").get(tgUser.id);
+/* ==========================================
+   1. БАЗА ДАННЫХ (SQLITE)
+   ========================================== */
+const db = new sqlite3.Database('./database.sqlite', (err) => {
+  if (err) {
+    console.error('Ошибка подключения к БД:', err);
   } else {
-    db.prepare(`UPDATE users SET username = ?, first_name = ? WHERE id = ?`)
-      .run(tgUser.username || "", tgUser.first_name || "", tgUser.id);
+    console.log('Успешное подключение к базе данных SQLite.');
   }
-  return user;
-}
+});
 
-async function telegram(method, body) {
-  const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${method}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
-  });
-  return response.json();
-}
+// Создание таблиц при старте сервера
+db.serialize(() => {
+  // Таблица пользователей
+  db.run(`
+    CREATE TABLE IF NOT EXISTS users (
+      telegram_id TEXT PRIMARY KEY,
+      username TEXT,
+      balance INTEGER DEFAULT 0,
+      total_games INTEGER DEFAULT 0,
+      max_mult REAL DEFAULT 1.0,
+      ref_earned INTEGER DEFAULT 0
+    )
+  `);
 
-app.get("/api/me", (req, res) => {
-  const tgUser = getTelegramUser(req);
-  if (!tgUser) return res.status(401).json({ error: "Unauthorized" });
+  // Таблица выполненных заданий (чтобы исключить начисление наград по несколько раз)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS completed_tasks (
+      telegram_id TEXT,
+      task_id INTEGER,
+      PRIMARY KEY (telegram_id, task_id)
+    )
+  `);
+});
 
-  const user = createOrUpdateUser(tgUser);
+/* ==========================================
+   2. КОНФИГУРАЦИЯ ЗАДАНИЙ (SERVER TRUTH)
+   ========================================== */
+const TASKS_CONFIG = {
+  1: { reward: 15, title: 'Подписка на канал' },
+  2: { reward: 15, title: 'Пригласи 3 друзей' },
+  3: { reward: 3,  title: 'Ежедневный бонус' }
+};
 
-  const referralCount = db.prepare(`
-    SELECT COUNT(*) AS count FROM referrals WHERE inviter_id = ?
-  `).get(tgUser.id).count;
+/* ==========================================
+   3. API ЭНДПОИНТЫ
+   ========================================== */
 
-  const now = Date.now();
-  let dailyAvailable = true;
-  if (user.daily_bonus_at) {
-    const lastBonus = new Date(user.daily_bonus_at).getTime();
-    if (now - lastBonus < 24 * 60 * 60 * 1000) {
-      dailyAvailable = false;
-    }
+// --- Инициализация и загрузка профиля ---
+app.post('/api/user/init', (req, res) => {
+  const { telegram_id, username } = req.body;
+
+  if (!telegram_id) {
+    return res.status(400).json({ error: 'Telegram ID обязателен' });
   }
 
-  res.json({
-    id: user.id,
-    stars: user.stars,
-    referralCount,
-    tasks: {
-      subscribe: Boolean(user.subscribe_claimed),
-      friends: Boolean(user.friends_task_claimed) || referralCount >= 3,
-      dailyAvailable: dailyAvailable
+  const userId = String(telegram_id);
+  const name = username || 'Игрок';
+
+  db.get('SELECT * FROM users WHERE telegram_id = ?', [userId], (err, userRow) => {
+    if (err) return res.status(500).json({ error: err.message });
+
+    if (!userRow) {
+      // Регистрируем нового пользователя с стартовым балансом 0
+      db.run(
+        'INSERT INTO users (telegram_id, username, balance) VALUES (?, ?, 0)',
+        [userId, name],
+        (insertErr) => {
+          if (insertErr) return res.status(500).json({ error: insertErr.message });
+          
+          return res.json({
+            user: { telegram_id: userId, username: name, balance: 0, total_games: 0, max_mult: 1.0, ref_earned: 0 },
+            completedTasks: []
+          });
+        }
+      );
+    } else {
+      // Загружаем список айди выполненных заданий
+      db.all('SELECT task_id FROM completed_tasks WHERE telegram_id = ?', [userId], (taskErr, taskRows) => {
+        if (taskErr) return res.status(500).json({ error: taskErr.message });
+
+        const completedIds = taskRows.map(t => t.task_id);
+        return res.json({
+          user: userRow,
+          completedTasks: completedIds
+        });
+      });
     }
   });
 });
 
-app.post("/api/check-subscription", async (req, res) => {
-  const tgUser = getTelegramUser(req);
-  if (!tgUser) return res.status(401).json({ error: "Unauthorized" });
+// --- Логика игры в Кости (Dice) ---
+app.post('/api/game/dice', (req, res) => {
+  const { telegram_id, bet } = req.body;
+  const userId = String(telegram_id);
+  const betAmount = parseInt(bet, 10);
 
-  const user = createOrUpdateUser(tgUser);
-  if (user.subscribe_claimed) {
-    return res.status(400).json({ error: "Вы уже получили награду за подписку!" });
+  if (isNaN(betAmount) || betAmount <= 0) {
+    return res.status(400).json({ error: 'Неверная сумма ставки' });
   }
 
-  try {
-    const result = await telegram("getChatMember", {
-      chat_id: `@${CHANNEL_USERNAME.replace(/^@/, "")}`,
-      user_id: tgUser.id
+  db.get('SELECT balance, total_games FROM users WHERE telegram_id = ?', [userId], (err, user) => {
+    if (err || !user) return res.status(400).json({ error: 'Пользователь не найден' });
+    if (user.balance < betAmount) return res.status(400).json({ error: 'Недостаточно звезд на балансе' });
+
+    // Генерация значений костей (1-6)
+    const dice1 = Math.floor(Math.random() * 6) + 1;
+    const dice2 = Math.floor(Math.random() * 6) + 1;
+    const sum = dice1 + dice2;
+
+    let isWin = false;
+    let winAmount = 0;
+    let newBalance = user.balance;
+
+    if (sum === 7) {
+      // При сумме 7 — проигрыш
+      newBalance -= betAmount;
+    } else {
+      // Любая другая сумма — выигрыш x1.20
+      isWin = true;
+      winAmount = Math.floor(betAmount * 1.20) - betAmount;
+      newBalance += winAmount;
+    }
+
+    const newGames = (user.total_games || 0) + 1;
+
+    // Сохранение результатов в БД
+    db.run(
+      'UPDATE users SET balance = ?, total_games = ? WHERE telegram_id = ?',
+      [newBalance, newGames, userId],
+      (updateErr) => {
+        if (updateErr) return res.status(500).json({ error: updateErr.message });
+
+        res.json({
+          dice1,
+          dice2,
+          sum,
+          isWin,
+          winAmount,
+          newBalance
+        });
+      }
+    );
+  });
+});
+
+// --- Выполнение заданий ---
+app.post('/api/tasks/complete', (req, res) => {
+  const { telegram_id, task_id } = req.body;
+  const userId = String(telegram_id);
+  const taskId = parseInt(task_id, 10);
+
+  const taskConfig = TASKS_CONFIG[taskId];
+  if (!taskConfig) {
+    return res.status(400).json({ error: 'Задание не существует' });
+  }
+
+  // Проверяем, делалось ли задание ранее
+  db.get('SELECT * FROM completed_tasks WHERE telegram_id = ? AND task_id = ?', [userId, taskId], (err, row) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (row) return res.status(400).json({ error: 'Вы уже получили награду за это задание' });
+
+    // Вставляем запись о выполнении
+    db.run('INSERT INTO completed_tasks (telegram_id, task_id) VALUES (?, ?)', [userId, taskId], (insertErr) => {
+      if (insertErr) return res.status(500).json({ error: insertErr.message });
+
+      // Начисляем награду на баланс
+      db.get('SELECT balance FROM users WHERE telegram_id = ?', [userId], (userErr, user) => {
+        if (userErr || !user) return res.status(400).json({ error: 'Пользователь не найден' });
+
+        const newBalance = user.balance + taskConfig.reward;
+
+        db.run('UPDATE users SET balance = ? WHERE telegram_id = ?', [newBalance, userId], (updateErr) => {
+          if (updateErr) return res.status(500).json({ error: updateErr.message });
+
+          res.json({
+            success: true,
+            reward: taskConfig.reward,
+            newBalance
+          });
+        });
+      });
     });
-
-    if (result.ok && ["creator", "administrator", "member"].includes(result.result.status)) {
-      db.prepare(`UPDATE users SET stars = stars + ?, subscribe_claimed = 1 WHERE id = ?`)
-        .run(SUBSCRIBE_REWARD, tgUser.id);
-
-      return res.json({ ok: true, reward: SUBSCRIBE_REWARD });
-    }
-    res.status(400).json({ error: "Подписка не обнаружена!" });
-  } catch (error) {
-    res.status(500).json({ error: "Ошибка проверки подписки." });
-  }
-});
-
-app.post("/api/check-friends-task", (req, res) => {
-  const tgUser = getTelegramUser(req);
-  if (!tgUser) return res.status(401).json({ error: "Unauthorized" });
-
-  const user = createOrUpdateUser(tgUser);
-  if (user.friends_task_claimed) {
-    return res.status(400).json({ error: "Задание уже выполнено!" });
-  }
-
-  const count = db.prepare(`SELECT COUNT(*) AS count FROM referrals WHERE inviter_id = ?`).get(tgUser.id).count;
-
-  if (count < 3) {
-    return res.status(400).json({ error: `Нужно 3 друга, сейчас приглашено: ${count}` });
-  }
-
-  db.prepare(`UPDATE users SET stars = stars + ?, friends_task_claimed = 1 WHERE id = ?`)
-    .run(FRIENDS_TASK_REWARD, tgUser.id);
-
-  res.json({ ok: true, reward: FRIENDS_TASK_REWARD });
-});
-
-app.post("/api/daily-bonus", (req, res) => {
-  const tgUser = getTelegramUser(req);
-  if (!tgUser) return res.status(401).json({ error: "Unauthorized" });
-
-  const user = createOrUpdateUser(tgUser);
-  const now = Date.now();
-
-  if (user.daily_bonus_at) {
-    const lastBonus = new Date(user.daily_bonus_at).getTime();
-    if (now - lastBonus < 24 * 60 * 60 * 1000) {
-      return res.status(400).json({ error: "Ежедневный бонус уже получен! Зайдите завтра." });
-    }
-  }
-
-  db.prepare(`UPDATE users SET stars = stars + ?, daily_bonus_at = ? WHERE id = ?`)
-    .run(DAILY_REWARD, new Date().toISOString(), tgUser.id);
-
-  res.json({ ok: true, reward: DAILY_REWARD });
-});
-
-/* --- ИГРА CRASH --- */
-app.post("/api/crash/play", (req, res) => {
-  const tgUser = getTelegramUser(req);
-  if (!tgUser) return res.status(401).json({ error: "Unauthorized" });
-
-  const { bet } = req.body;
-  const betAmount = parseInt(bet, 10);
-
-  if (isNaN(betAmount) || betAmount < 1 || betAmount > 100) {
-    return res.status(400).json({ error: "Ставка должна быть от 1 до 100 ⭐" });
-  }
-
-  const user = createOrUpdateUser(tgUser);
-  if (user.stars < betAmount) {
-    return res.status(400).json({ error: "Недостаточно ⭐ для этой ставки!" });
-  }
-
-  const isWin = Math.random() < 0.20;
-  let crashPoint = isWin ? parseFloat((1.5 + Math.random() * 2.0).toFixed(2)) : 1.00;
-
-  db.prepare(`
-    UPDATE users
-    SET stars = stars - ?,
-        active_crash_point = ?,
-        active_crash_bet = ?
-    WHERE id = ?
-  `).run(betAmount, crashPoint, betAmount, tgUser.id);
-
-  res.json({ ok: true, crashPoint });
-});
-
-app.post("/api/crash/cashout", (req, res) => {
-  const tgUser = getTelegramUser(req);
-  if (!tgUser) return res.status(401).json({ error: "Unauthorized" });
-
-  const { multiplier } = req.body;
-  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(tgUser.id);
-
-  if (!user || !user.active_crash_point) {
-    return res.status(400).json({ error: "Активная игра не найдена" });
-  }
-
-  if (multiplier > user.active_crash_point) {
-    db.prepare(`UPDATE users SET active_crash_point = 0, active_crash_bet = 0 WHERE id = ?`).run(tgUser.id);
-    return res.status(400).json({ error: "Ракета взорвалась раньше!" });
-  }
-
-  const winAmount = Math.floor(user.active_crash_bet * multiplier);
-  db.prepare(`UPDATE users SET stars = stars + ?, active_crash_point = 0, active_crash_bet = 0 WHERE id = ?`).run(winAmount, tgUser.id);
-
-  res.json({ ok: true, winAmount });
-});
-
-/* --- ИГРА КОСТИ (DICE) --- */
-app.post("/api/dice/play", (req, res) => {
-  const tgUser = getTelegramUser(req);
-  if (!tgUser) return res.status(401).json({ error: "Unauthorized" });
-
-  const { bet } = req.body;
-  const betAmount = parseInt(bet, 10);
-
-  if (isNaN(betAmount) || betAmount < 1 || betAmount > 100) {
-    return res.status(400).json({ error: "Ставка должна быть от 1 до 100 ⭐" });
-  }
-
-  const user = createOrUpdateUser(tgUser);
-  if (user.stars < betAmount) {
-    return res.status(400).json({ error: "Недостаточно ⭐ на балансе!" });
-  }
-
-  const isWin = Math.random() < 0.20;
-  let dice1, dice2, sum;
-
-  if (isWin) {
-    do {
-      dice1 = Math.floor(Math.random() * 6) + 1;
-      dice2 = Math.floor(Math.random() * 6) + 1;
-      sum = dice1 + dice2;
-    } while (sum === 7);
-  } else {
-    const losePairs = [[1, 6], [2, 5], [3, 4], [4, 3], [5, 2], [6, 1]];
-    const randomPair = losePairs[Math.floor(Math.random() * losePairs.length)];
-    dice1 = randomPair[0];
-    dice2 = randomPair[1];
-    sum = 7;
-  }
-
-  let winAmount = 0;
-  if (isWin) {
-    winAmount = Math.floor(betAmount * 1.2);
-    db.prepare(`UPDATE users SET stars = stars + ? WHERE id = ?`).run(winAmount - betAmount, tgUser.id);
-  } else {
-    db.prepare(`UPDATE users SET stars = stars - ? WHERE id = ?`).run(betAmount, tgUser.id);
-  }
-
-  const updatedUser = db.prepare("SELECT stars FROM users WHERE id = ?").get(tgUser.id);
-
-  res.json({
-    ok: true,
-    isWin,
-    dice1,
-    dice2,
-    sum,
-    winAmount,
-    newBalance: updatedUser.stars
   });
 });
 
-app.post("/api/withdraw", (req, res) => {
-  const tgUser = getTelegramUser(req);
-  if (!tgUser) return res.status(401).json({ error: "Unauthorized" });
+// --- Вывод средств ---
+app.post('/api/withdraw', (req, res) => {
+  const { telegram_id, wallet, amount } = req.body;
+  const userId = String(telegram_id);
+  const withdrawAmount = parseInt(amount, 10);
 
-  const user = createOrUpdateUser(tgUser);
-  if (user.stars < MIN_WITHDRAWAL) {
-    return res.status(400).json({ error: `Минимальный вывод: ${MIN_WITHDRAWAL} ⭐` });
+  if (!wallet || isNaN(withdrawAmount) || withdrawAmount < 50) {
+    return res.status(400).json({ error: 'Минимальная сумма для вывода: 50 ⭐' });
   }
 
-  const amount = user.stars;
-  db.prepare(`UPDATE users SET stars = 0 WHERE id = ?`).run(tgUser.id);
-  db.prepare(`INSERT INTO withdrawals (user_id, amount) VALUES (?, ?)`).run(tgUser.id, amount);
+  db.get('SELECT balance FROM users WHERE telegram_id = ?', [userId], (err, user) => {
+    if (err || !user) return res.status(400).json({ error: 'Пользователь не найден' });
+    if (user.balance < withdrawAmount) return res.status(400).json({ error: 'Недостаточно средств на балансе' });
 
-  res.json({ ok: true, amount });
+    const newBalance = user.balance - withdrawAmount;
+
+    db.run('UPDATE users SET balance = ? WHERE telegram_id = ?', [newBalance, userId], (updateErr) => {
+      if (updateErr) return res.status(500).json({ error: updateErr.message });
+
+      res.json({
+        success: true,
+        newBalance,
+        message: 'Заявка на вывод успешно сформирована!'
+      });
+    });
+  });
 });
 
-app.listen(PORT, "0.0.0.0", () => console.log(`Server running on port ${PORT}`));
+/* ==========================================
+   4. ЗАПУСК СЕРВЕРА
+   ========================================== */
+app.listen(PORT, () => {
+  console.log(`Сервер успешно запущен на порту ${PORT}`);
+});
