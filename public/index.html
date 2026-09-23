@@ -1,220 +1,144 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Star Rewards Mini App</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Звезды за задание</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--tg-theme-bg-color, #18222d);
+            color: var(--tg-theme-text-color, #ffffff);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background: var(--tg-theme-secondary-bg-color, #232e3c);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        h1 {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #a8b2bc);
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: var(--tg-theme-button-color, #3390ec);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:active {
+            opacity: 0.8;
+        }
+        .status {
+            margin-top: 15px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .admin-panel {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: none;
+        }
+    </style>
 </head>
 <body>
 
-  <div id="toast" class="toast">Уведомление</div>
+    <div class="container">
+        <h1>⭐ Звезды за задание</h1>
+        <p>Подпишитесь на наш канал, чтобы получить награду!</p>
+        
+        <button id="checkSubBtn">Проверить подписку</button>
+        <div id="statusText" class="status"></div>
 
-  <div class="app-container">
-
-    <header class="header-profile">
-      <div class="user-info">
-        <div class="avatar-glow" id="userAvatar">🚀</div>
-        <div>
-          <h4 id="userName">Игрок</h4>
-          <span class="badge" id="userLevel">Уровень 1</span>
+        <div id="adminPanel" class="admin-panel">
+            <h3>🛠 Панель администратора</h3>
+            <p>Добро пожаловать, босс! У вас полный доступ.</p>
         </div>
-      </div>
-      <button class="btn-chip" onclick="switchTab('profileTab')">Профиль ⚙️</button>
-    </header>
-
-    <div class="glass-card balance-card glow">
-      <div class="balance-title">Ваш баланс</div>
-      <div class="balance-amount">
-        <span id="balanceVal">0</span> <span style="font-size: 32px;">⭐</span>
-      </div>
-      <div style="display: flex; gap: 10px; margin-top: 12px;">
-        <button class="btn-main btn-secondary" style="padding: 10px; font-size: 13px;" onclick="switchTab('tasksTab')">Заработать ⭐</button>
-        <button class="btn-main" style="padding: 10px; font-size: 13px;" onclick="switchTab('withdrawTab')">Вывести 💳</button>
-      </div>
     </div>
 
-    <!-- ТАБ 1: ИГРЫ -->
-    <section id="gameTab" class="tab-content active">
-      
-      <!-- Rocket Crash -->
-      <div class="glass-card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h3>Rocket Crash 🚀</h3>
-          <span class="badge" style="background: rgba(0, 230, 118, 0.15); color: var(--accent-green);">LIVE</span>
-        </div>
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
 
-        <div class="canvas-wrapper">
-          <canvas id="crashCanvas"></canvas>
-          <div class="crash-overlay">
-            <div class="multiplier-val" id="multiplierVal">1.00x</div>
-            <div id="crashStatus" style="font-size: 12px; color: var(--text-muted); font-weight: 700;">ОЖИДАНИЕ СТАВКИ</div>
-          </div>
-        </div>
+        const user = tg.initDataUnsafe?.user;
+        const userId = user ? user.id : null;
+        const username = user ? user.username : null;
 
-        <div class="bet-control-group">
-          <input type="number" id="betInput" class="input-styled" value="5" min="1" placeholder="Сумма ставки">
-          <div class="quick-bets">
-            <button class="btn-chip" onclick="setBet(1)">1</button>
-            <button class="btn-chip" onclick="setBet(5)">5</button>
-            <button class="btn-chip" onclick="setBet(10)">10</button>
-            <button class="btn-chip" onclick="setMaxBet()">MAX</button>
-          </div>
-        </div>
+        const checkSubBtn = document.getElementById('checkSubBtn');
+        const statusText = document.getElementById('statusText');
+        const adminPanel = document.getElementById('adminPanel');
 
-        <button id="btnStartGame" class="btn-main" onclick="startCrashGame()">ПОЛЕТЕЛИ 🚀</button>
-        <button id="btnCashout" class="btn-main btn-cashout" onclick="cashoutCrash()" style="display: none;">ЗАБРАТЬ (1.00x)</button>
-      </div>
+        // Проверка прав администратора
+        if (username) {
+            fetch('/api/check-admin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: username })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.isAdmin) {
+                    adminPanel.style.display = 'block';
+                }
+            })
+            .catch(err => console.error('Ошибка проверки админа:', err));
+        }
 
-      <!-- Кости (Dice) -->
-      <div class="glass-card" style="margin-top: 16px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <h3>Кости (Dice) 🎲</h3>
-          <span class="badge">x1.20</span>
-        </div>
-        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
-          Победа при любой сумме, кроме <b>7</b>!
-        </p>
+        // Проверка подписки по кнопке
+        checkSubBtn.addEventListener('click', async () => {
+            if (!userId) {
+                statusText.style.color = '#ff5959';
+                statusText.innerText = 'Не удалось определить пользователя Telegram';
+                return;
+            }
 
-        <div class="dice-container" style="display: flex; justify-content: center; gap: 15px; margin: 15px 0;">
-          <div id="dice1" class="dice-box" style="font-size: 28px; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); border-radius: 10px;">?</div>
-          <div id="dice2" class="dice-box" style="font-size: 28px; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); border-radius: 10px;">?</div>
-        </div>
+            statusText.style.color = '#a8b2bc';
+            statusText.innerText = 'Проверяем подписку...';
 
-        <div id="diceStatus" style="text-align: center; font-size: 13px; font-weight: 700; margin-bottom: 12px; min-height: 18px;">Испытайте удачу!</div>
+            try {
+                const response = await fetch('/api/check-subscription', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: userId })
+                });
+                const data = await response.json();
 
-        <div class="bet-control-group">
-          <input type="number" id="diceBetInput" class="input-styled" value="5" min="1" placeholder="Сумма ставки">
-          <div class="quick-bets">
-            <button class="btn-chip" onclick="setDiceBet(1)">1</button>
-            <button class="btn-chip" onclick="setDiceBet(5)">5</button>
-            <button class="btn-chip" onclick="setDiceBet(10)">10</button>
-            <button class="btn-chip" onclick="setDiceMaxBet()">MAX</button>
-          </div>
-        </div>
-
-        <button id="btnPlayDice" class="btn-main btn-secondary" onclick="playDice()">БРОСИТЬ КОСТИ 🎲</button>
-      </div>
-
-    </section>
-
-    <!-- ТАБ 2: ЗАДАНИЯ -->
-    <section id="tasksTab" class="tab-content">
-      <div class="glass-card">
-        <h3>Выполняй задания</h3>
-        <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px; margin-bottom: 16px;">
-          Получай бесплатные ⭐ за активность
-        </p>
-
-        <div class="task-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 10px;">
-          <div class="task-info" style="display: flex; align-items: center; gap: 10px;">
-            <div style="font-size: 24px;">📢</div>
-            <div>
-              <div style="font-size: 14px; font-weight: 700;">Подписка на канал</div>
-              <div style="font-size: 12px; color: var(--primary); font-weight: 700;">+15 ⭐</div>
-            </div>
-          </div>
-          <button class="btn-chip task-btn" onclick="completeTask(this, 1)">Выполнить</button>
-        </div>
-
-        <div class="task-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 10px;">
-          <div class="task-info" style="display: flex; align-items: center; gap: 10px;">
-            <div style="font-size: 24px;">👥</div>
-            <div>
-              <div style="font-size: 14px; font-weight: 700;">Пригласи 3 друзей</div>
-              <div style="font-size: 12px; color: var(--primary); font-weight: 700;">+15 ⭐</div>
-            </div>
-          </div>
-          <button class="btn-chip task-btn" onclick="completeTask(this, 2)">Выполнить</button>
-        </div>
-
-        <div class="task-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 10px;">
-          <div class="task-info" style="display: flex; align-items: center; gap: 10px;">
-            <div style="font-size: 24px;">🎁</div>
-            <div>
-              <div style="font-size: 14px; font-weight: 700;">Ежедневный бонус</div>
-              <div style="font-size: 12px; color: var(--primary); font-weight: 700;">+3 ⭐</div>
-            </div>
-          </div>
-          <button class="btn-chip task-btn" onclick="completeTask(this, 3)">Забрать</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- ТАБ 3: РЕФЕРАЛЫ -->
-    <section id="refTab" class="tab-content">
-      <div class="glass-card" style="text-align: center;">
-        <div style="font-size: 40px; margin-bottom: 8px;">🤝</div>
-        <h3>Реферальная система</h3>
-        <p style="font-size: 13px; color: var(--text-muted); margin: 8px 0 16px 0;">
-          Получай +3 ⭐ за каждого приглашенного друга!
-        </p>
-
-        <input type="text" id="refLinkInput" class="input-styled" style="font-size: 13px; padding: 12px; width: 100%; box-sizing: border-box;" readonly value="https://t.me/your_bot?start=ref12345">
-        <button class="btn-main btn-secondary" style="margin-top: 10px;" onclick="copyRefLink()">Скопировать ссылку 📋</button>
-      </div>
-    </section>
-
-    <!-- ТАБ 4: ВЫВОД -->
-    <section id="withdrawTab" class="tab-content">
-      <div class="glass-card">
-        <h3>Вывод средств</h3>
-        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
-          Минимальная сумма вывода: 50 ⭐
-        </p>
-
-        <div class="bet-control-group" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px;">
-          <input type="text" id="withdrawWallet" class="input-styled" style="font-size: 14px; text-align: left;" placeholder="Кошелек TON / Telegram ID">
-          <input type="number" id="withdrawInput" class="input-styled" style="font-size: 14px; text-align: left;" placeholder="Сумма звезд (мин. 50)">
-        </div>
-
-        <button class="btn-main btn-cashout" onclick="requestWithdrawal()">Запросить вывод 💳</button>
-      </div>
-    </section>
-
-    <!-- ТАБ 5: ПРОФИЛЬ -->
-    <section id="profileTab" class="tab-content">
-      <div class="glass-card">
-        <h3>Статистика аккаунта</h3>
-        <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 12px; font-size: 14px;">
-          <div style="display: flex; justify-content: space-between;">
-            <span style="color: var(--text-muted);">Всего игр:</span>
-            <span id="statTotalGames" style="font-weight: 700;">0</span>
-          </div>
-          <div style="display: flex; justify-content: space-between;">
-            <span style="color: var(--text-muted);">Макс. коэффициент:</span>
-            <span id="statMaxMult" style="font-weight: 700; color: var(--accent-green);">1.00x</span>
-          </div>
-          <div style="display: flex; justify-content: space-between;">
-            <span style="color: var(--text-muted);">Заработано на рефералах:</span>
-            <span id="statRefEarned" style="font-weight: 700; color: var(--primary);">0 ⭐</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-  </div>
-
-  <nav class="bottom-nav">
-    <div class="nav-item active" onclick="switchTab('gameTab', this)">
-      <span class="icon">🎮</span>
-      <span>Игры</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('tasksTab', this)">
-      <span class="icon">🎯</span>
-      <span>Задания</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('refTab', this)">
-      <span class="icon">👥</span>
-      <span>Друзья</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('withdrawTab', this)">
-      <span class="icon">💳</span>
-      <span>Вывод</span>
-    </div>
-  </nav>
-
-  <script src="script.js"></script>
+                if (data.subscribed) {
+                    statusText.style.color = '#4cd964';
+                    statusText.innerText = '✅ Вы подписаны! Награда зачислена.';
+                } else {
+                    statusText.style.color = '#ff5959';
+                    statusText.innerText = '❌ Вы не подписаны на канал!';
+                }
+            } catch (error) {
+                statusText.style.color = '#ff5959';
+                statusText.innerText = 'Ошибка соединения с сервером';
+            }
+        });
+    </script>
 </body>
 </html>
