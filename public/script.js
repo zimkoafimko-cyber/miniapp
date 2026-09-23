@@ -6,13 +6,16 @@ if (tg) {
 }
 
 // Глобальные переменные состояния
-let balance = 1000;
+let balance = 0; // ИСПРАВЛЕНО: баланс установлен на 0
 let gameState = 'IDLE'; // IDLE, RUNNING, CRASHED
 let currentMultiplier = 1.0;
 let crashPoint = 1.0;
 let betAmount = 100;
 let gameInterval = null;
 let animationFrame = null;
+
+// Порог вывода средств
+const MIN_WITHDRAWAL_STARS = 50;
 
 // Canvas элементы
 const canvas = document.getElementById('crashCanvas');
@@ -26,6 +29,11 @@ function resizeCanvas() {
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
+
+// Инициализация баланса при загрузке
+document.addEventListener('DOMContentLoaded', () => {
+  updateBalance(0);
+});
 
 // ==================== 1. ПЕРЕКЛЮЧЕНИЕ ТАБОВ ====================
 function switchTab(tabId, el) {
@@ -87,13 +95,48 @@ function copyRefLink() {
   }
 }
 
+// ИСПРАВЛЕНО: Награда за задание ограничена 15 звездами
 function completeTask(btn, reward) {
   if (btn.disabled) return;
+  
+  // Жесткое ограничение награды не более 15 звезд
+  const actualReward = Math.min(reward, 15);
+
   btn.disabled = true;
   btn.innerText = 'Готово';
   btn.style.opacity = '0.5';
-  updateBalance(reward);
-  showToast(`Получено +${reward} ⭐!`);
+  
+  updateBalance(actualReward);
+  showToast(`Получено +${actualReward} ⭐!`);
+}
+
+// Сброс всех выполненных заданий
+function resetTasks() {
+  document.querySelectorAll('.task-btn').forEach(btn => {
+    btn.disabled = false;
+    btn.innerText = 'Выполнить';
+    btn.style.opacity = '1';
+  });
+  showToast('Проверка заданий сброшена');
+}
+
+// НОВОЕ: Функция вывода средств (минимум 50 звезд)
+function requestWithdrawal() {
+  const input = document.getElementById('withdrawInput');
+  const amount = input ? parseInt(input.value) || 0 : balance;
+
+  if (amount < MIN_WITHDRAWAL_STARS) {
+    showToast(`Минимальный вывод от ${MIN_WITHDRAWAL_STARS} ⭐`);
+    return;
+  }
+
+  if (amount > balance) {
+    showToast('Недостаточно ⭐ на балансе');
+    return;
+  }
+
+  updateBalance(-amount);
+  showToast(`Заявка на вывод ${amount} ⭐ создана!`);
 }
 
 // ==================== 3. ЛОГИКА CRASH ИГРЫ ====================
@@ -115,7 +158,7 @@ function startCrashGame() {
   gameState = 'RUNNING';
   currentMultiplier = 1.0;
 
-  // Генерация случайного коэффициента краша (с house edge)
+  // Генерация случайного коэффициента краша
   const e = 2 ** 32;
   const h = crypto.getRandomValues(new Uint32Array(1))[0];
   crashPoint = Math.max(1.01, parseFloat(((100 * e - h) / (e - h) / 100).toFixed(2)));
