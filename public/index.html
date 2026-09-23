@@ -3,167 +3,261 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Stars Tasks</title>
+  <title>Stars</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
     *{box-sizing:border-box}
+
     body{
       margin:0;
+      min-height:100vh;
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      background:#f3f4f6;
-      color:#171717;
+      color:#fff;
+      background:
+        radial-gradient(circle at 20% 0%,#3b2678 0,transparent 35%),
+        radial-gradient(circle at 100% 20%,#742c76 0,transparent 32%),
+        linear-gradient(160deg,#090713,#160c27 55%,#090713);
     }
+
+    body:before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background-image:
+        radial-gradient(circle,#ffffff55 1px,transparent 1px);
+      background-size:42px 42px;
+      opacity:.22;
+    }
+
     .wrap{
+      position:relative;
       max-width:520px;
       margin:auto;
-      padding:18px 14px 35px;
+      padding:18px 14px 40px;
     }
-    .header{
-      background:#fff;
-      border-radius:22px;
-      padding:22px;
-      margin-bottom:14px;
-      box-shadow:0 4px 18px rgba(0,0,0,.06);
+
+    .top{
+      text-align:center;
+      padding:14px 5px 20px;
     }
-    .title{
-      font-size:25px;
-      font-weight:800;
-      margin-bottom:5px;
+
+    .logo{
+      width:74px;
+      height:74px;
+      margin:auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:25px;
+      font-size:38px;
+      background:linear-gradient(145deg,#ffe88a,#ffb300);
+      box-shadow:
+        0 0 25px #ffc40088,
+        inset 0 2px 5px #fff9;
     }
-    .sub{
-      color:#777;
+
+    h1{
+      margin:13px 0 3px;
+      font-size:28px;
+      font-weight:900;
+      letter-spacing:-.5px;
+    }
+
+    .subtitle{
+      color:#bdb6cf;
       font-size:14px;
     }
+
     .balance{
       margin-top:18px;
-      background:#f0f1f3;
-      border-radius:18px;
-      padding:17px;
+      padding:24px;
+      border-radius:27px;
+      background:linear-gradient(145deg,#ffffff16,#ffffff08);
+      border:1px solid #ffffff18;
+      box-shadow:0 18px 50px #0008;
+      backdrop-filter:blur(15px);
+      text-align:center;
     }
-    .balance-label{
-      color:#777;
+
+    .balance-title{
+      color:#aaa1bc;
       font-size:13px;
     }
+
     .stars{
-      font-size:32px;
-      font-weight:800;
-      margin-top:3px;
+      margin-top:4px;
+      font-size:42px;
+      font-weight:900;
+      background:linear-gradient(90deg,#fff,#ffd447);
+      -webkit-background-clip:text;
+      color:transparent;
     }
+
     .refresh{
       margin-top:12px;
-      width:100%;
-      border:0;
-      border-radius:13px;
-      padding:12px;
-      background:#e5e7eb;
-      font-size:14px;
+      padding:10px 16px;
+      border:1px solid #ffffff18;
+      border-radius:14px;
+      background:#ffffff0d;
+      color:#ddd6e9;
       font-weight:700;
-      cursor:pointer;
     }
+
     .card{
-      background:#fff;
-      border-radius:20px;
-      padding:18px;
-      margin-bottom:12px;
-      box-shadow:0 4px 18px rgba(0,0,0,.05);
+      position:relative;
+      margin-top:14px;
+      padding:19px;
+      border-radius:23px;
+      background:linear-gradient(145deg,#ffffff12,#ffffff07);
+      border:1px solid #ffffff14;
+      box-shadow:0 14px 35px #0007;
+      backdrop-filter:blur(13px);
+      overflow:hidden;
     }
+
+    .card:after{
+      content:"";
+      position:absolute;
+      width:100px;
+      height:100px;
+      right:-50px;
+      top:-50px;
+      background:#ffc40022;
+      border-radius:50%;
+      filter:blur(10px);
+    }
+
     .row{
       display:flex;
       align-items:center;
       gap:13px;
     }
+
     .icon{
-      width:46px;
-      height:46px;
-      border-radius:14px;
-      background:#f0f1f3;
+      width:51px;
+      height:51px;
+      flex:none;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:23px;
-      flex:none;
+      border-radius:17px;
+      font-size:25px;
+      background:linear-gradient(145deg,#ffd85c,#ff9f00);
+      box-shadow:0 6px 20px #ffb00035;
     }
+
     .name{
       font-size:17px;
-      font-weight:750;
+      font-weight:850;
     }
+
     .desc{
-      color:#777;
-      font-size:13px;
-      margin-top:3px;
-      line-height:1.35;
+      margin-top:4px;
+      color:#aaa2b9;
+      font-size:12px;
+      line-height:1.4;
     }
+
     .reward{
       margin-left:auto;
-      font-weight:800;
+      color:#ffd447;
+      font-weight:900;
       white-space:nowrap;
     }
-    button.action{
+
+    .action{
       width:100%;
       margin-top:15px;
-      border:0;
-      border-radius:14px;
       padding:14px;
-      background:#171717;
-      color:#fff;
+      border:0;
+      border-radius:15px;
+      background:linear-gradient(90deg,#ffbf19,#ff8a00);
+      color:#201300;
       font-size:15px;
-      font-weight:700;
-      cursor:pointer;
+      font-weight:900;
+      box-shadow:0 7px 22px #ff9d0038;
     }
-    button.action:disabled{
-      opacity:.55;
+
+    .action:active{
+      transform:scale(.98);
     }
+
+    .action:disabled{
+      opacity:.5;
+    }
+
     .progress{
       height:8px;
-      background:#e5e7eb;
-      border-radius:10px;
+      margin-top:15px;
+      background:#ffffff10;
+      border-radius:20px;
       overflow:hidden;
-      margin-top:13px;
     }
-    .progress > div{
+
+    .progress div{
       height:100%;
-      width:0%;
-      background:#171717;
-      transition:.3s;
+      width:0;
+      border-radius:20px;
+      background:linear-gradient(90deg,#ffb300,#ffe16b);
+      box-shadow:0 0 15px #ffc400;
+      transition:.4s;
     }
+
     .small{
-      margin-top:8px;
-      color:#777;
+      margin-top:9px;
+      color:#aaa2b9;
       font-size:12px;
     }
+
     .withdraw{
-      background:#171717;
+      background:linear-gradient(145deg,#3c1d59,#21112f);
+    }
+
+    .withdraw .icon{
+      background:linear-gradient(145deg,#d95cff,#7c3cff);
+    }
+
+    .withdraw .action{
+      background:linear-gradient(90deg,#d95cff,#8b4dff);
       color:#fff;
     }
-    .withdraw .desc,
-    .withdraw .small{
-      color:#bbb;
+
+    .footer{
+      text-align:center;
+      color:#777080;
+      font-size:11px;
+      margin-top:22px;
     }
   </style>
 </head>
 
 <body>
+
 <div class="wrap">
 
-  <div class="header">
-    <div class="title">⭐ Stars Tasks</div>
-    <div class="sub">Выполняй задания и получай Telegram Stars</div>
+  <div class="top">
+    <div class="logo">⭐</div>
+    <h1>Stars Rewards</h1>
+    <div class="subtitle">Выполняй задания и получай ⭐</div>
 
     <div class="balance">
-      <div class="balance-label">Ваш баланс</div>
+      <div class="balance-title">Твой баланс</div>
       <div class="stars" id="balance">0 ⭐</div>
-      <button class="refresh" id="refreshBtn">↻ Обновить баланс</button>
+      <button class="refresh" id="refreshBtn">↻ Обновить</button>
     </div>
   </div>
 
   <div class="card">
     <div class="row">
       <div class="icon">📢</div>
+
       <div>
-        <div class="name">Подписаться на канал</div>
-        <div class="desc">Подпишись на канал и проверь подписку</div>
+        <div class="name">Подписка на канал</div>
+        <div class="desc">Подпишись и получи награду</div>
       </div>
+
       <div class="reward">+15 ⭐</div>
     </div>
 
@@ -172,62 +266,69 @@
     </button>
 
     <button class="action" id="checkBtn">
-      Проверить подписку
+      ✓ Проверить подписку
     </button>
   </div>
 
   <div class="card">
     <div class="row">
-      <div class="icon">👥</div>
+      <div class="icon">🎁</div>
+
       <div>
-        <div class="name">Пригласить друзей</div>
-        <div class="desc">+2 ⭐ за каждого приглашённого друга</div>
+        <div class="name">Ежедневный бонус</div>
+        <div class="desc">Заходи каждый день и забирай награду</div>
       </div>
-      <div class="reward">+2 ⭐</div>
+
+      <div class="reward">+3 ⭐</div>
     </div>
 
-    <div class="progress">
-      <div id="refProgress"></div>
-    </div>
-
-    <div class="small" id="refText">Приглашено: 0 / 5</div>
-
-    <button class="action" id="inviteBtn">
-      Пригласить друзей
+    <button class="action" id="dailyBtn">
+      Забрать бонус
     </button>
+
+    <div class="small" id="dailyText">
+      Доступен сегодня
+    </div>
   </div>
 
   <div class="card">
     <div class="row">
       <div class="icon">📤</div>
+
       <div>
-        <div class="name">Отправить пост</div>
-        <div class="desc">Поделись постом с друзьями</div>
+        <div class="name">Поделиться постом</div>
+        <div class="desc">Поделись постом и получи награду</div>
       </div>
+
       <div class="reward">+5 ⭐</div>
     </div>
 
     <button class="action" id="shareBtn">
-      Отправить пост
+      Поделиться
     </button>
   </div>
 
   <div class="card withdraw">
     <div class="row">
-      <div class="icon">💰</div>
+      <div class="icon">💎</div>
+
       <div>
-        <div class="name">Вывод ⭐</div>
-        <div class="desc">Минимальная сумма вывода — 50 ⭐</div>
+        <div class="name">Вывод Stars</div>
+        <div class="desc">Минимальная сумма — 50 ⭐</div>
       </div>
     </div>
 
     <button class="action" id="withdrawBtn">
-      Вывести Stars
+      Вывести ⭐
     </button>
 
     <div class="small">
-      После заявки напиши администратору @AlinaResseler
+      После заявки свяжись с @AlinaResseler
     </div>
+  </div>
+
+  <div class="footer">
+    Stars Rewards • Выполняй задания честно ⭐
   </div>
 
 </div>
@@ -241,199 +342,162 @@ tg.expand();
 const initData = tg.initData;
 
 const headers = {
-  "Content-Type": "application/json",
-  "X-Telegram-Init-Data": initData
+  "Content-Type":"application/json",
+  "X-Telegram-Init-Data":initData
 };
 
 let currentUser = null;
 
-async function loadUser() {
-  try {
-    const res = await fetch("/api/me", {
-      headers
-    });
+async function loadUser(){
+  try{
+    const res = await fetch("/api/me",{headers});
 
-    if (!res.ok) {
-      throw new Error("Ошибка авторизации");
-    }
+    if(!res.ok) throw new Error();
 
     currentUser = await res.json();
 
     document.getElementById("balance").textContent =
       `${currentUser.stars} ⭐`;
 
-    const referrals = Number(currentUser.referrals || 0);
-    const progress = Math.min(referrals, 5);
-
-    document.getElementById("refText").textContent =
-      `Приглашено: ${referrals} / 5`;
-
-    document.getElementById("refProgress").style.width =
-      `${progress * 20}%`;
-
-  } catch (e) {
-    console.error(e);
+  }catch(e){
     tg.showAlert("Не удалось обновить баланс.");
   }
 }
 
-document.getElementById("refreshBtn").addEventListener("click", async () => {
-  const btn = document.getElementById("refreshBtn");
+document.getElementById("refreshBtn").onclick = async()=>{
+  const btn=document.getElementById("refreshBtn");
 
-  btn.disabled = true;
-  btn.textContent = "Обновление...";
+  btn.disabled=true;
+  btn.textContent="Обновление...";
 
   await loadUser();
 
-  btn.disabled = false;
-  btn.textContent = "↻ Обновить баланс";
-});
+  btn.disabled=false;
+  btn.textContent="↻ Обновить";
+};
 
-document.getElementById("subscribeBtn").addEventListener("click", () => {
+document.getElementById("subscribeBtn").onclick=()=>{
   tg.openTelegramLink("https://t.me/belcryptoo");
-});
+};
 
-document.getElementById("checkBtn").addEventListener("click", async () => {
-  const btn = document.getElementById("checkBtn");
+document.getElementById("checkBtn").onclick=async()=>{
+  const btn=document.getElementById("checkBtn");
 
-  btn.disabled = true;
-  btn.textContent = "Проверяем...";
+  btn.disabled=true;
+  btn.textContent="Проверяем...";
 
-  try {
-    const res = await fetch("/api/check-subscription", {
-      method: "POST",
+  try{
+    const res=await fetch("/api/check-subscription",{
+      method:"POST",
       headers
     });
 
-    const data = await res.json();
+    const data=await res.json();
 
-    if (data.ok) {
+    if(data.ok){
       tg.showAlert("Подписка подтверждена! +15 ⭐");
-    } else {
-      tg.showAlert("Подписка не найдена. Сначала подпишись на канал.");
+    }else{
+      tg.showAlert("Сначала подпишись на канал.");
     }
 
     await loadUser();
 
-  } catch (e) {
-    tg.showAlert("Ошибка проверки подписки.");
+  }catch(e){
+    tg.showAlert("Ошибка проверки.");
   }
 
-  btn.disabled = false;
-  btn.textContent = "Проверить подписку";
-});
+  btn.disabled=false;
+  btn.textContent="✓ Проверить подписку";
+};
 
-document.getElementById("inviteBtn").addEventListener("click", async () => {
-  if (!currentUser) {
+document.getElementById("dailyBtn").onclick=async()=>{
+  const btn=document.getElementById("dailyBtn");
+
+  btn.disabled=true;
+  btn.textContent="Получаем...";
+
+  try{
+    const res=await fetch("/api/daily-bonus",{
+      method:"POST",
+      headers
+    });
+
+    const data=await res.json();
+
+    if(data.ok){
+      tg.showAlert("🎁 Бонус получен! +3 ⭐");
+      document.getElementById("dailyText").textContent=
+        "Бонус получен сегодня";
+    }else{
+      tg.showAlert(data.error || "Бонус пока недоступен.");
+    }
+
     await loadUser();
+
+  }catch(e){
+    tg.showAlert("Ошибка получения бонуса.");
   }
 
-  const ref = currentUser.id;
+  btn.disabled=false;
+  btn.textContent="Забрать бонус";
+};
 
-  const link =
-    `${location.origin}/?ref=${ref}`;
-
-  const text =
-    "Заходи и получай Telegram Stars ⭐";
-
-  const shareUrl =
-    "https://t.me/share/url?url=" +
-    encodeURIComponent(link) +
-    "&text=" +
-    encodeURIComponent(text);
-
-  tg.openTelegramLink(shareUrl);
-});
-
-document.getElementById("shareBtn").addEventListener("click", async () => {
-
-  const shareUrl =
-    "https://t.me/share/url?url=" +
-    encodeURIComponent("https://t.me/belcryptoo") +
-    "&text=" +
-    encodeURIComponent("Подпишись на канал ⭐");
+document.getElementById("shareBtn").onclick=()=>{
+  const shareUrl=
+    "https://t.me/share/url?url="+
+    encodeURIComponent("https://t.me/belcryptoo")+
+    "&text="+
+    encodeURIComponent("⭐ Получай Telegram Stars вместе со мной!");
 
   tg.openTelegramLink(shareUrl);
 
-  setTimeout(async () => {
-    try {
-      await fetch("/api/share-complete", {
-        method: "POST",
+  setTimeout(async()=>{
+    try{
+      await fetch("/api/share-complete",{
+        method:"POST",
         headers
       });
 
       await loadUser();
 
       tg.showAlert("Готово! +5 ⭐");
-    } catch (e) {
-      console.error(e);
-    }
-  }, 1200);
-});
+    }catch(e){}
+  },1200);
+};
 
-document.getElementById("withdrawBtn").addEventListener("click", async () => {
-  if (!currentUser) {
-    await loadUser();
-  }
+document.getElementById("withdrawBtn").onclick=async()=>{
+  if(!currentUser) await loadUser();
 
-  if (Number(currentUser.stars) < 50) {
+  if(Number(currentUser.stars)<50){
     tg.showAlert("Минимальный вывод — 50 ⭐");
     return;
   }
 
-  try {
-    const res = await fetch("/api/withdraw", {
-      method: "POST",
+  try{
+    const res=await fetch("/api/withdraw",{
+      method:"POST",
       headers
     });
 
-    const data = await res.json();
+    const data=await res.json();
 
-    if (!res.ok) {
+    if(!res.ok){
       tg.showAlert(data.error || "Ошибка вывода.");
       return;
     }
 
-    tg.showAlert(
-      "Заявка на вывод создана. Сейчас откроется администратор."
-    );
+    tg.showAlert("Заявка создана. Сейчас откроется администратор.");
 
     tg.openTelegramLink(
       "https://t.me/AlinaResseler"
     );
 
-  } catch (e) {
+  }catch(e){
     tg.showAlert("Ошибка отправки заявки.");
   }
-});
+};
 
-async function processReferral() {
-  const params = new URLSearchParams(window.location.search);
-  const ref = Number(params.get("ref"));
-
-  if (!ref || !currentUser || ref === Number(currentUser.id)) {
-    return;
-  }
-
-  try {
-    await fetch("/api/referral", {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        inviter_id: ref
-      })
-    });
-
-    await loadUser();
-  } catch (e) {
-    console.error(e);
-  }
-}
-
-(async () => {
-  await loadUser();
-  await processReferral();
-})();
+loadUser();
 </script>
 
 </body>
