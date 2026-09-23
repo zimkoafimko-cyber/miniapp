@@ -5,17 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Star Rewards Mini App</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
 
-  <!-- Уведомления (Toast) -->
   <div id="toast" class="toast">Уведомление</div>
 
   <div class="app-container">
 
-    <!-- ВЕРХНЯЯ ПАНЕЛЬ С ИНФОРМАЦИЕЙ О ПОЛЬЗОВАТЕЛЕ -->
     <header class="header-profile">
       <div class="user-info">
         <div class="avatar-glow" id="userAvatar">🚀</div>
@@ -27,7 +24,6 @@
       <button class="btn-chip" onclick="switchTab('profileTab')">Профиль ⚙️</button>
     </header>
 
-    <!-- КАРТОЧКА БАЛАНСА -->
     <div class="glass-card balance-card glow">
       <div class="balance-title">Ваш баланс</div>
       <div class="balance-amount">
@@ -39,10 +35,10 @@
       </div>
     </div>
 
-    <!-- ==================== ТАБ 1: ИГРЫ (CRASH & DICE) ==================== -->
+    <!-- ТАБ 1: ИГРЫ -->
     <section id="gameTab" class="tab-content active">
       
-      <!-- Игра 1: Rocket Crash -->
+      <!-- Rocket Crash -->
       <div class="glass-card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
           <h3>Rocket Crash 🚀</h3>
@@ -71,7 +67,7 @@
         <button id="btnCashout" class="btn-main btn-cashout" onclick="cashoutCrash()" style="display: none;">ЗАБРАТЬ (1.00x)</button>
       </div>
 
-      <!-- Игра 2: Кости (Dice) -->
+      <!-- Кости (Dice) -->
       <div class="glass-card" style="margin-top: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
           <h3>Кости (Dice) 🎲</h3>
@@ -81,7 +77,6 @@
           Победа при любой сумме, кроме <b>7</b>!
         </p>
 
-        <!-- Кубики -->
         <div class="dice-container" style="display: flex; justify-content: center; gap: 15px; margin: 15px 0;">
           <div id="dice1" class="dice-box" style="font-size: 28px; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); border-radius: 10px;">?</div>
           <div id="dice2" class="dice-box" style="font-size: 28px; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); border-radius: 10px;">?</div>
@@ -89,7 +84,6 @@
 
         <div id="diceStatus" style="text-align: center; font-size: 13px; font-weight: 700; margin-bottom: 12px; min-height: 18px;">Испытайте удачу!</div>
 
-        <!-- Ставка Dice -->
         <div class="bet-control-group">
           <input type="number" id="diceBetInput" class="input-styled" value="5" min="1" placeholder="Сумма ставки">
           <div class="quick-bets">
@@ -105,7 +99,7 @@
 
     </section>
 
-    <!-- ==================== ТАБ 2: ЗАДАНИЯ ==================== -->
+    <!-- ТАБ 2: ЗАДАНИЯ -->
     <section id="tasksTab" class="tab-content">
       <div class="glass-card">
         <h3>Выполняй задания</h3>
@@ -113,7 +107,6 @@
           Получай бесплатные ⭐ за активность
         </p>
 
-        <!-- Задание 1 -->
         <div class="task-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 10px;">
           <div class="task-info" style="display: flex; align-items: center; gap: 10px;">
             <div style="font-size: 24px;">📢</div>
@@ -122,10 +115,9 @@
               <div style="font-size: 12px; color: var(--primary); font-weight: 700;">+15 ⭐</div>
             </div>
           </div>
-          <button class="btn-chip task-btn" onclick="completeTask(this, 1, 15)">Выполнить</button>
+          <button class="btn-chip task-btn" onclick="completeTask(this, 1)">Выполнить</button>
         </div>
 
-        <!-- Задание 2 -->
         <div class="task-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 10px;">
           <div class="task-info" style="display: flex; align-items: center; gap: 10px;">
             <div style="font-size: 24px;">👥</div>
@@ -134,10 +126,9 @@
               <div style="font-size: 12px; color: var(--primary); font-weight: 700;">+15 ⭐</div>
             </div>
           </div>
-          <button class="btn-chip task-btn" onclick="completeTask(this, 2, 15)">Выполнить</button>
+          <button class="btn-chip task-btn" onclick="completeTask(this, 2)">Выполнить</button>
         </div>
 
-        <!-- Задание 3 -->
         <div class="task-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 10px;">
           <div class="task-info" style="display: flex; align-items: center; gap: 10px;">
             <div style="font-size: 24px;">🎁</div>
@@ -146,12 +137,12 @@
               <div style="font-size: 12px; color: var(--primary); font-weight: 700;">+3 ⭐</div>
             </div>
           </div>
-          <button class="btn-chip task-btn" onclick="completeTask(this, 3, 3)">Забрать</button>
+          <button class="btn-chip task-btn" onclick="completeTask(this, 3)">Забрать</button>
         </div>
       </div>
     </section>
 
-    <!-- ==================== ТАБ 3: РЕФЕРАЛЫ ==================== -->
+    <!-- ТАБ 3: РЕФЕРАЛЫ -->
     <section id="refTab" class="tab-content">
       <div class="glass-card" style="text-align: center;">
         <div style="font-size: 40px; margin-bottom: 8px;">🤝</div>
@@ -165,7 +156,7 @@
       </div>
     </section>
 
-    <!-- ==================== ТАБ 4: ВЫВОД ==================== -->
+    <!-- ТАБ 4: ВЫВОД -->
     <section id="withdrawTab" class="tab-content">
       <div class="glass-card">
         <h3>Вывод средств</h3>
@@ -182,7 +173,7 @@
       </div>
     </section>
 
-    <!-- ==================== ТАБ 5: ПРОФИЛЬ ==================== -->
+    <!-- ТАБ 5: ПРОФИЛЬ -->
     <section id="profileTab" class="tab-content">
       <div class="glass-card">
         <h3>Статистика аккаунта</h3>
@@ -205,7 +196,6 @@
 
   </div>
 
-  <!-- НИЖНЯЯ НАВИГАЦИОННАЯ ПАНЕЛЬ -->
   <nav class="bottom-nav">
     <div class="nav-item active" onclick="switchTab('gameTab', this)">
       <span class="icon">🎮</span>
