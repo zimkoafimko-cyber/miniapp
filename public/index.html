@@ -2,766 +2,205 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-  >
-
-  <title>Star Rewards</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Star Rewards Mini App</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Подключаем Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-  <style>
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: Arial, sans-serif;
-      color: #fff;
-      background:
-        radial-gradient(circle at 15% 10%, rgba(137, 54, 255, .35), transparent 30%),
-        radial-gradient(circle at 90% 30%, rgba(255, 193, 7, .18), transparent 28%),
-        linear-gradient(145deg, #090612, #160b2c 55%, #08050e);
-      overflow-x: hidden;
-    }
-
-    .app {
-      max-width: 520px;
-      margin: 0 auto;
-      padding: 20px 16px 40px;
-    }
-
-    .top {
-      text-align: center;
-      padding: 10px 0 20px;
-    }
-
-    .logo {
-      width: 82px;
-      height: 82px;
-      margin: 0 auto 12px;
-      border-radius: 26px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 43px;
-      background: linear-gradient(145deg, #ffd84d, #ff9f00);
-      box-shadow:
-        0 0 25px rgba(255, 190, 30, .5),
-        inset 0 1px 0 rgba(255,255,255,.5);
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 27px;
-    }
-
-    .subtitle {
-      margin-top: 7px;
-      color: #b9aecb;
-      font-size: 14px;
-    }
-
-    .balance {
-      position: relative;
-      overflow: hidden;
-      padding: 24px;
-      border-radius: 25px;
-      margin-bottom: 15px;
-      background: linear-gradient(
-        135deg,
-        rgba(255, 196, 48, .18),
-        rgba(121, 48, 255, .18)
-      );
-      border: 1px solid rgba(255,255,255,.11);
-      box-shadow: 0 15px 45px rgba(0,0,0,.3);
-      text-align: center;
-    }
-
-    .balance-label {
-      color: #bdb2cd;
-      font-size: 14px;
-    }
-
-    .balance-number {
-      margin-top: 5px;
-      font-size: 45px;
-      font-weight: 800;
-      color: #ffd43b;
-      text-shadow: 0 0 22px rgba(255,196,30,.45);
-    }
-
-    .stars {
-      font-size: 18px;
-    }
-
-    .card {
-      padding: 18px;
-      margin-bottom: 14px;
-      border-radius: 22px;
-      background: rgba(255,255,255,.065);
-      border: 1px solid rgba(255,255,255,.1);
-      backdrop-filter: blur(16px);
-      box-shadow: 0 12px 35px rgba(0,0,0,.22);
-    }
-
-    .card-title {
-      font-size: 18px;
-      font-weight: 800;
-      margin-bottom: 7px;
-    }
-
-    .card-text {
-      color: #aaa0b9;
-      font-size: 13px;
-      line-height: 1.45;
-      margin-bottom: 15px;
-    }
-
-    button {
-      width: 100%;
-      border: 0;
-      border-radius: 15px;
-      padding: 14px 16px;
-      font-size: 15px;
-      font-weight: 800;
-      color: #140d20;
-      background: linear-gradient(135deg, #ffd84a, #ff9e00);
-      box-shadow: 0 8px 24px rgba(255,165,0,.22);
-      cursor: pointer;
-    }
-
-    button:active {
-      transform: scale(.98);
-    }
-
-    button.secondary {
-      margin-top: 9px;
-      color: white;
-      background: linear-gradient(135deg, #7139dc, #9c4dff);
-      box-shadow: 0 8px 25px rgba(126,57,220,.25);
-    }
-
-    button.dark {
-      margin-top: 9px;
-      color: white;
-      background: rgba(255,255,255,.09);
-      box-shadow: none;
-      border: 1px solid rgba(255,255,255,.1);
-    }
-
-    button:disabled {
-      opacity: .55;
-      cursor: default;
-      transform: none;
-    }
-
-    .reward {
-      float: right;
-      color: #ffd43b;
-      font-weight: 800;
-    }
-
-    .ref-box {
-      padding: 13px;
-      margin: 12px 0;
-      border-radius: 14px;
-      background: rgba(0,0,0,.2);
-      border: 1px solid rgba(255,255,255,.08);
-      word-break: break-all;
-      color: #d7cbe4;
-      font-size: 12px;
-    }
-
-    .ref-count {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 13px 0 3px;
-      color: #bdb2cd;
-      font-size: 14px;
-    }
-
-    .ref-count strong {
-      color: #ffd43b;
-      font-size: 18px;
-    }
-
-    .withdraw {
-      background:
-        linear-gradient(
-          135deg,
-          rgba(122, 45, 255, .3),
-          rgba(255, 176, 0, .12)
-        );
-    }
-
-    .status {
-      display: none;
-      margin-bottom: 14px;
-      padding: 13px;
-      border-radius: 15px;
-      text-align: center;
-      font-size: 13px;
-      background: rgba(255,255,255,.08);
-      color: #ddd;
-    }
-
-    .status.show {
-      display: block;
-    }
-
-    .footer {
-      text-align: center;
-      color: #71677d;
-      font-size: 11px;
-      padding: 10px 0;
-    }
-  </style>
 </head>
-
 <body>
 
-<div class="app">
+  <!-- Уведомления (Toasts) -->
+  <div id="toast" class="toast">Уведомление</div>
 
-  <div class="top">
-    <div class="logo">⭐</div>
-    <h1>Star Rewards</h1>
-    <div class="subtitle">
-      Выполняй задания и получай ⭐
+  <div class="app-container">
+
+    <!-- ВЕРХНЯЯ ПАНЕЛЬ С ИНФОРМАЦИЕЙ О ПОЛЬЗОВАТЕЛЕ -->
+    <header class="header-profile">
+      <div class="user-info">
+        <div class="avatar-glow" id="userAvatar">🚀</div>
+        <div>
+          <h4 id="userName">Игрок</h4>
+          <span class="badge" id="userLevel">Уровень 1</span>
+        </div>
+      </div>
+      <button class="btn-chip" onclick="switchTab('profileTab')">Профиль ⚙️</button>
+    </header>
+
+    <!-- КАРТОЧКА БАЛАНСА -->
+    <div class="glass-card balance-card glow">
+      <div class="balance-title">Ваш баланс</div>
+      <div class="balance-amount">
+        <span id="balanceVal">1 000</span> <span style="font-size: 32px;">⭐</span>
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 12px;">
+        <button class="btn-main btn-secondary" style="padding: 10px; font-size: 13px;" onclick="switchTab('tasksTab')">Заработать ⭐</button>
+        <button class="btn-main" style="padding: 10px; font-size: 13px;" onclick="switchTab('withdrawTab')">Вывести 💳</button>
+      </div>
     </div>
+
+    <!-- ==================== ТАБ 1: ИГРА CRASH ==================== -->
+    <section id="gameTab" class="tab-content active">
+      <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h3>Rocket Crash</h3>
+          <span class="badge" style="background: rgba(0, 230, 118, 0.15); color: var(--accent-green);">LIVE</span>
+        </div>
+
+        <!-- Canvas для графики ракета/график -->
+        <div class="canvas-wrapper">
+          <canvas id="crashCanvas"></canvas>
+          <div class="crash-overlay">
+            <div class="multiplier-val" id="multiplierVal">1.00x</div>
+            <div id="crashStatus" style="font-size: 12px; color: var(--text-muted); font-weight: 700;">ОЖИДАНИЕ СТАВКИ</div>
+          </div>
+        </div>
+
+        <!-- Управление ставкой -->
+        <div class="bet-control-group">
+          <input type="number" id="betInput" class="input-styled" value="100" min="10" placeholder="Сумма ставки">
+          
+          <div class="quick-bets">
+            <button class="btn-chip" onclick="setBet(50)">50</button>
+            <button class="btn-chip" onclick="setBet(100)">100</button>
+            <button class="btn-chip" onclick="setBet(500)">500</button>
+            <button class="btn-chip" onclick="setMaxBet()">MAX</button>
+          </div>
+        </div>
+
+        <!-- Главные кнопки игры -->
+        <button id="btnStartGame" class="btn-main" onclick="startCrashGame()">ПОЛЕТЕЛИ 🚀</button>
+        <button id="btnCashout" class="btn-main btn-cashout" onclick="cashoutCrash()" style="display: none;">ZABRAT' (1.00x)</button>
+      </div>
+
+      <!-- История последних X раундов -->
+      <div class="glass-card">
+        <h4 style="margin-bottom: 10px; font-size: 14px; color: var(--text-muted);">История коэффициентов</h4>
+        <div id="crashHistory" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;">
+          <span class="badge" style="background: rgba(255, 70, 85, 0.2); color: var(--accent-red);">1.12x</span>
+          <span class="badge" style="background: rgba(0, 230, 118, 0.2); color: var(--accent-green);">2.45x</span>
+          <span class="badge" style="background: rgba(0, 230, 118, 0.2); color: var(--accent-green);">5.10x</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== ТАБ 2: ЗАДАНИЯ ==================== -->
+    <section id="tasksTab" class="tab-content">
+      <div class="glass-card">
+        <h3>Выполняй задания</h3>
+        <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px; margin-bottom: 16px;">
+          Получай бесплатные ⭐ за подписки и активность
+        </p>
+
+        <div class="task-item">
+          <div class="task-info">
+            <div class="task-icon">📢</div>
+            <div>
+              <div style="font-size: 14px; font-weight: 700;">Подписка на канал</div>
+              <div style="font-size: 12px; color: var(--primary); font-weight: 700;">+250 ⭐</div>
+            </div>
+          </div>
+          <button class="btn-chip" onclick="completeTask(this, 250)">Выполнить</button>
+        </div>
+
+        <div class="task-item">
+          <div class="task-info">
+            <div class="task-icon">👥</div>
+            <div>
+              <div style="font-size: 14px; font-weight: 700;">Пригласи 3 друзей</div>
+              <div style="font-size: 12px; color: var(--primary); font-weight: 700;">+500 ⭐</div>
+            </div>
+          </div>
+          <button class="btn-chip" onclick="completeTask(this, 500)">Выполнить</button>
+        </div>
+
+        <div class="task-item">
+          <div class="task-info">
+            <div class="task-icon">🎁</div>
+            <div>
+              <div style="font-size: 14px; font-weight: 700;">Ежедневный бонус</div>
+              <div style="font-size: 12px; color: var(--primary); font-weight: 700;">+100 ⭐</div>
+            </div>
+          </div>
+          <button class="btn-chip" onclick="completeTask(this, 100)">Забрать</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== ТАБ 3: РЕФЕРАЛЫ ==================== -->
+    <section id="refTab" class="tab-content">
+      <div class="glass-card" style="text-align: center;">
+        <div style="font-size: 40px; margin-bottom: 8px;">🤝</div>
+        <h3>Реферальная система</h3>
+        <p style="font-size: 13px; color: var(--text-muted); margin: 8px 0 16px 0;">
+          Получай 10% от каждого выигрыша твоих друзей навсегда!
+        </p>
+
+        <input type="text" id="refLinkInput" class="input-styled" style="font-size: 13px; padding: 12px;" readonly value="https://t.me/your_bot?start=ref12345">
+        <button class="btn-main btn-secondary" style="margin-top: 10px;" onclick="copyRefLink()">Скопировать ссылку 📋</button>
+      </div>
+    </section>
+
+    <!-- ==================== ТАБ 4: ВЫВОД / ПРОФИЛЬ ==================== -->
+    <section id="withdrawTab" class="tab-content">
+      <div class="glass-card">
+        <h3>Вывод средств</h3>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+          Минимальная сумма вывода: 1 000 ⭐
+        </p>
+
+        <div class="bet-control-group">
+          <input type="text" class="input-styled" style="font-size: 14px; text-align: left;" placeholder="Кошелек TON / Карточка">
+          <input type="number" class="input-styled" style="font-size: 14px; text-align: left;" placeholder="Сумма звезд">
+        </div>
+
+        <button class="btn-main" onclick="showToast('Заявка на вывод отправлена!')">Запросить вывод 💳</button>
+      </div>
+    </section>
+
+    <section id="profileTab" class="tab-content">
+      <div class="glass-card">
+        <h3>Статистика аккаунта</h3>
+        <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 12px; font-size: 14px;">
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Всего игр:</span>
+            <span style="font-weight: 700;">42</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Макс. коэффициент:</span>
+            <span style="font-weight: 700; color: var(--accent-green);">12.40x</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Заработано на рефералах:</span>
+            <span style="font-weight: 700; color: var(--primary);">1 500 ⭐</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </div>
 
-  <div id="status" class="status"></div>
-
-  <div class="balance">
-    <div class="balance-label">Твой баланс</div>
-    <div class="balance-number">
-      <span id="balance">0</span>
-      <span class="stars">⭐</span>
+  <!-- НИЖНЯЯ НАВИГАЦИОННАЯ ПАНЕЛЬ -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('gameTab', this)">
+      <span class="icon">🚀</span>
+      <span>Игра</span>
     </div>
-  </div>
-
-  <!-- Игра Crash -->
-  <div class="card" style="border: 1px solid rgba(255, 212, 59, 0.3);">
-    <div class="card-title">
-      🚀 Игра Crash
+    <div class="nav-item" onclick="switchTab('tasksTab', this)">
+      <span class="icon">🎯</span>
+      <span>Задания</span>
     </div>
-    <div class="card-text">
-      Укажи ставку от 1 до 100 ⭐. Коэффициент растет! Успей забрать выигрыш до крушения ракеты.
+    <div class="nav-item" onclick="switchTab('refTab', this)">
+      <span class="icon">👥</span>
+      <span>Друзья</span>
     </div>
-
-    <div id="betInputContainer" style="margin-bottom: 15px;">
-      <label style="font-size: 13px; color: #aaa0b9; display: block; margin-bottom: 6px;">Сумма ставки (⭐):</label>
-      <input 
-        type="number" 
-        id="crashBetInput" 
-        min="1" 
-        max="100" 
-        value="1" 
-        style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: #fff; font-size: 16px; text-align: center; font-weight: bold; outline: none;"
-      />
+    <div class="nav-item" onclick="switchTab('withdrawTab', this)">
+      <span class="icon">💳</span>
+      <span>Вывод</span>
     </div>
+  </nav>
 
-    <div style="text-align: center; margin-bottom: 15px;">
-      <div id="crashMultiplier" style="font-size: 38px; font-weight: 800; color: #ffd43b;">1.00x</div>
-      <div id="crashStatusText" style="font-size: 13px; color: #aaa0b9; margin-top: 5px;"></div>
-    </div>
-
-    <button id="crashStartBtn" onclick="startCrashGame()">
-      Сделать ставку
-    </button>
-
-    <button id="crashCashoutBtn" class="secondary" onclick="cashoutCrashGame()" style="display: none;">
-      Забрать выигрыш
-    </button>
-  </div>
-
-  <!-- Подписка -->
-
-  <div class="card">
-    <div class="card-title">
-      📢 Подписка
-      <span class="reward">+15 ⭐</span>
-    </div>
-
-    <div class="card-text">
-      Подпишись на наш Telegram-канал и получи бонус.
-    </div>
-
-    <button id="channelBtn" onclick="openChannel()">
-      Подписаться
-    </button>
-
-    <button
-      id="checkBtn"
-      class="secondary"
-      onclick="checkSubscription()"
-    >
-      Проверить подписку
-    </button>
-  </div>
-
-  <!-- Ежедневный бонус -->
-
-  <div class="card">
-    <div class="card-title">
-      🎁 Ежедневный бонус
-      <span class="reward">+3 ⭐</span>
-    </div>
-
-    <div class="card-text">
-      Заходи каждый день и забирай бесплатные ⭐.
-    </div>
-
-    <button onclick="getDailyBonus()">
-      Забрать +3 ⭐
-    </button>
-  </div>
-
-  <!-- Рефералы -->
-
-  <div class="card">
-    <div class="card-title">
-      👥 Приглашай друзей
-      <span class="reward">+2 ⭐</span>
-    </div>
-
-    <div class="card-text">
-      Приглашай друзей по своей персональной ссылке.
-      За каждого нового пользователя получишь +2 ⭐.
-    </div>
-
-    <div class="ref-box" id="refLink">
-      Загружаем ссылку...
-    </div>
-
-    <div class="ref-count">
-      <span>Приглашено друзей</span>
-      <strong id="refCount">0</strong>
-    </div>
-
-    <button onclick="copyReferral()">
-      🔗 Скопировать ссылку
-    </button>
-
-    <button
-      class="secondary"
-      onclick="shareReferral()"
-    >
-      📤 Пригласить друзей
-    </button>
-  </div>
-
-  <!-- Вывод -->
-
-  <div class="card withdraw">
-    <div class="card-title">
-      💸 Вывод
-    </div>
-
-    <div class="card-text">
-      Минимальная сумма вывода — 50 ⭐.
-      После оформления заявки свяжись с администратором.
-    </div>
-
-    <button onclick="withdraw()">
-      Вывести ⭐
-    </button>
-  </div>
-
-  <button
-    class="dark"
-    onclick="loadUser()"
-  >
-    🔄 Обновить баланс
-  </button>
-
-  <div class="footer">
-    Star Rewards
-  </div>
-
-</div>
-
-<script>
-  const tg = window.Telegram.WebApp;
-
-  tg.ready();
-  tg.expand();
-
-  let config = null;
-  let referralLink = "";
-
-  const initData = tg.initData || "";
-
-  function headers() {
-    return {
-      "Content-Type": "application/json",
-      "X-Telegram-Init-Data": initData,
-      "X-Telegram-Start-Param":
-        tg.initDataUnsafe?.start_param || ""
-    };
-  }
-
-  function showStatus(message) {
-    const el = document.getElementById("status");
-
-    el.textContent = message;
-    el.classList.add("show");
-
-    setTimeout(() => {
-      el.classList.remove("show");
-    }, 3500);
-  }
-
-  function setBalance(value) {
-    document.getElementById("balance").textContent =
-      Number(value || 0);
-  }
-
-  async function loadConfig() {
-    const response = await fetch("/api/config");
-    config = await response.json();
-
-    document.getElementById("channelBtn").textContent =
-      `Подписаться на @${config.channel.replace(/^@/, "")}`;
-  }
-
-  async function loadUser() {
-    try {
-      const response = await fetch("/api/me", {
-        headers: headers()
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.error || "Ошибка авторизации"
-        );
-      }
-
-      setBalance(data.stars);
-      document.getElementById("refCount").textContent =
-        data.referralCount || 0;
-
-      await loadReferral();
-
-    } catch (error) {
-      showStatus(error.message);
-    }
-  }
-
-  async function loadReferral() {
-    try {
-      const response = await fetch("/api/referral", {
-        headers: headers()
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) return;
-
-      referralLink = data.link;
-
-      document.getElementById("refLink").textContent =
-        referralLink;
-
-      document.getElementById("refCount").textContent =
-        data.count || 0;
-
-    } catch {
-      document.getElementById("refLink").textContent =
-        "Не удалось загрузить ссылку";
-    }
-  }
-
-  function openChannel() {
-    const username =
-      config.channel.replace(/^@/, "");
-
-    tg.openTelegramLink(
-      `https://t.me/${username}`
-    );
-  }
-
-  async function checkSubscription() {
-    const button =
-      document.getElementById("checkBtn");
-
-    button.disabled = true;
-    button.textContent = "Проверяем...";
-
-    try {
-      const response = await fetch(
-        "/api/check-subscription",
-        {
-          method: "POST",
-          headers: headers()
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.error || "Ошибка проверки"
-        );
-      }
-
-      if (data.ok) {
-        showStatus("Подписка подтверждена! +15 ⭐");
-        await loadUser();
-      } else {
-        showStatus(
-          "Подписка не найдена. Сначала подпишись на канал."
-        );
-      }
-
-    } catch (error) {
-      showStatus(error.message);
-    }
-
-    button.disabled = false;
-    button.textContent = "Проверить подписку";
-  }
-
-  async function getDailyBonus() {
-    try {
-      const response = await fetch(
-        "/api/daily-bonus",
-        {
-          method: "POST",
-          headers: headers()
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.error || "Ошибка"
-        );
-      }
-
-      showStatus("Ежедневный бонус получен! +3 ⭐");
-      await loadUser();
-
-    } catch (error) {
-      showStatus(error.message);
-    }
-  }
-
-  async function copyReferral() {
-    if (!referralLink) {
-      await loadReferral();
-    }
-
-    if (!referralLink) {
-      showStatus("Ссылка пока недоступна");
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(
-        referralLink
-      );
-
-      showStatus(
-        "Реферальная ссылка скопирована!"
-      );
-
-    } catch {
-      showStatus(
-        "Не удалось скопировать ссылку"
-      );
-    }
-  }
-
-  async function shareReferral() {
-    if (!referralLink) {
-      await loadReferral();
-    }
-
-    if (!referralLink) {
-      showStatus("Ссылка пока недоступна");
-      return;
-    }
-
-    const text =
-      "Заходи в Star Rewards и получай ⭐";
-
-    const shareUrl =
-      `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(text)}`;
-
-    tg.openTelegramLink(shareUrl);
-  }
-
-  async function withdraw() {
-    try {
-      const response = await fetch(
-        "/api/withdraw",
-        {
-          method: "POST",
-          headers: headers()
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.error || "Ошибка вывода"
-        );
-      }
-
-      showStatus(
-        `Заявка на вывод ${data.amount} ⭐ создана.`
-      );
-
-      setTimeout(() => {
-        tg.openTelegramLink(data.contact);
-      }, 700);
-
-    } catch (error) {
-      showStatus(error.message);
-    }
-  }
-
-  /* ЛОГИКА ИГРЫ CRASH */
-  let crashInterval = null;
-  let currentMultiplier = 1.00;
-  let isCrashPlaying = false;
-  let crashPoint = 1.00;
-
-  async function startCrashGame() {
-    const startBtn = document.getElementById("crashStartBtn");
-    const cashoutBtn = document.getElementById("crashCashoutBtn");
-    const multEl = document.getElementById("crashMultiplier");
-    const statusEl = document.getElementById("crashStatusText");
-    const betInput = document.getElementById("crashBetInput");
-    const betContainer = document.getElementById("betInputContainer");
-
-    const betAmount = parseInt(betInput.value, 10);
-
-    if (isNaN(betAmount) || betAmount < 1 || betAmount > 100) {
-      showStatus("Ставка должна быть от 1 до 100 ⭐");
-      return;
-    }
-
-    startBtn.disabled = true;
-
-    try {
-      const response = await fetch("/api/crash/play", {
-        method: "POST",
-        headers: headers(),
-        body: JSON.stringify({ bet: betAmount })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Ошибка старта игры");
-      }
-
-      await loadUser();
-
-      crashPoint = data.crashPoint;
-      currentMultiplier = 1.00;
-      isCrashPlaying = true;
-
-      startBtn.style.display = "none";
-      betContainer.style.display = "none";
-      cashoutBtn.style.display = "block";
-      cashoutBtn.disabled = false;
-
-      statusEl.textContent = `🚀 Ракета летит... (Ставка: ${betAmount} ⭐)`;
-      statusEl.style.color = "#aaa0b9";
-
-      crashInterval = setInterval(() => {
-        currentMultiplier += 0.05;
-        multEl.textContent = currentMultiplier.toFixed(2) + "x";
-
-        if (currentMultiplier >= crashPoint) {
-          clearInterval(crashInterval);
-          isCrashPlaying = false;
-
-          multEl.textContent = crashPoint.toFixed(2) + "x";
-          statusEl.textContent = "💥 Ракета взорвалась!";
-          statusEl.style.color = "#ff4d4d";
-
-          cashoutBtn.style.display = "none";
-          betContainer.style.display = "block";
-          startBtn.style.display = "block";
-          startBtn.disabled = false;
-        }
-      }, 100);
-
-    } catch (error) {
-      showStatus(error.message);
-      startBtn.disabled = false;
-    }
-  }
-
-  async function cashoutCrashGame() {
-    if (!isCrashPlaying) return;
-
-    const cashoutBtn = document.getElementById("crashCashoutBtn");
-    const startBtn = document.getElementById("crashStartBtn");
-    const statusEl = document.getElementById("crashStatusText");
-    const betContainer = document.getElementById("betInputContainer");
-
-    cashoutBtn.disabled = true;
-    clearInterval(crashInterval);
-    isCrashPlaying = false;
-
-    const finalWinMultiplier = currentMultiplier.toFixed(2);
-
-    try {
-      const response = await fetch("/api/crash/cashout", {
-        method: "POST",
-        headers: headers(),
-        body: JSON.stringify({ multiplier: parseFloat(finalWinMultiplier) })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Ошибка вывода");
-      }
-
-      statusEl.textContent = `🎉 Забрано +${data.winAmount} ⭐ (х${finalWinMultiplier})`;
-      statusEl.style.color = "#4dff88";
-
-      await loadUser();
-    } catch (error) {
-      showStatus(error.message);
-    } finally {
-      cashoutBtn.style.display = "none";
-      betContainer.style.display = "block";
-      startBtn.style.display = "block";
-      startBtn.disabled = false;
-    }
-  }
-
-  async function init() {
-    if (!initData) {
-      showStatus(
-        "Открой приложение через Telegram."
-      );
-      return;
-    }
-
-    await loadConfig();
-    await loadUser();
-  }
-
-  init();
-</script>
-
+  <!-- JS подключим в следующей части -->
+  <script src="script.js"></script>
 </body>
 </html>
