@@ -1,5 +1,5 @@
 const express = require('express');
-const Database = require('better-sqlite3');
+const Datastore = require('nedb-promises');
 const path = require('path');
 
 const app = express();
@@ -8,26 +8,9 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Инициализация базы данных SQLite
-const db = new Database('./database.sqlite');
-
-// Создание таблиц при запуске
-db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-    telegram_id TEXT PRIMARY KEY,
-    username TEXT,
-    balance INTEGER DEFAULT 0,
-    total_games INTEGER DEFAULT 0,
-    max_mult REAL DEFAULT 1.0,
-    ref_earned INTEGER DEFAULT 0
-  );
-
-  CREATE TABLE IF NOT EXISTS completed_tasks (
-    telegram_id TEXT,
-    task_id INTEGER,
-    PRIMARY KEY (telegram_id, task_id)
-  );
-`);
+// Инициализация базы данных на чистом JS (без C++ компиляции)
+const usersDb = Datastore.create({ filename: path.join(__dirname, 'users.db'), autoload: true });
+const tasksDb = Datastore.create({ filename: path.join(__dirname, 'tasks.db'), autoload: true });
 
 // Конфигурация заданий
 const TASKS_CONFIG = {
@@ -37,7 +20,7 @@ const TASKS_CONFIG = {
 };
 
 // 1. Инициализация пользователя
-app.post('/api/user/init', (req, res) => {
+app.post('/api/user/init', async (req, res) => {
   try {
     const { telegram_id, username } = req.body;
     if (!telegram_id) return res.status(400).json({ error: 'Telegram ID обязателен' });
@@ -45,14 +28,21 @@ app.post('/api/user/init', (req, res) => {
     const userId = String(telegram_id);
     const name = username || 'Игрок';
 
-    let user = db.prepare('SELECT * FROM users WHERE telegram_id = ?').get(userId);
+    let user = await usersDb.findOne({ telegram_id: userId });
 
     if (!user) {
-      db.prepare('INSERT INTO users (telegram_id, username, balance) VALUES (?, ?, 0)').run(userId, name);
-      user = { telegram_id: userId, username: name, balance: 0, total_games: 0, max_mult: 1.0, ref_earned: 0 };
+      user = {
+        telegram_id: userId,
+        username: name,
+        balance: 0,
+        total_games: 0,
+        max_mult: 1.0,
+        ref_earned: 0
+      };
+      await usersDb.insert(user);
     }
 
-    const tasks = db.prepare('SELECT task_id FROM completed_tasks WHERE telegram_id = ?').all(userId);
+    const tasks = await tasksDb.find({ telegram_id: userId });
     const completedTasks = tasks.map(t => t.task_id);
 
     res.json({ user, completedTasks });
@@ -62,7 +52,7 @@ app.post('/api/user/init', (req, res) => {
 });
 
 // 2. Игра в Кости (Dice)
-app.post('/api/game/dice', (req, res) => {
+app.post('/api/game/dice', async (req, res) => {
   try {
     const { telegram_id, bet } = req.body;
     const userId = String(telegram_id);
@@ -72,7 +62,7 @@ app.post('/api/game/dice', (req, res) => {
       return res.status(400).json({ error: 'Неверная сумма ставки' });
     }
 
-    const user = db.prepare('SELECT balance, total_games FROM users WHERE telegram_id = ?').get(userId);
+    const user = await usersDb.findOne({ telegram_id: userId });
     if (!user) return res.status(400).json({ error: 'Пользователь не найден' });
     if (user.balance < betAmount) return res.status(400).json({ error: 'Недостаточно звезд на балансе' });
 
@@ -94,7 +84,10 @@ app.post('/api/game/dice', (req, res) => {
 
     const newGames = (user.total_games || 0) + 1;
 
-    db.prepare('UPDATE users SET balance = ?, total_games = ? WHERE telegram_id = ?').run(newBalance, newGames, userId);
+    await usersDb.update(
+      { telegram_id: userId },
+      { $set: { balance: newBalance, total_games: newGames } }
+    );
 
     res.json({ dice1, dice2, sum, isWin, winAmount, newBalance });
   } catch (err) {
@@ -103,7 +96,7 @@ app.post('/api/game/dice', (req, res) => {
 });
 
 // 3. Выполнение заданий
-app.post('/api/tasks/complete', (req, res) => {
+app.post('/api/tasks/complete', async (req, res) => {
   try {
     const { telegram_id, task_id } = req.body;
     const userId = String(telegram_id);
@@ -112,15 +105,18 @@ app.post('/api/tasks/complete', (req, res) => {
     const taskConfig = TASKS_CONFIG[taskId];
     if (!taskConfig) return res.status(400).json({ error: 'Задание не найдено' });
 
-    const existing = db.prepare('SELECT * FROM completed_tasks WHERE telegram_id = ? AND task_id = ?').get(userId, taskId);
+    const existing = await tasksDb.findOne({ telegram_id: userId, task_id: taskId });
     if (existing) return res.status(400).json({ error: 'Задание уже выполнено' });
 
-    db.prepare('INSERT INTO completed_tasks (telegram_id, task_id) VALUES (?, ?)').run(userId, taskId);
+    await tasksDb.insert({ telegram_id: userId, task_id: taskId });
 
-    const user = db.prepare('SELECT balance FROM users WHERE telegram_id = ?').get(userId);
+    const user = await usersDb.findOne({ telegram_id: userId });
     const newBalance = (user ? user.balance : 0) + taskConfig.reward;
 
-    db.prepare('UPDATE users SET balance = ? WHERE telegram_id = ?').run(newBalance, userId);
+    await usersDb.update(
+      { telegram_id: userId },
+      { $set: { balance: newBalance } }
+    );
 
     res.json({ success: true, reward: taskConfig.reward, newBalance });
   } catch (err) {
@@ -129,7 +125,7 @@ app.post('/api/tasks/complete', (req, res) => {
 });
 
 // 4. Вывод средств
-app.post('/api/withdraw', (req, res) => {
+app.post('/api/withdraw', async (req, res) => {
   try {
     const { telegram_id, wallet, amount } = req.body;
     const userId = String(telegram_id);
@@ -139,12 +135,15 @@ app.post('/api/withdraw', (req, res) => {
       return res.status(400).json({ error: 'Минимальная сумма вывода 50 ⭐' });
     }
 
-    const user = db.prepare('SELECT balance FROM users WHERE telegram_id = ?').get(userId);
+    const user = await usersDb.findOne({ telegram_id: userId });
     if (!user) return res.status(400).json({ error: 'Пользователь не найден' });
     if (user.balance < withdrawAmount) return res.status(400).json({ error: 'Недостаточно средств' });
 
     const newBalance = user.balance - withdrawAmount;
-    db.prepare('UPDATE users SET balance = ? WHERE telegram_id = ?').run(newBalance, userId);
+    await usersDb.update(
+      { telegram_id: userId },
+      { $set: { balance: newBalance } }
+    );
 
     res.json({ success: true, newBalance, message: 'Заявка отправлена!' });
   } catch (err) {
