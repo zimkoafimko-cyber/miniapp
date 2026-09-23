@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Star Rewards Mini App</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- Подключаем Telegram WebApp SDK -->
+  <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
 
-  <!-- Уведомления (Toasts) -->
+  <!-- Уведомления (Toast) -->
   <div id="toast" class="toast">Уведомление</div>
 
   <div class="app-container">
@@ -49,7 +49,6 @@
           <span class="badge" style="background: rgba(0, 230, 118, 0.15); color: var(--accent-green);">LIVE</span>
         </div>
 
-        <!-- Canvas для графики ракета/график -->
         <div class="canvas-wrapper">
           <canvas id="crashCanvas"></canvas>
           <div class="crash-overlay">
@@ -58,10 +57,8 @@
           </div>
         </div>
 
-        <!-- Управление ставкой Crash -->
         <div class="bet-control-group">
           <input type="number" id="betInput" class="input-styled" value="5" min="1" placeholder="Сумма ставки">
-          
           <div class="quick-bets">
             <button class="btn-chip" onclick="setBet(1)">1</button>
             <button class="btn-chip" onclick="setBet(5)">5</button>
@@ -70,23 +67,12 @@
           </div>
         </div>
 
-        <!-- Главные кнопки игры Crash -->
         <button id="btnStartGame" class="btn-main" onclick="startCrashGame()">ПОЛЕТЕЛИ 🚀</button>
         <button id="btnCashout" class="btn-main btn-cashout" onclick="cashoutCrash()" style="display: none;">ЗАБРАТЬ (1.00x)</button>
       </div>
 
-      <!-- История последних раундов Crash -->
-      <div class="glass-card" style="padding: 14px 20px; margin-bottom: 16px;">
-        <h4 style="margin-bottom: 8px; font-size: 13px; color: var(--text-muted);">История коэффициентов</h4>
-        <div id="crashHistory" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;">
-          <span class="badge" style="background: rgba(255, 70, 85, 0.2); color: var(--accent-red);">1.12x</span>
-          <span class="badge" style="background: rgba(0, 230, 118, 0.2); color: var(--accent-green);">2.45x</span>
-          <span class="badge" style="background: rgba(0, 230, 118, 0.2); color: var(--accent-green);">5.10x</span>
-        </div>
-      </div>
-
       <!-- Игра 2: Кости (Dice) -->
-      <div class="glass-card">
+      <div class="glass-card" style="margin-top: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
           <h3>Кости (Dice) 🎲</h3>
           <span class="badge">x1.20</span>
@@ -95,15 +81,15 @@
           Победа при любой сумме, кроме <b>7</b>!
         </p>
 
-        <!-- Отображение кубиков -->
-        <div class="dice-container">
-          <div id="dice1" class="dice-box">?</div>
-          <div id="dice2" class="dice-box">?</div>
+        <!-- Кубики -->
+        <div class="dice-container" style="display: flex; justify-content: center; gap: 15px; margin: 15px 0;">
+          <div id="dice1" class="dice-box" style="font-size: 28px; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); border-radius: 10px;">?</div>
+          <div id="dice2" class="dice-box" style="font-size: 28px; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); border-radius: 10px;">?</div>
         </div>
 
-        <div id="diceStatus" class="dice-status-text">Испытайте удачу!</div>
+        <div id="diceStatus" style="text-align: center; font-size: 13px; font-weight: 700; margin-bottom: 12px; min-height: 18px;">Испытайте удачу!</div>
 
-        <!-- Управление ставкой Dice -->
+        <!-- Ставка Dice -->
         <div class="bet-control-group">
           <input type="number" id="diceBetInput" class="input-styled" value="5" min="1" placeholder="Сумма ставки">
           <div class="quick-bets">
@@ -124,12 +110,13 @@
       <div class="glass-card">
         <h3>Выполняй задания</h3>
         <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px; margin-bottom: 16px;">
-          Получай бесплатные ⭐ за подписки и активность
+          Получай бесплатные ⭐ за активность
         </p>
 
-        <div class="task-item">
-          <div class="task-info">
-            <div class="task-icon">📢</div>
+        <!-- Задание 1 -->
+        <div class="task-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+          <div class="task-info" style="display: flex; align-items: center; gap: 10px;">
+            <div style="font-size: 24px;">📢</div>
             <div>
               <div style="font-size: 14px; font-weight: 700;">Подписка на канал</div>
               <div style="font-size: 12px; color: var(--primary); font-weight: 700;">+15 ⭐</div>
@@ -138,9 +125,10 @@
           <button class="btn-chip task-btn" onclick="completeTask(this, 1, 15)">Выполнить</button>
         </div>
 
-        <div class="task-item">
-          <div class="task-info">
-            <div class="task-icon">👥</div>
+        <!-- Задание 2 -->
+        <div class="task-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+          <div class="task-info" style="display: flex; align-items: center; gap: 10px;">
+            <div style="font-size: 24px;">👥</div>
             <div>
               <div style="font-size: 14px; font-weight: 700;">Пригласи 3 друзей</div>
               <div style="font-size: 12px; color: var(--primary); font-weight: 700;">+15 ⭐</div>
@@ -149,9 +137,10 @@
           <button class="btn-chip task-btn" onclick="completeTask(this, 2, 15)">Выполнить</button>
         </div>
 
-        <div class="task-item">
-          <div class="task-info">
-            <div class="task-icon">🎁</div>
+        <!-- Задание 3 -->
+        <div class="task-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+          <div class="task-info" style="display: flex; align-items: center; gap: 10px;">
+            <div style="font-size: 24px;">🎁</div>
             <div>
               <div style="font-size: 14px; font-weight: 700;">Ежедневный бонус</div>
               <div style="font-size: 12px; color: var(--primary); font-weight: 700;">+3 ⭐</div>
@@ -171,7 +160,7 @@
           Получай +3 ⭐ за каждого приглашенного друга!
         </p>
 
-        <input type="text" id="refLinkInput" class="input-styled" style="font-size: 13px; padding: 12px;" readonly value="https://t.me/your_bot?start=ref12345">
+        <input type="text" id="refLinkInput" class="input-styled" style="font-size: 13px; padding: 12px; width: 100%; box-sizing: border-box;" readonly value="https://t.me/your_bot?start=ref12345">
         <button class="btn-main btn-secondary" style="margin-top: 10px;" onclick="copyRefLink()">Скопировать ссылку 📋</button>
       </div>
     </section>
@@ -184,7 +173,7 @@
           Минимальная сумма вывода: 50 ⭐
         </p>
 
-        <div class="bet-control-group">
+        <div class="bet-control-group" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px;">
           <input type="text" id="withdrawWallet" class="input-styled" style="font-size: 14px; text-align: left;" placeholder="Кошелек TON / Telegram ID">
           <input type="number" id="withdrawInput" class="input-styled" style="font-size: 14px; text-align: left;" placeholder="Сумма звезд (мин. 50)">
         </div>
