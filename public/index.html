@@ -1,503 +1,615 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Stars</title>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  >
+
+  <title>Star Rewards</title>
+
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
-    *{box-sizing:border-box}
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-    body{
-      margin:0;
-      min-height:100vh;
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      color:#fff;
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      color: #fff;
       background:
-        radial-gradient(circle at 20% 0%,#3b2678 0,transparent 35%),
-        radial-gradient(circle at 100% 20%,#742c76 0,transparent 32%),
-        linear-gradient(160deg,#090713,#160c27 55%,#090713);
+        radial-gradient(circle at 15% 10%, rgba(137, 54, 255, .35), transparent 30%),
+        radial-gradient(circle at 90% 30%, rgba(255, 193, 7, .18), transparent 28%),
+        linear-gradient(145deg, #090612, #160b2c 55%, #08050e);
+      overflow-x: hidden;
     }
 
-    body:before{
-      content:"";
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      background-image:
-        radial-gradient(circle,#ffffff55 1px,transparent 1px);
-      background-size:42px 42px;
-      opacity:.22;
+    .app {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
     }
 
-    .wrap{
-      position:relative;
-      max-width:520px;
-      margin:auto;
-      padding:18px 14px 40px;
+    .top {
+      text-align: center;
+      padding: 10px 0 20px;
     }
 
-    .top{
-      text-align:center;
-      padding:14px 5px 20px;
-    }
-
-    .logo{
-      width:74px;
-      height:74px;
-      margin:auto;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      border-radius:25px;
-      font-size:38px;
-      background:linear-gradient(145deg,#ffe88a,#ffb300);
+    .logo {
+      width: 82px;
+      height: 82px;
+      margin: 0 auto 12px;
+      border-radius: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 43px;
+      background: linear-gradient(145deg, #ffd84d, #ff9f00);
       box-shadow:
-        0 0 25px #ffc40088,
-        inset 0 2px 5px #fff9;
+        0 0 25px rgba(255, 190, 30, .5),
+        inset 0 1px 0 rgba(255,255,255,.5);
     }
 
-    h1{
-      margin:13px 0 3px;
-      font-size:28px;
-      font-weight:900;
-      letter-spacing:-.5px;
+    h1 {
+      margin: 0;
+      font-size: 27px;
     }
 
-    .subtitle{
-      color:#bdb6cf;
-      font-size:14px;
+    .subtitle {
+      margin-top: 7px;
+      color: #b9aecb;
+      font-size: 14px;
     }
 
-    .balance{
-      margin-top:18px;
-      padding:24px;
-      border-radius:27px;
-      background:linear-gradient(145deg,#ffffff16,#ffffff08);
-      border:1px solid #ffffff18;
-      box-shadow:0 18px 50px #0008;
-      backdrop-filter:blur(15px);
-      text-align:center;
+    .balance {
+      position: relative;
+      overflow: hidden;
+      padding: 24px;
+      border-radius: 25px;
+      margin-bottom: 15px;
+      background: linear-gradient(
+        135deg,
+        rgba(255, 196, 48, .18),
+        rgba(121, 48, 255, .18)
+      );
+      border: 1px solid rgba(255,255,255,.11);
+      box-shadow: 0 15px 45px rgba(0,0,0,.3);
+      text-align: center;
     }
 
-    .balance-title{
-      color:#aaa1bc;
-      font-size:13px;
+    .balance-label {
+      color: #bdb2cd;
+      font-size: 14px;
     }
 
-    .stars{
-      margin-top:4px;
-      font-size:42px;
-      font-weight:900;
-      background:linear-gradient(90deg,#fff,#ffd447);
-      -webkit-background-clip:text;
-      color:transparent;
+    .balance-number {
+      margin-top: 5px;
+      font-size: 45px;
+      font-weight: 800;
+      color: #ffd43b;
+      text-shadow: 0 0 22px rgba(255,196,30,.45);
     }
 
-    .refresh{
-      margin-top:12px;
-      padding:10px 16px;
-      border:1px solid #ffffff18;
-      border-radius:14px;
-      background:#ffffff0d;
-      color:#ddd6e9;
-      font-weight:700;
+    .stars {
+      font-size: 18px;
     }
 
-    .card{
-      position:relative;
-      margin-top:14px;
-      padding:19px;
-      border-radius:23px;
-      background:linear-gradient(145deg,#ffffff12,#ffffff07);
-      border:1px solid #ffffff14;
-      box-shadow:0 14px 35px #0007;
-      backdrop-filter:blur(13px);
-      overflow:hidden;
+    .card {
+      padding: 18px;
+      margin-bottom: 14px;
+      border-radius: 22px;
+      background: rgba(255,255,255,.065);
+      border: 1px solid rgba(255,255,255,.1);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 12px 35px rgba(0,0,0,.22);
     }
 
-    .card:after{
-      content:"";
-      position:absolute;
-      width:100px;
-      height:100px;
-      right:-50px;
-      top:-50px;
-      background:#ffc40022;
-      border-radius:50%;
-      filter:blur(10px);
+    .card-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 7px;
     }
 
-    .row{
-      display:flex;
-      align-items:center;
-      gap:13px;
+    .card-text {
+      color: #aaa0b9;
+      font-size: 13px;
+      line-height: 1.45;
+      margin-bottom: 15px;
     }
 
-    .icon{
-      width:51px;
-      height:51px;
-      flex:none;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      border-radius:17px;
-      font-size:25px;
-      background:linear-gradient(145deg,#ffd85c,#ff9f00);
-      box-shadow:0 6px 20px #ffb00035;
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 15px;
+      padding: 14px 16px;
+      font-size: 15px;
+      font-weight: 800;
+      color: #140d20;
+      background: linear-gradient(135deg, #ffd84a, #ff9e00);
+      box-shadow: 0 8px 24px rgba(255,165,0,.22);
+      cursor: pointer;
     }
 
-    .name{
-      font-size:17px;
-      font-weight:850;
+    button:active {
+      transform: scale(.98);
     }
 
-    .desc{
-      margin-top:4px;
-      color:#aaa2b9;
-      font-size:12px;
-      line-height:1.4;
+    button.secondary {
+      margin-top: 9px;
+      color: white;
+      background: linear-gradient(135deg, #7139dc, #9c4dff);
+      box-shadow: 0 8px 25px rgba(126,57,220,.25);
     }
 
-    .reward{
-      margin-left:auto;
-      color:#ffd447;
-      font-weight:900;
-      white-space:nowrap;
+    button.dark {
+      margin-top: 9px;
+      color: white;
+      background: rgba(255,255,255,.09);
+      box-shadow: none;
+      border: 1px solid rgba(255,255,255,.1);
     }
 
-    .action{
-      width:100%;
-      margin-top:15px;
-      padding:14px;
-      border:0;
-      border-radius:15px;
-      background:linear-gradient(90deg,#ffbf19,#ff8a00);
-      color:#201300;
-      font-size:15px;
-      font-weight:900;
-      box-shadow:0 7px 22px #ff9d0038;
+    button:disabled {
+      opacity: .55;
+      cursor: default;
+      transform: none;
     }
 
-    .action:active{
-      transform:scale(.98);
+    .reward {
+      float: right;
+      color: #ffd43b;
+      font-weight: 800;
     }
 
-    .action:disabled{
-      opacity:.5;
+    .ref-box {
+      padding: 13px;
+      margin: 12px 0;
+      border-radius: 14px;
+      background: rgba(0,0,0,.2);
+      border: 1px solid rgba(255,255,255,.08);
+      word-break: break-all;
+      color: #d7cbe4;
+      font-size: 12px;
     }
 
-    .progress{
-      height:8px;
-      margin-top:15px;
-      background:#ffffff10;
-      border-radius:20px;
-      overflow:hidden;
+    .ref-count {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 13px 0 3px;
+      color: #bdb2cd;
+      font-size: 14px;
     }
 
-    .progress div{
-      height:100%;
-      width:0;
-      border-radius:20px;
-      background:linear-gradient(90deg,#ffb300,#ffe16b);
-      box-shadow:0 0 15px #ffc400;
-      transition:.4s;
+    .ref-count strong {
+      color: #ffd43b;
+      font-size: 18px;
     }
 
-    .small{
-      margin-top:9px;
-      color:#aaa2b9;
-      font-size:12px;
+    .withdraw {
+      background:
+        linear-gradient(
+          135deg,
+          rgba(122, 45, 255, .3),
+          rgba(255, 176, 0, .12)
+        );
     }
 
-    .withdraw{
-      background:linear-gradient(145deg,#3c1d59,#21112f);
+    .status {
+      display: none;
+      margin-bottom: 14px;
+      padding: 13px;
+      border-radius: 15px;
+      text-align: center;
+      font-size: 13px;
+      background: rgba(255,255,255,.08);
+      color: #ddd;
     }
 
-    .withdraw .icon{
-      background:linear-gradient(145deg,#d95cff,#7c3cff);
+    .status.show {
+      display: block;
     }
 
-    .withdraw .action{
-      background:linear-gradient(90deg,#d95cff,#8b4dff);
-      color:#fff;
-    }
-
-    .footer{
-      text-align:center;
-      color:#777080;
-      font-size:11px;
-      margin-top:22px;
+    .footer {
+      text-align: center;
+      color: #71677d;
+      font-size: 11px;
+      padding: 10px 0;
     }
   </style>
 </head>
 
 <body>
 
-<div class="wrap">
+<div class="app">
 
   <div class="top">
     <div class="logo">⭐</div>
-    <h1>Stars Rewards</h1>
-    <div class="subtitle">Выполняй задания и получай ⭐</div>
-
-    <div class="balance">
-      <div class="balance-title">Твой баланс</div>
-      <div class="stars" id="balance">0 ⭐</div>
-      <button class="refresh" id="refreshBtn">↻ Обновить</button>
+    <h1>Star Rewards</h1>
+    <div class="subtitle">
+      Выполняй задания и получай ⭐
     </div>
   </div>
 
+  <div id="status" class="status"></div>
+
+  <div class="balance">
+    <div class="balance-label">Твой баланс</div>
+    <div class="balance-number">
+      <span id="balance">0</span>
+      <span class="stars">⭐</span>
+    </div>
+  </div>
+
+  <!-- Подписка -->
+
   <div class="card">
-    <div class="row">
-      <div class="icon">📢</div>
-
-      <div>
-        <div class="name">Подписка на канал</div>
-        <div class="desc">Подпишись и получи награду</div>
-      </div>
-
-      <div class="reward">+15 ⭐</div>
+    <div class="card-title">
+      📢 Подписка
+      <span class="reward">+15 ⭐</span>
     </div>
 
-    <button class="action" id="subscribeBtn">
+    <div class="card-text">
+      Подпишись на наш Telegram-канал и получи бонус.
+    </div>
+
+    <button id="channelBtn" onclick="openChannel()">
       Подписаться
     </button>
 
-    <button class="action" id="checkBtn">
-      ✓ Проверить подписку
+    <button
+      id="checkBtn"
+      class="secondary"
+      onclick="checkSubscription()"
+    >
+      Проверить подписку
     </button>
   </div>
+
+  <!-- Ежедневный бонус -->
 
   <div class="card">
-    <div class="row">
-      <div class="icon">🎁</div>
-
-      <div>
-        <div class="name">Ежедневный бонус</div>
-        <div class="desc">Заходи каждый день и забирай награду</div>
-      </div>
-
-      <div class="reward">+3 ⭐</div>
+    <div class="card-title">
+      🎁 Ежедневный бонус
+      <span class="reward">+3 ⭐</span>
     </div>
 
-    <button class="action" id="dailyBtn">
-      Забрать бонус
+    <div class="card-text">
+      Заходи каждый день и забирай бесплатные ⭐.
+    </div>
+
+    <button onclick="getDailyBonus()">
+      Забрать +3 ⭐
     </button>
-
-    <div class="small" id="dailyText">
-      Доступен сегодня
-    </div>
   </div>
+
+  <!-- Рефералы -->
 
   <div class="card">
-    <div class="row">
-      <div class="icon">📤</div>
-
-      <div>
-        <div class="name">Поделиться постом</div>
-        <div class="desc">Поделись постом и получи награду</div>
-      </div>
-
-      <div class="reward">+5 ⭐</div>
+    <div class="card-title">
+      👥 Приглашай друзей
+      <span class="reward">+2 ⭐</span>
     </div>
 
-    <button class="action" id="shareBtn">
-      Поделиться
+    <div class="card-text">
+      Приглашай друзей по своей персональной ссылке.
+      За каждого нового пользователя получишь +2 ⭐.
+    </div>
+
+    <div class="ref-box" id="refLink">
+      Загружаем ссылку...
+    </div>
+
+    <div class="ref-count">
+      <span>Приглашено друзей</span>
+      <strong id="refCount">0</strong>
+    </div>
+
+    <button onclick="copyReferral()">
+      🔗 Скопировать ссылку
+    </button>
+
+    <button
+      class="secondary"
+      onclick="shareReferral()"
+    >
+      📤 Пригласить друзей
     </button>
   </div>
+
+  <!-- Вывод -->
 
   <div class="card withdraw">
-    <div class="row">
-      <div class="icon">💎</div>
-
-      <div>
-        <div class="name">Вывод Stars</div>
-        <div class="desc">Минимальная сумма — 50 ⭐</div>
-      </div>
+    <div class="card-title">
+      💸 Вывод
     </div>
 
-    <button class="action" id="withdrawBtn">
+    <div class="card-text">
+      Минимальная сумма вывода — 50 ⭐.
+      После оформления заявки свяжись с администратором.
+    </div>
+
+    <button onclick="withdraw()">
       Вывести ⭐
     </button>
-
-    <div class="small">
-      После заявки свяжись с @AlinaResseler
-    </div>
   </div>
 
+  <button
+    class="dark"
+    onclick="loadUser()"
+  >
+    🔄 Обновить баланс
+  </button>
+
   <div class="footer">
-    Stars Rewards • Выполняй задания честно ⭐
+    Star Rewards
   </div>
 
 </div>
 
 <script>
-const tg = window.Telegram.WebApp;
+  const tg = window.Telegram.WebApp;
 
-tg.ready();
-tg.expand();
+  tg.ready();
+  tg.expand();
 
-const initData = tg.initData;
+  let config = null;
+  let referralLink = "";
 
-const headers = {
-  "Content-Type":"application/json",
-  "X-Telegram-Init-Data":initData
-};
+  const initData = tg.initData || "";
 
-let currentUser = null;
+  function headers() {
+    return {
+      "Content-Type": "application/json",
+      "X-Telegram-Init-Data": initData,
+      "X-Telegram-Start-Param":
+        tg.initDataUnsafe?.start_param || ""
+    };
+  }
 
-async function loadUser(){
-  try{
-    const res = await fetch("/api/me",{headers});
+  function showStatus(message) {
+    const el = document.getElementById("status");
 
-    if(!res.ok) throw new Error();
+    el.textContent = message;
+    el.classList.add("show");
 
-    currentUser = await res.json();
+    setTimeout(() => {
+      el.classList.remove("show");
+    }, 3500);
+  }
 
+  function setBalance(value) {
     document.getElementById("balance").textContent =
-      `${currentUser.stars} ⭐`;
-
-  }catch(e){
-    tg.showAlert("Не удалось обновить баланс.");
-  }
-}
-
-document.getElementById("refreshBtn").onclick = async()=>{
-  const btn=document.getElementById("refreshBtn");
-
-  btn.disabled=true;
-  btn.textContent="Обновление...";
-
-  await loadUser();
-
-  btn.disabled=false;
-  btn.textContent="↻ Обновить";
-};
-
-document.getElementById("subscribeBtn").onclick=()=>{
-  tg.openTelegramLink("https://t.me/belcryptoo");
-};
-
-document.getElementById("checkBtn").onclick=async()=>{
-  const btn=document.getElementById("checkBtn");
-
-  btn.disabled=true;
-  btn.textContent="Проверяем...";
-
-  try{
-    const res=await fetch("/api/check-subscription",{
-      method:"POST",
-      headers
-    });
-
-    const data=await res.json();
-
-    if(data.ok){
-      tg.showAlert("Подписка подтверждена! +15 ⭐");
-    }else{
-      tg.showAlert("Сначала подпишись на канал.");
-    }
-
-    await loadUser();
-
-  }catch(e){
-    tg.showAlert("Ошибка проверки.");
+      Number(value || 0);
   }
 
-  btn.disabled=false;
-  btn.textContent="✓ Проверить подписку";
-};
+  async function loadConfig() {
+    const response = await fetch("/api/config");
+    config = await response.json();
 
-document.getElementById("dailyBtn").onclick=async()=>{
-  const btn=document.getElementById("dailyBtn");
-
-  btn.disabled=true;
-  btn.textContent="Получаем...";
-
-  try{
-    const res=await fetch("/api/daily-bonus",{
-      method:"POST",
-      headers
-    });
-
-    const data=await res.json();
-
-    if(data.ok){
-      tg.showAlert("🎁 Бонус получен! +3 ⭐");
-      document.getElementById("dailyText").textContent=
-        "Бонус получен сегодня";
-    }else{
-      tg.showAlert(data.error || "Бонус пока недоступен.");
-    }
-
-    await loadUser();
-
-  }catch(e){
-    tg.showAlert("Ошибка получения бонуса.");
+    document.getElementById("channelBtn").textContent =
+      `Подписаться на @${config.channel.replace(/^@/, "")}`;
   }
 
-  btn.disabled=false;
-  btn.textContent="Забрать бонус";
-};
-
-document.getElementById("shareBtn").onclick=()=>{
-  const shareUrl=
-    "https://t.me/share/url?url="+
-    encodeURIComponent("https://t.me/belcryptoo")+
-    "&text="+
-    encodeURIComponent("⭐ Получай Telegram Stars вместе со мной!");
-
-  tg.openTelegramLink(shareUrl);
-
-  setTimeout(async()=>{
-    try{
-      await fetch("/api/share-complete",{
-        method:"POST",
-        headers
+  async function loadUser() {
+    try {
+      const response = await fetch("/api/me", {
+        headers: headers()
       });
 
-      await loadUser();
+      const data = await response.json();
 
-      tg.showAlert("Готово! +5 ⭐");
-    }catch(e){}
-  },1200);
-};
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Ошибка авторизации"
+        );
+      }
 
-document.getElementById("withdrawBtn").onclick=async()=>{
-  if(!currentUser) await loadUser();
+      setBalance(data.stars);
+      document.getElementById("refCount").textContent =
+        data.referralCount || 0;
 
-  if(Number(currentUser.stars)<50){
-    tg.showAlert("Минимальный вывод — 50 ⭐");
-    return;
+      await loadReferral();
+
+    } catch (error) {
+      showStatus(error.message);
+    }
   }
 
-  try{
-    const res=await fetch("/api/withdraw",{
-      method:"POST",
-      headers
-    });
+  async function loadReferral() {
+    try {
+      const response = await fetch("/api/referral", {
+        headers: headers()
+      });
 
-    const data=await res.json();
+      const data = await response.json();
 
-    if(!res.ok){
-      tg.showAlert(data.error || "Ошибка вывода.");
+      if (!response.ok) return;
+
+      referralLink = data.link;
+
+      document.getElementById("refLink").textContent =
+        referralLink;
+
+      document.getElementById("refCount").textContent =
+        data.count || 0;
+
+    } catch {
+      document.getElementById("refLink").textContent =
+        "Не удалось загрузить ссылку";
+    }
+  }
+
+  function openChannel() {
+    const username =
+      config.channel.replace(/^@/, "");
+
+    tg.openTelegramLink(
+      `https://t.me/${username}`
+    );
+  }
+
+  async function checkSubscription() {
+    const button =
+      document.getElementById("checkBtn");
+
+    button.disabled = true;
+    button.textContent = "Проверяем...";
+
+    try {
+      const response = await fetch(
+        "/api/check-subscription",
+        {
+          method: "POST",
+          headers: headers()
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Ошибка проверки"
+        );
+      }
+
+      if (data.ok) {
+        showStatus("Подписка подтверждена! +15 ⭐");
+        await loadUser();
+      } else {
+        showStatus(
+          "Подписка не найдена. Сначала подпишись на канал."
+        );
+      }
+
+    } catch (error) {
+      showStatus(error.message);
+    }
+
+    button.disabled = false;
+    button.textContent = "Проверить подписку";
+  }
+
+  async function getDailyBonus() {
+    try {
+      const response = await fetch(
+        "/api/daily-bonus",
+        {
+          method: "POST",
+          headers: headers()
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Ошибка"
+        );
+      }
+
+      showStatus("Ежедневный бонус получен! +3 ⭐");
+      await loadUser();
+
+    } catch (error) {
+      showStatus(error.message);
+    }
+  }
+
+  async function copyReferral() {
+    if (!referralLink) {
+      await loadReferral();
+    }
+
+    if (!referralLink) {
+      showStatus("Ссылка пока недоступна");
       return;
     }
 
-    tg.showAlert("Заявка создана. Сейчас откроется администратор.");
+    try {
+      await navigator.clipboard.writeText(
+        referralLink
+      );
 
-    tg.openTelegramLink(
-      "https://t.me/AlinaResseler"
-    );
+      showStatus(
+        "Реферальная ссылка скопирована!"
+      );
 
-  }catch(e){
-    tg.showAlert("Ошибка отправки заявки.");
+    } catch {
+      showStatus(
+        "Не удалось скопировать ссылку"
+      );
+    }
   }
-};
 
-loadUser();
+  async function shareReferral() {
+    if (!referralLink) {
+      await loadReferral();
+    }
+
+    if (!referralLink) {
+      showStatus("Ссылка пока недоступна");
+      return;
+    }
+
+    const text =
+      "Заходи в Star Rewards и получай ⭐";
+
+    const shareUrl =
+      `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(text)}`;
+
+    tg.openTelegramLink(shareUrl);
+  }
+
+  async function withdraw() {
+    try {
+      const response = await fetch(
+        "/api/withdraw",
+        {
+          method: "POST",
+          headers: headers()
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Ошибка вывода"
+        );
+      }
+
+      showStatus(
+        `Заявка на вывод ${data.amount} ⭐ создана.`
+      );
+
+      setTimeout(() => {
+        tg.openTelegramLink(data.contact);
+      }, 700);
+
+    } catch (error) {
+      showStatus(error.message);
+    }
+  }
+
+  async function init() {
+    if (!initData) {
+      showStatus(
+        "Открой приложение через Telegram."
+      );
+      return;
+    }
+
+    await loadConfig();
+    await loadUser();
+  }
+
+  init();
 </script>
 
 </body>
