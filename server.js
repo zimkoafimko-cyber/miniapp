@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const DataStore = require('nedb-promises');
+
 const app = express();
 
 app.use(express.json());
@@ -12,7 +14,7 @@ const ADMIN_NAME = process.env.ADMIN_NAME;
 
 // Базовый роут для проверки, что сервер живой
 app.get('/', (req, res) => {
-    res.send('Telegram Mini App Backend is running!');
+    res.send('Star Rewards Mini App Backend is running!');
 });
 
 // Функция проверки подписки на канал
@@ -27,7 +29,6 @@ async function checkTelegramSubscription(userId) {
         
         if (data.ok) {
             const status = data.result.status;
-            // Пользователь считается подписанным, если он участник, админ или создатель
             return ['member', 'administrator', 'creator'].includes(status);
         }
         return false;
@@ -37,7 +38,7 @@ async function checkTelegramSubscription(userId) {
     }
 }
 
-// Эндпоинт для проверки подписки из фронтенда
+// Эндпоинт для проверки подписки
 app.post('/api/check-subscription', async (req, res) => {
     const { userId } = req.body;
     if (!userId) {
@@ -48,14 +49,13 @@ app.post('/api/check-subscription', async (req, res) => {
     res.json({ subscribed: isSubscribed });
 });
 
-// Эндпоинт для проверки, является ли пользователь администратором
+// Эндпоинт для проверки прав администратора
 app.post('/api/check-admin', (req, res) => {
     const { username } = req.body;
     if (!username) {
         return res.json({ isAdmin: false });
     }
 
-    // Сравниваем пришедший username с ADMIN_NAME из Render (без учета регистра и лишних символов)
     const cleanAdminName = (ADMIN_NAME || '').replace('@', '').trim();
     const cleanUserName = username.replace('@', '').trim();
 
@@ -63,7 +63,7 @@ app.post('/api/check-admin', (req, res) => {
     res.json({ isAdmin });
 });
 
-// Обязательно используем process.env.PORT для Render
+// Запуск сервера с портом от Render
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
