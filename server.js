@@ -8,11 +8,10 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Инициализация базы данных на чистом JS (без C++ компиляции)
-const usersDb = Datastore.create({ filename: path.join(__dirname, 'users.db'), autoload: true });
-const tasksDb = Datastore.create({ filename: path.join(__dirname, 'tasks.db'), autoload: true });
+// Использование новых файлов базы данных (автоматический сброс старых данных)
+const usersDb = Datastore.create({ filename: path.join(__dirname, 'users_v2.db'), autoload: true });
+const tasksDb = Datastore.create({ filename: path.join(__dirname, 'tasks_v2.db'), autoload: true });
 
-// Конфигурация заданий
 const TASKS_CONFIG = {
   1: { reward: 15, title: 'Подписка на канал' },
   2: { reward: 15, title: 'Пригласи 3 друзей' },
@@ -51,20 +50,70 @@ app.post('/api/user/init', async (req, res) => {
   }
 });
 
-// 2. Игра в Кости (Dice)
+// 2. Логика Ракетки: Старт полета
+app.post('/api/game/crash/play', async (req, res) => {
+  try {
+    const { telegram_id, bet } = req.body;
+    const userId = String(telegram_id);
+    const betAmount = parseInt(bet, 10);
+
+    if (isNaN(betAmount) || betAmount <= 0) return res.status(400).json({ error: 'Неверная ставка' });
+
+    const user = await usersDb.findOne({ telegram_id: userId });
+    if (!user || user.balance < betAmount) return res.status(400).json({ error: 'Недостаточно звезд' });
+
+    // Снимаем ставку с баланса
+    const newBalance = user.balance - betAmount;
+    
+    // Генерация коэффициента взрыва (от 1.01 до 10.00x)
+    const crashPoint = +(1 + Math.random() * 5).toFixed(2);
+
+    await usersDb.update({ telegram_id: userId }, { $set: { balance: newBalance } });
+
+    res.json({ success: true, newBalance, crashPoint });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 3. Логика Ракетки: Забрать выигрыш (Cashout)
+app.post('/api/game/crash/cashout', async (req, res) => {
+  try {
+    const { telegram_id, winAmount, mult } = req.body;
+    const userId = String(telegram_id);
+    const win = parseInt(winAmount, 10);
+    const currentMult = parseFloat(mult);
+
+    const user = await usersDb.findOne({ telegram_id: userId });
+    if (!user) return res.status(400).json({ error: 'Пользователь не найден' });
+
+    const newBalance = user.balance + win;
+    const newGames = (user.total_games || 0) + 1;
+    const maxMult = Math.max(user.max_mult || 1.0, currentMult);
+
+    await usersDb.update(
+      { telegram_id: userId },
+      { $set: { balance: newBalance, total_games: newGames, max_mult: maxMult } }
+    );
+
+    res.json({ success: true, newBalance });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 4. Игра в Кости (Dice)
 app.post('/api/game/dice', async (req, res) => {
   try {
     const { telegram_id, bet } = req.body;
     const userId = String(telegram_id);
     const betAmount = parseInt(bet, 10);
 
-    if (isNaN(betAmount) || betAmount <= 0) {
-      return res.status(400).json({ error: 'Неверная сумма ставки' });
-    }
+    if (isNaN(betAmount) || betAmount <= 0) return res.status(400).json({ error: 'Неверная ставка' });
 
     const user = await usersDb.findOne({ telegram_id: userId });
     if (!user) return res.status(400).json({ error: 'Пользователь не найден' });
-    if (user.balance < betAmount) return res.status(400).json({ error: 'Недостаточно звезд на балансе' });
+    if (user.balance < betAmount) return res.status(400).json({ error: 'Недостаточно звезд' });
 
     const dice1 = Math.floor(Math.random() * 6) + 1;
     const dice2 = Math.floor(Math.random() * 6) + 1;
@@ -95,7 +144,7 @@ app.post('/api/game/dice', async (req, res) => {
   }
 });
 
-// 3. Выполнение заданий
+// 5. Задания
 app.post('/api/tasks/complete', async (req, res) => {
   try {
     const { telegram_id, task_id } = req.body;
@@ -113,10 +162,7 @@ app.post('/api/tasks/complete', async (req, res) => {
     const user = await usersDb.findOne({ telegram_id: userId });
     const newBalance = (user ? user.balance : 0) + taskConfig.reward;
 
-    await usersDb.update(
-      { telegram_id: userId },
-      { $set: { balance: newBalance } }
-    );
+    await usersDb.update({ telegram_id: userId }, { $set: { balance: newBalance } });
 
     res.json({ success: true, reward: taskConfig.reward, newBalance });
   } catch (err) {
@@ -124,7 +170,7 @@ app.post('/api/tasks/complete', async (req, res) => {
   }
 });
 
-// 4. Вывод средств
+// 6. Вывод
 app.post('/api/withdraw', async (req, res) => {
   try {
     const { telegram_id, wallet, amount } = req.body;
@@ -136,21 +182,15 @@ app.post('/api/withdraw', async (req, res) => {
     }
 
     const user = await usersDb.findOne({ telegram_id: userId });
-    if (!user) return res.status(400).json({ error: 'Пользователь не найден' });
-    if (user.balance < withdrawAmount) return res.status(400).json({ error: 'Недостаточно средств' });
+    if (!user || user.balance < withdrawAmount) return res.status(400).json({ error: 'Недостаточно средств' });
 
     const newBalance = user.balance - withdrawAmount;
-    await usersDb.update(
-      { telegram_id: userId },
-      { $set: { balance: newBalance } }
-    );
+    await usersDb.update({ telegram_id: userId }, { $set: { balance: newBalance } });
 
-    res.json({ success: true, newBalance, message: 'Заявка отправлена!' });
+    res.json({ success: true, newBalance });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Сервер запущен на порту ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Сервер запущен на порту ${PORT}`));
