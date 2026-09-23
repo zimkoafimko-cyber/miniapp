@@ -5,12 +5,14 @@ const tgUser = tg?.initDataUnsafe?.user;
 const telegram_id = tgUser ? tgUser.id : 'test_user_123';
 const username = tgUser ? (tgUser.first_name || tgUser.username) : 'Игрок';
 
-let currentUser = {
-  balance: 0,
-  total_games: 0,
-  max_mult: 1.0,
-  ref_earned: 0
-};
+let currentUser = { balance: 0, total_games: 0, max_mult: 1.0, ref_earned: 0 };
+
+// Переменные для Rocket Crash
+let crashInterval = null;
+let currentMult = 1.00;
+let serverCrashPoint = 1.00;
+let currentBet = 0;
+let isFlying = false;
 
 function showToast(message) {
   const toast = document.getElementById('toast');
@@ -35,9 +37,7 @@ async function initUserData() {
     }
 
     if (data.completedTasks) {
-      data.completedTasks.forEach(taskId => {
-        markTaskAsCompleted(taskId);
-      });
+      data.completedTasks.forEach(taskId => markTaskAsCompleted(taskId));
     }
   } catch (e) {
     console.error('Ошибка инициализации профиля:', e);
@@ -52,31 +52,111 @@ function updateUI() {
     document.getElementById('statTotalGames').innerText = currentUser.total_games;
   }
   if (document.getElementById('statMaxMult')) {
-    document.getElementById('statMaxMult').innerText = currentUser.max_mult.toFixed(2) + 'x';
+    document.getElementById('statMaxMult').innerText = (currentUser.max_mult || 1.0).toFixed(2) + 'x';
   }
   if (document.getElementById('statRefEarned')) {
     document.getElementById('statRefEarned').innerText = currentUser.ref_earned + ' ⭐';
   }
 }
 
-function setDiceBet(val) {
-  const input = document.getElementById('diceBetInput');
-  if (input) input.value = val;
+// LOGIC: ROCKET CRASH
+async function startCrashGame() {
+  const betInput = document.getElementById('betInput');
+  const bet = parseInt(betInput ? betInput.value : 0, 10);
+  const btnStart = document.getElementById('btnStartGame');
+  const btnCashout = document.getElementById('btnCashout');
+  const multText = document.getElementById('multiplierVal');
+  const statusText = document.getElementById('crashStatus');
+
+  if (!bet || bet <= 0) return showToast('Укажите ставку');
+  if (bet > currentUser.balance) return showToast('Недостаточно звезд на балансе');
+
+  currentBet = bet;
+  btnStart.style.display = 'none';
+  btnCashout.style.display = 'block';
+  btnCashout.innerText = `ЗАБРАТЬ (1.00x)`;
+
+  try {
+    const response = await fetch('/api/game/crash/play', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_id, bet })
+    });
+    const data = await response.json();
+
+    if (data.error) {
+      btnStart.style.display = 'block';
+      btnCashout.style.display = 'none';
+      return showToast(data.error);
+    }
+
+    currentUser.balance = data.newBalance;
+    updateUI();
+
+    serverCrashPoint = data.crashPoint;
+    currentMult = 1.00;
+    isFlying = true;
+    statusText.innerText = 'ПОЛЕТ...';
+    statusText.style.color = 'var(--accent-green)';
+
+    crashInterval = setInterval(() => {
+      currentMult += 0.03;
+      multText.innerText = currentMult.toFixed(2) + 'x';
+      
+      const potentialWin = Math.floor(currentBet * currentMult);
+      btnCashout.innerText = `ЗАБРАТЬ (${potentialWin} ⭐)`;
+
+      if (currentMult >= serverCrashPoint) {
+        clearInterval(crashInterval);
+        isFlying = false;
+        statusText.innerText = 'РАКЕТА ВЗОРВАЛАСЬ!';
+        statusText.style.color = 'var(--accent-red)';
+        
+        btnStart.style.display = 'block';
+        btnCashout.style.display = 'none';
+        showToast('Ракета взлетела слишком высоко и сгорела!');
+      }
+    }, 100);
+
+  } catch (e) {
+    btnStart.style.display = 'block';
+    btnCashout.style.display = 'none';
+    showToast('Ошибка запуска полета');
+  }
 }
 
-function setDiceMaxBet() {
-  const input = document.getElementById('diceBetInput');
-  if (input) input.value = currentUser.balance;
-}
+async function cashoutCrash() {
+  if (!isFlying) return;
+  clearInterval(crashInterval);
+  isFlying = false;
 
-function setBet(val) {
-  const input = document.getElementById('betInput');
-  if (input) input.value = val;
-}
+  const btnStart = document.getElementById('btnStartGame');
+  const btnCashout = document.getElementById('btnCashout');
+  const statusText = document.getElementById('crashStatus');
 
-function setMaxBet() {
-  const input = document.getElementById('betInput');
-  if (input) input.value = currentUser.balance;
+  const winAmount = Math.floor(currentBet * currentMult);
+
+  try {
+    const res = await fetch('/api/game/crash/cashout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_id, winAmount, mult: currentMult })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      currentUser.balance = data.newBalance;
+      updateUI();
+      statusText.innerText = `УСПЕХ! Вы забрали ${winAmount} ⭐`;
+      statusText.style.color = 'var(--accent-green)';
+      showToast(`Выигрыш +${winAmount} ⭐`);
+    }
+  } catch (e) {
+    showToast('Ошибка вывода');
+  }
+
+  btnStart.style.display = 'block';
+  btnCashout.style.display = 'none';
 }
 
 // LOGIC: DICE
@@ -133,7 +213,7 @@ async function playDice() {
   }
 }
 
-// LOGIC: TASKS
+// LOGIC: TASKS & UTILS
 async function completeTask(btnElement, taskId) {
   try {
     const res = await fetch('/api/tasks/complete', {
@@ -143,10 +223,7 @@ async function completeTask(btnElement, taskId) {
     });
     const data = await res.json();
 
-    if (data.error) {
-      showToast(data.error);
-      return;
-    }
+    if (data.error) return showToast(data.error);
 
     currentUser.balance = data.newBalance;
     updateUI();
@@ -166,32 +243,10 @@ function markTaskAsCompleted(taskId) {
   }
 }
 
-// LOGIC: WITHDRAWAL & TABS
-async function requestWithdrawal() {
-  const wallet = document.getElementById('withdrawWallet')?.value;
-  const amount = parseInt(document.getElementById('withdrawInput')?.value || 0, 10);
-
-  if (!wallet) return showToast('Введите адрес кошелька');
-  if (amount < 50) return showToast('Минимальная сумма 50 ⭐');
-  if (amount > currentUser.balance) return showToast('Недостаточно средств');
-
-  try {
-    const res = await fetch('/api/withdraw', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ telegram_id, wallet, amount })
-    });
-    const data = await res.json();
-
-    if (data.error) return showToast(data.error);
-
-    currentUser.balance = data.newBalance;
-    updateUI();
-    showToast('Заявка на вывод отправлена!');
-  } catch (e) {
-    showToast('Ошибка при выводе средств');
-  }
-}
+function setBet(val) { document.getElementById('betInput').value = val; }
+function setMaxBet() { document.getElementById('betInput').value = currentUser.balance; }
+function setDiceBet(val) { document.getElementById('diceBetInput').value = val; }
+function setDiceMaxBet() { document.getElementById('diceBetInput').value = currentUser.balance; }
 
 function switchTab(tabId, el) {
   document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
@@ -202,15 +257,4 @@ function switchTab(tabId, el) {
   if (el) el.classList.add('active');
 }
 
-function copyRefLink() {
-  const refInput = document.getElementById('refLinkInput');
-  if (refInput) {
-    refInput.select();
-    navigator.clipboard.writeText(refInput.value);
-    showToast('Ссылка скопирована!');
-  }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  initUserData();
-});
+document.addEventListener('DOMContentLoaded', () => initUserData());
