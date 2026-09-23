@@ -1,11 +1,16 @@
 {
-  "name": "telegram-stars-task-miniapp",
+  "name": "star-rewards-app",
   "version": "1.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {"start": "node server.js"},
+  "description": "Star Rewards Mini App",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
-    "express": "^5.1.0",
-    "better-sqlite3": "^12.4.1"
+    "better-sqlite3": "^9.4.3",
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
