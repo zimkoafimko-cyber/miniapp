@@ -36,6 +36,8 @@ CREATE TABLE IF NOT EXISTS users (
   referral_rewarded INTEGER NOT NULL DEFAULT 0,
   subscribe_claimed INTEGER NOT NULL DEFAULT 0,
   daily_bonus_at TEXT,
+  active_crash_point REAL DEFAULT 0,
+  active_crash_bet INTEGER DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -160,10 +162,6 @@ async function telegram(method, body) {
   return response.json();
 }
 
-/*
-  Получаем username бота автоматически,
-  если BOT_USERNAME не задан в Render.
-*/
 let cachedBotUsername = BOT_USERNAME.replace(/^@/, "");
 
 async function getBotUsername() {
@@ -185,13 +183,6 @@ async function getBotUsername() {
   return "";
 }
 
-/*
-  Регистрируем реферала.
-
-  ref_123456789
-  ^
-  Telegram ID пригласившего.
-*/
 function processReferral(tgUser, startParam) {
   if (!startParam) return;
 
@@ -202,7 +193,6 @@ function processReferral(tgUser, startParam) {
   const inviterId = Number(match[1]);
   const inviteeId = Number(tgUser.id);
 
-  // Нельзя пригласить самого себя.
   if (inviterId === inviteeId) return;
 
   const inviter = db
@@ -221,7 +211,6 @@ function processReferral(tgUser, startParam) {
 
   if (!invitee) return;
 
-  // Уже есть пригласивший — ничего не меняем.
   if (invitee.referred_by) return;
 
   const transaction = db.transaction(() => {
@@ -522,6 +511,91 @@ app.post("/api/withdraw", (req, res) => {
     contact:
       `https://t.me/${ADMIN_USERNAME.replace(/^@/, "")}`
   });
+});
+
+/* --- ЛОГИКА CRASH ИГРЫ (20% шанс) --- */
+
+// Начать игру (ставку 1 ⭐)
+app.post("/api/crash/play", (req, res) => {
+  const tgUser = getTelegramUser(req);
+
+  if (!tgUser) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const user = createOrUpdateUser(tgUser);
+  const betAmount = 1;
+
+  if (user.stars < betAmount) {
+    return res.status(400).json({ error: "Недостаточно ⭐ для ставки!" });
+  }
+
+  // 20% шанс на выигрыш
+  const isWin = Math.random() < 0.20;
+
+  let crashPoint;
+  if (isWin) {
+    // В случае победы случайный коэффициент от 1.50x до 3.50x
+    crashPoint = parseFloat((1.5 + Math.random() * 2.0).toFixed(2));
+  } else {
+    // В случае поражения взрыв ровно на 1.00x
+    crashPoint = 1.00;
+  }
+
+  // Списываем ставку и записываем точку краша в БД
+  db.prepare(`
+    UPDATE users
+    SET stars = stars - ?,
+        active_crash_point = ?,
+        active_crash_bet = ?
+    WHERE id = ?
+  `).run(betAmount, crashPoint, betAmount, tgUser.id);
+
+  res.json({ ok: true, crashPoint });
+});
+
+// Забрать выигрыш
+app.post("/api/crash/cashout", (req, res) => {
+  const tgUser = getTelegramUser(req);
+
+  if (!tgUser) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const { multiplier } = req.body;
+
+  const user = db
+    .prepare("SELECT * FROM users WHERE id = ?")
+    .get(tgUser.id);
+
+  if (!user || !user.active_crash_point) {
+    return res.status(400).json({ error: "Активная игра не найдена" });
+  }
+
+  if (multiplier > user.active_crash_point) {
+    // Сбрасываем активную игру
+    db.prepare(`
+      UPDATE users
+      SET active_crash_point = 0,
+          active_crash_bet = 0
+      WHERE id = ?
+    `).run(tgUser.id);
+
+    return res.status(400).json({ error: "Ракета взорвалась раньше!" });
+  }
+
+  // Считаем выигрыш и обновляем пользователя
+  const winAmount = Math.floor(user.active_crash_bet * multiplier);
+
+  db.prepare(`
+    UPDATE users
+    SET stars = stars + ?,
+        active_crash_point = 0,
+        active_crash_bet = 0
+    WHERE id = ?
+  `).run(winAmount, tgUser.id);
+
+  res.json({ ok: true, winAmount });
 });
 
 app.get("/health", (req, res) => {
