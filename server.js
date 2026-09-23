@@ -17,14 +17,6 @@ const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "AlinaResseler";
 const CHANNEL_USERNAME = process.env.CHANNEL_USERNAME || "belcryptoo";
 const PORT = Number(process.env.PORT || 3000);
 
-if (!BOT_TOKEN) {
-  console.warn("WARNING: BOT_TOKEN is not set");
-}
-
-/* =========================
-   DATABASE
-========================= */
-
 const db = new Database(path.join(__dirname, "data.sqlite"));
 
 db.pragma("journal_mode = WAL");
@@ -39,6 +31,7 @@ CREATE TABLE IF NOT EXISTS users (
   referral_rewarded INTEGER NOT NULL DEFAULT 0,
   subscribe_claimed INTEGER NOT NULL DEFAULT 0,
   share_rewarded INTEGER NOT NULL DEFAULT 0,
+  daily_bonus_at TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -57,23 +50,17 @@ CREATE TABLE IF NOT EXISTS withdrawals (
 );
 `);
 
-
-/* =========================
-   TELEGRAM INIT DATA
-========================= */
+try {
+  db.exec("ALTER TABLE users ADD COLUMN daily_bonus_at TEXT");
+} catch (e) {}
 
 function verifyInitData(initData) {
-  if (!initData || !BOT_TOKEN) {
-    return null;
-  }
+  if (!initData || !BOT_TOKEN) return null;
 
   const params = new URLSearchParams(initData);
-
   const hash = params.get("hash");
 
-  if (!hash) {
-    return null;
-  }
+  if (!hash) return null;
 
   params.delete("hash");
 
@@ -92,9 +79,7 @@ function verifyInitData(initData) {
     .update(dataCheckString)
     .digest("hex");
 
-  if (calculatedHash.length !== hash.length) {
-    return null;
-  }
+  if (calculatedHash.length !== hash.length) return null;
 
   if (
     !crypto.timingSafeEqual(
@@ -107,11 +92,8 @@ function verifyInitData(initData) {
 
   const authDate = Number(params.get("auth_date") || 0);
 
-  if (!authDate) {
-    return null;
-  }
+  if (!authDate) return null;
 
-  // initData не старше 24 часов
   if (Date.now() / 1000 - authDate > 86400) {
     return null;
   }
@@ -123,17 +105,9 @@ function verifyInitData(initData) {
   }
 }
 
-
 function getTelegramUser(req) {
-  return verifyInitData(
-    req.headers["x-telegram-init-data"]
-  );
+  return verifyInitData(req.headers["x-telegram-init-data"]);
 }
-
-
-/* =========================
-   USER
-========================= */
 
 function createOrUpdateUser(tgUser) {
   let user = db
@@ -169,11 +143,6 @@ function createOrUpdateUser(tgUser) {
   return user;
 }
 
-
-/* =========================
-   TELEGRAM API
-========================= */
-
 async function telegram(method, body) {
   const response = await fetch(
     `https://api.telegram.org/bot${BOT_TOKEN}/${method}`,
@@ -189,30 +158,18 @@ async function telegram(method, body) {
   return response.json();
 }
 
-
-/* =========================
-   CONFIG
-========================= */
-
 app.get("/api/config", (req, res) => {
   res.json({
     channel: CHANNEL_USERNAME,
     admin: ADMIN_USERNAME,
-
     minWithdrawal: 50,
-
     rewards: {
       subscribe: 15,
-      referral: 2,
+      daily: 3,
       share: 5
     }
   });
 });
-
-
-/* =========================
-   USER INFO
-========================= */
 
 app.get("/api/me", (req, res) => {
   const tgUser = getTelegramUser(req);
@@ -242,11 +199,6 @@ app.get("/api/me", (req, res) => {
   });
 });
 
-
-/* =========================
-   REFERRAL
-========================= */
-
 app.post("/api/referral", (req, res) => {
   const tgUser = getTelegramUser(req);
 
@@ -259,9 +211,7 @@ app.post("/api/referral", (req, res) => {
   const inviterId = Number(req.body.inviter_id);
 
   if (!inviterId || inviterId === tgUser.id) {
-    return res.json({
-      ok: false
-    });
+    return res.json({ ok: false });
   }
 
   createOrUpdateUser(tgUser);
@@ -271,22 +221,19 @@ app.post("/api/referral", (req, res) => {
     .get(inviterId);
 
   if (!inviter) {
-    return res.json({
-      ok: false
-    });
+    return res.json({ ok: false });
   }
 
   const alreadyReferred = db
     .prepare(`
-      SELECT * FROM referrals
+      SELECT *
+      FROM referrals
       WHERE invitee_id = ?
     `)
     .get(tgUser.id);
 
   if (alreadyReferred) {
-    return res.json({
-      ok: false
-    });
+    return res.json({ ok: false });
   }
 
   db.prepare(`
@@ -301,15 +248,8 @@ app.post("/api/referral", (req, res) => {
     WHERE id = ?
   `).run(inviterId);
 
-  res.json({
-    ok: true
-  });
+  res.json({ ok: true });
 });
-
-
-/* =========================
-   SUBSCRIPTION CHECK
-========================= */
 
 app.post("/api/check-subscription", async (req, res) => {
   const tgUser = getTelegramUser(req);
@@ -323,18 +263,14 @@ app.post("/api/check-subscription", async (req, res) => {
   createOrUpdateUser(tgUser);
 
   try {
-    const result = await telegram(
-      "getChatMember",
-      {
-        chat_id: `@${CHANNEL_USERNAME.replace(/^@/, "")}`,
-        user_id: tgUser.id
-      }
-    );
+    const result = await telegram("getChatMember", {
+      chat_id: `@${CHANNEL_USERNAME.replace(/^@/, "")}`,
+      user_id: tgUser.id
+    });
 
     if (!result.ok) {
       return res.status(500).json({
-        error:
-          "Telegram не смог проверить подписку. Проверьте, что бот является администратором канала."
+        error: "Telegram не смог проверить подписку."
       });
     }
 
@@ -359,9 +295,8 @@ app.post("/api/check-subscription", async (req, res) => {
       if (!user.subscribe_claimed) {
         db.prepare(`
           UPDATE users
-          SET
-            stars = stars + 15,
-            subscribe_claimed = 1
+          SET stars = stars + 15,
+              subscribe_claimed = 1
           WHERE id = ?
         `).run(tgUser.id);
       }
@@ -376,16 +311,59 @@ app.post("/api/check-subscription", async (req, res) => {
     console.error(error);
 
     res.status(500).json({
-      error:
-        "Ошибка проверки подписки. Убедитесь, что бот является администратором канала."
+      error: "Ошибка проверки подписки."
     });
   }
 });
 
+app.post("/api/daily-bonus", (req, res) => {
+  const tgUser = getTelegramUser(req);
 
-/* =========================
-   SHARE POST
-========================= */
+  if (!tgUser) {
+    return res.status(401).json({
+      error: "Unauthorized"
+    });
+  }
+
+  createOrUpdateUser(tgUser);
+
+  const user = db
+    .prepare(`
+      SELECT *
+      FROM users
+      WHERE id = ?
+    `)
+    .get(tgUser.id);
+
+  const today = new Date()
+    .toISOString()
+    .slice(0, 10);
+
+  const lastBonus = user.daily_bonus_at
+    ? String(user.daily_bonus_at).slice(0, 10)
+    : null;
+
+  if (lastBonus === today) {
+    return res.status(400).json({
+      error: "Бонус уже получен сегодня."
+    });
+  }
+
+  db.prepare(`
+    UPDATE users
+    SET stars = stars + 3,
+        daily_bonus_at = ?
+    WHERE id = ?
+  `).run(
+    new Date().toISOString(),
+    tgUser.id
+  );
+
+  res.json({
+    ok: true,
+    reward: 3
+  });
+});
 
 app.post("/api/share-complete", (req, res) => {
   const tgUser = getTelegramUser(req);
@@ -409,22 +387,17 @@ app.post("/api/share-complete", (req, res) => {
   if (!user.share_rewarded) {
     db.prepare(`
       UPDATE users
-      SET
-        stars = stars + 5,
-        share_rewarded = 1
+      SET stars = stars + 5,
+          share_rewarded = 1
       WHERE id = ?
     `).run(tgUser.id);
   }
 
   res.json({
-    ok: true
+    ok: true,
+    reward: 5
   });
 });
-
-
-/* =========================
-   WITHDRAWAL
-========================= */
 
 app.post("/api/withdraw", (req, res) => {
   const tgUser = getTelegramUser(req);
@@ -459,37 +432,16 @@ app.post("/api/withdraw", (req, res) => {
   });
 });
 
-
-/* =========================
-   HEALTH CHECK
-========================= */
-
 app.get("/health", (req, res) => {
   res.send("OK");
 });
 
-
-/* =========================
-   MINI APP
-========================= */
-
 app.use((req, res) => {
   res.sendFile(
-    path.join(
-      __dirname,
-      "public",
-      "index.html"
-    )
+    path.join(__dirname, "public", "index.html")
   );
 });
 
-
-/* =========================
-   START SERVER
-========================= */
-
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(
-    `Server started on port ${PORT}`
-  );
+  console.log(`Server started on port ${PORT}`);
 });
