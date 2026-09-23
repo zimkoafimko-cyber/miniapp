@@ -1,0 +1,408 @@
+/* ==========================================
+   1. СБРОС И ПЕРЕМЕННЫЕ ТЕМЫ
+   ========================================== */
+:root {
+  --bg-main: #0a0714;
+  --bg-card: rgba(255, 255, 255, 0.05);
+  --bg-card-hover: rgba(255, 255, 255, 0.08);
+  --border-glass: rgba(255, 255, 255, 0.1);
+  --border-glow: rgba(255, 212, 59, 0.3);
+  
+  --primary: #ffd43b;
+  --primary-glow: rgba(255, 212, 59, 0.4);
+  --accent-purple: #8a36ff;
+  --accent-purple-glow: rgba(138, 54, 255, 0.5);
+  --accent-green: #00e676;
+  --accent-red: #ff4655;
+  
+  --text-main: #ffffff;
+  --text-muted: #a097b5;
+  --text-dark: #0f0a1c;
+
+  --nav-height: 68px;
+  --radius-xl: 24px;
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  
+  --transition-fast: 0.2s ease;
+  --transition-bounce: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-main);
+  background-image: 
+    radial-gradient(circle at 10% 10%, rgba(138, 54, 255, 0.25) 0%, transparent 40%),
+    radial-gradient(circle at 90% 40%, rgba(255, 212, 59, 0.15) 0%, transparent 35%),
+    radial-gradient(circle at 50% 80%, rgba(121, 48, 255, 0.2) 0%, transparent 50%);
+  background-attachment: fixed;
+  color: var(--text-main);
+  min-height: 100vh;
+  padding-bottom: calc(var(--nav-height) + 20px);
+  overflow-x: hidden;
+}
+
+/* ==========================================
+   2. ТИПОГРАФИКА И БАЗОВЫЕ ЭЛЕМЕНТЫ
+   ========================================== */
+h1, h2, h3, h4 {
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(255, 212, 59, 0.15);
+  color: var(--primary);
+  border: 1px solid rgba(255, 212, 59, 0.3);
+}
+
+/* ==========================================
+   3. ВЕРСТКА И ТАБЫ (PAGES)
+   ========================================== */
+.app-container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.tab-content {
+  display: none;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.tab-content.active {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ==========================================
+   4. GLASSMORPHISM КАРТОЧКИ
+   ========================================== */
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-xl);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card.glow {
+  border: 1px solid var(--border-glow);
+  box-shadow: 0 0 20px rgba(255, 212, 59, 0.12);
+}
+
+/* ==========================================
+   5. ШАПКА И БАЛАНС
+   ========================================== */
+.header-profile {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar-glow {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-purple), var(--primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 0 15px var(--accent-purple-glow);
+}
+
+.balance-card {
+  text-align: center;
+  padding: 28px 20px;
+  background: linear-gradient(135deg, rgba(138, 54, 255, 0.2), rgba(255, 212, 59, 0.1));
+}
+
+.balance-title {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.balance-amount {
+  font-size: 48px;
+  font-weight: 900;
+  color: var(--primary);
+  text-shadow: 0 0 25px var(--primary-glow);
+  margin: 6px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* ==========================================
+   6. ИГРОВОЙ ЭКРАН CRASH (CANVAS + ВВОД)
+   ========================================== */
+.canvas-wrapper {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-glass);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+canvas#crashCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.crash-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.multiplier-val {
+  font-size: 44px;
+  font-weight: 900;
+  color: var(--primary);
+  text-shadow: 0 0 20px var(--primary-glow);
+}
+
+.multiplier-val.crashed {
+  color: var(--accent-red);
+  text-shadow: 0 0 20px rgba(255, 70, 85, 0.6);
+  animation: shake 0.4s ease;
+}
+
+.bet-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.input-styled {
+  width: 100%;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-glass);
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  text-align: center;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.input-styled:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 12px var(--primary-glow);
+}
+
+.quick-bets {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.btn-chip {
+  padding: 8px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-glass);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.btn-chip:active {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+/* ==========================================
+   7. КНОПКИ И ИНТЕРАКТИВ
+   ========================================== */
+.btn-main {
+  width: 100%;
+  padding: 18px;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-dark);
+  background: linear-gradient(135deg, #ffd84a, #ff9e00);
+  box-shadow: 0 6px 20px var(--primary-glow);
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.btn-main:active {
+  transform: scale(0.97);
+}
+
+.btn-main:disabled {
+  opacity: 0.5;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, var(--accent-purple), #a855f7);
+  color: #fff;
+  box-shadow: 0 6px 20px var(--accent-purple-glow);
+}
+
+.btn-cashout {
+  background: linear-gradient(135deg, #00e676, #00b0ff);
+  color: var(--text-dark);
+  box-shadow: 0 6px 20px rgba(0, 230, 118, 0.4);
+}
+
+/* ==========================================
+   8. СПИСОК ЗАДАНИЙ И РЕФЕРАЛОВ
+   ========================================== */
+.task-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.task-item:last-child {
+  border-bottom: none;
+}
+
+.task-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.task-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+/* ==========================================
+   9. НИЖНЯЯ НАВИГАЦИЯ (BOTTOM NAV)
+   ========================================== */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--nav-height);
+  background: rgba(10, 7, 20, 0.85);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border-top: 1px solid var(--border-glass);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.nav-item .icon {
+  font-size: 22px;
+  transition: transform var(--transition-bounce);
+}
+
+.nav-item.active {
+  color: var(--primary);
+}
+
+.nav-item.active .icon {
+  transform: translateY(-2px) scale(1.15);
+}
+
+/* ==========================================
+   10. АНИМАЦИИ
+   ========================================== */
+@keyframes shake {
+  0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+  20% { transform: translate(-52%, -50%) rotate(-3deg); }
+  40% { transform: translate(-48%, -50%) rotate(3deg); }
+  60% { transform: translate(-52%, -50%) rotate(-2deg); }
+  80% { transform: translate(-48%, -50%) rotate(2deg); }
+}
+
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100px);
+  background: rgba(20, 15, 35, 0.95);
+  border: 1px solid var(--border-glow);
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+}
