@@ -18,14 +18,16 @@ const CHANNEL_USERNAME = process.env.CHANNEL_USERNAME || "belcryptoo";
 const BOT_USERNAME = process.env.BOT_USERNAME || "";
 const PORT = Number(process.env.PORT || 3000);
 
+// ОГРАНИЧЕНИЯ И НАГРАДЫ (НЕ ПРЕВЫШАЮТ 15 ЗВЕЗД)
 const REFERRAL_REWARD = 2;
-const SUBSCRIBE_REWARD = 15;
+const SUBSCRIBE_REWARD = 15; // Максимум 15 звезд
 const DAILY_REWARD = 3;
-const MIN_WITHDRAWAL = 50;
+const MIN_WITHDRAWAL = 50;  // Вывод строго от 50 звезд
 
 const db = new Database(path.join(__dirname, "data.sqlite"));
 db.pragma("journal_mode = WAL");
 
+// Инициализация базы данных (Баланс изначально 0)
 db.exec(`
 CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY,
@@ -121,8 +123,8 @@ function createOrUpdateUser(tgUser) {
   if (!user) {
     db.prepare(`
       INSERT INTO users
-      (id, username, first_name)
-      VALUES (?, ?, ?)
+      (id, username, first_name, stars)
+      VALUES (?, ?, ?, 0)
     `).run(
       tgUser.id,
       tgUser.username || "",
@@ -241,12 +243,15 @@ function processReferral(tgUser, startParam) {
         inviteeId
       );
 
+      // Жесткое ограничение награды за реферала
+      const reward = Math.min(REFERRAL_REWARD, 15);
+
       db.prepare(`
         UPDATE users
         SET stars = stars + ?
         WHERE id = ?
       `).run(
-        REFERRAL_REWARD,
+        reward,
         inviterId
       );
 
@@ -270,9 +275,9 @@ app.get("/api/config", async (req, res) => {
     botUsername,
     minWithdrawal: MIN_WITHDRAWAL,
     rewards: {
-      subscribe: SUBSCRIBE_REWARD,
-      daily: DAILY_REWARD,
-      referral: REFERRAL_REWARD
+      subscribe: Math.min(SUBSCRIBE_REWARD, 15),
+      daily: Math.min(DAILY_REWARD, 15),
+      referral: Math.min(REFERRAL_REWARD, 15)
     }
   });
 });
@@ -318,11 +323,11 @@ app.get("/api/me", (req, res) => {
     first_name: user.first_name,
     stars: user.stars,
     referralCount,
-    referralReward: REFERRAL_REWARD
+    referralReward: Math.min(REFERRAL_REWARD, 15)
   });
 });
 
-/* Проверка подписки (ЕДИНОРАЗОВАЯ НАГРАДА) */
+/* Проверка подписки (ЕДИНОРАЗОВАЯ НАГРАДА ДО 15 ЗВЕЗД) */
 app.post("/api/check-subscription", async (req, res) => {
   const tgUser = getTelegramUser(req);
 
@@ -364,12 +369,13 @@ app.post("/api/check-subscription", async (req, res) => {
         `)
         .get(tgUser.id);
 
-      // Проверка: если уже получал бонус за подписку — больше НЕ выдаем
       if (user.subscribe_claimed) {
         return res.status(400).json({
           error: "Бонус за подписку уже был получен ранее!"
         });
       }
+
+      const reward = Math.min(SUBSCRIBE_REWARD, 15);
 
       db.prepare(`
         UPDATE users
@@ -377,14 +383,15 @@ app.post("/api/check-subscription", async (req, res) => {
             subscribe_claimed = 1
         WHERE id = ?
       `).run(
-        SUBSCRIBE_REWARD,
+        reward,
         tgUser.id
       );
 
       return res.json({
         ok: true,
         status,
-        rewarded: true
+        rewarded: true,
+        reward
       });
     }
 
@@ -428,7 +435,6 @@ app.post("/api/daily-bonus", (req, res) => {
   if (user.daily_bonus_at) {
     const lastBonusTime = new Date(user.daily_bonus_at).getTime();
     
-    // Проверяем, прошло ли 24 часа (в миллисекундах)
     if (now - lastBonusTime < TWENTY_FOUR_HOURS) {
       const timeLeftMs = TWENTY_FOUR_HOURS - (now - lastBonusTime);
       const hoursLeft = Math.floor(timeLeftMs / (1000 * 60 * 60));
@@ -440,21 +446,22 @@ app.post("/api/daily-bonus", (req, res) => {
     }
   }
 
-  // Обновляем время получения на текущий ISO штамп
+  const reward = Math.min(DAILY_REWARD, 15);
+
   db.prepare(`
     UPDATE users
     SET stars = stars + ?,
         daily_bonus_at = ?
     WHERE id = ?
   `).run(
-    DAILY_REWARD,
+    reward,
     new Date().toISOString(),
     tgUser.id
   );
 
   res.json({
     ok: true,
-    reward: DAILY_REWARD
+    reward
   });
 });
 
@@ -491,10 +498,11 @@ app.get("/api/referral", async (req, res) => {
   res.json({
     link: referralLink,
     count,
-    reward: REFERRAL_REWARD
+    reward: Math.min(REFERRAL_REWARD, 15)
   });
 });
 
+/* Вывод средств (СТРОГО ОТ 50 ЗВЕЗД) */
 app.post("/api/withdraw", (req, res) => {
   const tgUser = getTelegramUser(req);
 
@@ -513,6 +521,13 @@ app.post("/api/withdraw", (req, res) => {
   }
 
   const amount = user.stars;
+
+  // Списываем средства при выводе
+  db.prepare(`
+    UPDATE users
+    SET stars = 0
+    WHERE id = ?
+  `).run(tgUser.id);
 
   db.prepare(`
     INSERT INTO withdrawals
