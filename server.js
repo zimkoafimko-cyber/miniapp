@@ -30,7 +30,6 @@ CREATE TABLE IF NOT EXISTS users (
   referred_by INTEGER,
   referral_rewarded INTEGER NOT NULL DEFAULT 0,
   subscribe_claimed INTEGER NOT NULL DEFAULT 0,
-  share_rewarded INTEGER NOT NULL DEFAULT 0,
   daily_bonus_at TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -52,7 +51,7 @@ CREATE TABLE IF NOT EXISTS withdrawals (
 
 try {
   db.exec("ALTER TABLE users ADD COLUMN daily_bonus_at TEXT");
-} catch (e) {}
+} catch {}
 
 function verifyInitData(initData) {
   if (!initData || !BOT_TOKEN) return null;
@@ -106,7 +105,9 @@ function verifyInitData(initData) {
 }
 
 function getTelegramUser(req) {
-  return verifyInitData(req.headers["x-telegram-init-data"]);
+  return verifyInitData(
+    req.headers["x-telegram-init-data"]
+  );
 }
 
 function createOrUpdateUser(tgUser) {
@@ -165,8 +166,7 @@ app.get("/api/config", (req, res) => {
     minWithdrawal: 50,
     rewards: {
       subscribe: 15,
-      daily: 3,
-      share: 5
+      daily: 3
     }
   });
 });
@@ -182,73 +182,12 @@ app.get("/api/me", (req, res) => {
 
   const user = createOrUpdateUser(tgUser);
 
-  const referrals = db
-    .prepare(`
-      SELECT COUNT(*) AS count
-      FROM referrals
-      WHERE inviter_id = ?
-    `)
-    .get(tgUser.id).count;
-
   res.json({
     id: user.id,
     username: user.username,
     first_name: user.first_name,
-    stars: user.stars,
-    referrals
+    stars: user.stars
   });
-});
-
-app.post("/api/referral", (req, res) => {
-  const tgUser = getTelegramUser(req);
-
-  if (!tgUser) {
-    return res.status(401).json({
-      error: "Unauthorized"
-    });
-  }
-
-  const inviterId = Number(req.body.inviter_id);
-
-  if (!inviterId || inviterId === tgUser.id) {
-    return res.json({ ok: false });
-  }
-
-  createOrUpdateUser(tgUser);
-
-  const inviter = db
-    .prepare("SELECT * FROM users WHERE id = ?")
-    .get(inviterId);
-
-  if (!inviter) {
-    return res.json({ ok: false });
-  }
-
-  const alreadyReferred = db
-    .prepare(`
-      SELECT *
-      FROM referrals
-      WHERE invitee_id = ?
-    `)
-    .get(tgUser.id);
-
-  if (alreadyReferred) {
-    return res.json({ ok: false });
-  }
-
-  db.prepare(`
-    INSERT INTO referrals
-    (inviter_id, invitee_id)
-    VALUES (?, ?)
-  `).run(inviterId, tgUser.id);
-
-  db.prepare(`
-    UPDATE users
-    SET stars = stars + 2
-    WHERE id = ?
-  `).run(inviterId);
-
-  res.json({ ok: true });
 });
 
 app.post("/api/check-subscription", async (req, res) => {
@@ -270,7 +209,7 @@ app.post("/api/check-subscription", async (req, res) => {
 
     if (!result.ok) {
       return res.status(500).json({
-        error: "Telegram не смог проверить подписку."
+        error: "Не удалось проверить подписку."
       });
     }
 
@@ -284,13 +223,11 @@ app.post("/api/check-subscription", async (req, res) => {
       );
 
     if (isSubscribed) {
-      const user = db
-        .prepare(`
-          SELECT subscribe_claimed
-          FROM users
-          WHERE id = ?
-        `)
-        .get(tgUser.id);
+      const user = db.prepare(`
+        SELECT subscribe_claimed
+        FROM users
+        WHERE id = ?
+      `).get(tgUser.id);
 
       if (!user.subscribe_claimed) {
         db.prepare(`
@@ -327,13 +264,11 @@ app.post("/api/daily-bonus", (req, res) => {
 
   createOrUpdateUser(tgUser);
 
-  const user = db
-    .prepare(`
-      SELECT *
-      FROM users
-      WHERE id = ?
-    `)
-    .get(tgUser.id);
+  const user = db.prepare(`
+    SELECT daily_bonus_at
+    FROM users
+    WHERE id = ?
+  `).get(tgUser.id);
 
   const today = new Date()
     .toISOString()
@@ -362,40 +297,6 @@ app.post("/api/daily-bonus", (req, res) => {
   res.json({
     ok: true,
     reward: 3
-  });
-});
-
-app.post("/api/share-complete", (req, res) => {
-  const tgUser = getTelegramUser(req);
-
-  if (!tgUser) {
-    return res.status(401).json({
-      error: "Unauthorized"
-    });
-  }
-
-  createOrUpdateUser(tgUser);
-
-  const user = db
-    .prepare(`
-      SELECT share_rewarded
-      FROM users
-      WHERE id = ?
-    `)
-    .get(tgUser.id);
-
-  if (!user.share_rewarded) {
-    db.prepare(`
-      UPDATE users
-      SET stars = stars + 5,
-          share_rewarded = 1
-      WHERE id = ?
-    `).run(tgUser.id);
-  }
-
-  res.json({
-    ok: true,
-    reward: 5
   });
 });
 
