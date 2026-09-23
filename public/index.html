@@ -246,6 +246,29 @@
     </div>
   </div>
 
+  <!-- Игра Crash -->
+  <div class="card" style="border: 1px solid rgba(255, 212, 59, 0.3);">
+    <div class="card-title">
+      🚀 Игра Crash
+    </div>
+    <div class="card-text">
+      Сделай ставку (1 ⭐). Коэффициент растет! Успей забрать выигрыш до крушения ракеты.
+    </div>
+
+    <div style="text-align: center; margin-bottom: 15px;">
+      <div id="crashMultiplier" style="font-size: 38px; font-weight: 800; color: #ffd43b;">1.00x</div>
+      <div id="crashStatusText" style="font-size: 13px; color: #aaa0b9; margin-top: 5px;">Шанс победы: 20%</div>
+    </div>
+
+    <button id="crashStartBtn" onclick="startCrashGame()">
+      Сделать ставку (1 ⭐)
+    </button>
+
+    <button id="crashCashoutBtn" class="secondary" onclick="cashoutCrashGame()" style="display: none;">
+      Забрать выигрыш
+    </button>
+  </div>
+
   <!-- Подписка -->
 
   <div class="card">
@@ -594,6 +617,108 @@
 
     } catch (error) {
       showStatus(error.message);
+    }
+  }
+
+  /* ЛОГИКА ИГРЫ CRASH */
+  let crashInterval = null;
+  let currentMultiplier = 1.00;
+  let isCrashPlaying = false;
+  let crashPoint = 1.00;
+
+  async function startCrashGame() {
+    const startBtn = document.getElementById("crashStartBtn");
+    const cashoutBtn = document.getElementById("crashCashoutBtn");
+    const multEl = document.getElementById("crashMultiplier");
+    const statusEl = document.getElementById("crashStatusText");
+
+    startBtn.disabled = true;
+
+    try {
+      const response = await fetch("/api/crash/play", {
+        method: "POST",
+        headers: headers()
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Ошибка старта игры");
+      }
+
+      await loadUser();
+
+      crashPoint = data.crashPoint;
+      currentMultiplier = 1.00;
+      isCrashPlaying = true;
+
+      startBtn.style.display = "none";
+      cashoutBtn.style.display = "block";
+      cashoutBtn.disabled = false;
+
+      statusEl.textContent = "🚀 Ракета летит...";
+      statusEl.style.color = "#aaa0b9";
+
+      crashInterval = setInterval(() => {
+        currentMultiplier += 0.05;
+        multEl.textContent = currentMultiplier.toFixed(2) + "x";
+
+        if (currentMultiplier >= crashPoint) {
+          clearInterval(crashInterval);
+          isCrashPlaying = false;
+
+          multEl.textContent = crashPoint.toFixed(2) + "x";
+          statusEl.textContent = "💥 Ракета взорвалась!";
+          statusEl.style.color = "#ff4d4d";
+
+          cashoutBtn.style.display = "none";
+          startBtn.style.display = "block";
+          startBtn.disabled = false;
+        }
+      }, 100);
+
+    } catch (error) {
+      showStatus(error.message);
+      startBtn.disabled = false;
+    }
+  }
+
+  async function cashoutCrashGame() {
+    if (!isCrashPlaying) return;
+
+    const cashoutBtn = document.getElementById("crashCashoutBtn");
+    const startBtn = document.getElementById("crashStartBtn");
+    const statusEl = document.getElementById("crashStatusText");
+
+    cashoutBtn.disabled = true;
+    clearInterval(crashInterval);
+    isCrashPlaying = false;
+
+    const finalWinMultiplier = currentMultiplier.toFixed(2);
+
+    try {
+      const response = await fetch("/api/crash/cashout", {
+        method: "POST",
+        headers: headers(),
+        body: JSON.stringify({ multiplier: parseFloat(finalWinMultiplier) })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Ошибка вывода");
+      }
+
+      statusEl.textContent = `🎉 Забрано +${data.winAmount} ⭐ (х${finalWinMultiplier})`;
+      statusEl.style.color = "#4dff88";
+
+      await loadUser();
+    } catch (error) {
+      showStatus(error.message);
+    } finally {
+      cashoutBtn.style.display = "none";
+      startBtn.style.display = "block";
+      startBtn.disabled = false;
     }
   }
 
