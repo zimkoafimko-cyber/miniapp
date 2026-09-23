@@ -1,21 +1,22 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const DataStore = require('nedb-promises');
 
 const app = express();
 
 app.use(express.json());
 app.use(cors());
 
-// Раздаем статические файлы (ваш index.html, стили, скрипты фронтенда) из текущей папки
+// Раздаем статические файлы (index.html) из корня проекта
 app.use(express.static(path.join(__dirname)));
 
-// Читаем переменные окружения из Render
+// Переменные окружения из Render
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const CHANNEL_ID = process.env.CHANNEL_ID;
 const ADMIN_NAME = process.env.ADMIN_NAME;
 
-// Функция проверки подписки на канал
+// Функция проверки подписки на канал через Telegram API
 async function checkTelegramSubscription(userId) {
     if (!BOT_TOKEN || !CHANNEL_ID) {
         console.error('BOT_TOKEN или CHANNEL_ID не заданы!');
@@ -36,7 +37,7 @@ async function checkTelegramSubscription(userId) {
     }
 }
 
-// Эндпоинт для проверки подписки
+// Эндпоинт проверки подписки
 app.post('/api/check-subscription', async (req, res) => {
     const { userId } = req.body;
     if (!userId) {
@@ -47,26 +48,26 @@ app.post('/api/check-subscription', async (req, res) => {
     res.json({ subscribed: isSubscribed });
 });
 
-// Эндпоинт для проверки прав администратора
+// Эндпоинт проверки прав администратора (сравнение без учета собачки и регистра)
 app.post('/api/check-admin', (req, res) => {
     const { username } = req.body;
     if (!username) {
         return res.json({ isAdmin: false });
     }
 
-    const cleanAdminName = (ADMIN_NAME || '').replace('@', '').trim();
-    const cleanUserName = username.replace('@', '').trim();
+    const cleanAdminName = (ADMIN_NAME || '').replace('@', '').trim().toLowerCase();
+    const cleanUserName = username.replace('@', '').trim().toLowerCase();
 
     const isAdmin = cleanUserName === cleanAdminName;
     res.json({ isAdmin });
 });
 
-// Главная страница — отдаем index.html вместо текста
+// Главная страница — отдает index.html
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Запуск сервера с портом от Render
+// Запуск сервера с учетом порта Render
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
