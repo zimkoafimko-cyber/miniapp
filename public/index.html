@@ -39,11 +39,13 @@
       </div>
     </div>
 
-    <!-- ==================== ТАБ 1: ИГРА CRASH ==================== -->
+    <!-- ==================== ТАБ 1: ИГРЫ (CRASH & DICE) ==================== -->
     <section id="gameTab" class="tab-content active">
+      
+      <!-- Игра 1: Rocket Crash -->
       <div class="glass-card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h3>Rocket Crash</h3>
+          <h3>Rocket Crash 🚀</h3>
           <span class="badge" style="background: rgba(0, 230, 118, 0.15); color: var(--accent-green);">LIVE</span>
         </div>
 
@@ -56,7 +58,7 @@
           </div>
         </div>
 
-        <!-- Управление ставкой -->
+        <!-- Управление ставкой Crash -->
         <div class="bet-control-group">
           <input type="number" id="betInput" class="input-styled" value="5" min="1" placeholder="Сумма ставки">
           
@@ -68,20 +70,53 @@
           </div>
         </div>
 
-        <!-- Главные кнопки игры -->
+        <!-- Главные кнопки игры Crash -->
         <button id="btnStartGame" class="btn-main" onclick="startCrashGame()">ПОЛЕТЕЛИ 🚀</button>
         <button id="btnCashout" class="btn-main btn-cashout" onclick="cashoutCrash()" style="display: none;">ЗАБРАТЬ (1.00x)</button>
       </div>
 
-      <!-- История последних X раундов -->
-      <div class="glass-card">
-        <h4 style="margin-bottom: 10px; font-size: 14px; color: var(--text-muted);">История коэффициентов</h4>
+      <!-- История последних раундов Crash -->
+      <div class="glass-card" style="padding: 14px 20px; margin-bottom: 16px;">
+        <h4 style="margin-bottom: 8px; font-size: 13px; color: var(--text-muted);">История коэффициентов</h4>
         <div id="crashHistory" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;">
           <span class="badge" style="background: rgba(255, 70, 85, 0.2); color: var(--accent-red);">1.12x</span>
           <span class="badge" style="background: rgba(0, 230, 118, 0.2); color: var(--accent-green);">2.45x</span>
           <span class="badge" style="background: rgba(0, 230, 118, 0.2); color: var(--accent-green);">5.10x</span>
         </div>
       </div>
+
+      <!-- Игра 2: Кости (Dice) -->
+      <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <h3>Кости (Dice) 🎲</h3>
+          <span class="badge">x1.20</span>
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+          Победа при любой сумме, кроме <b>7</b>!
+        </p>
+
+        <!-- Отображение кубиков -->
+        <div class="dice-container">
+          <div id="dice1" class="dice-box">?</div>
+          <div id="dice2" class="dice-box">?</div>
+        </div>
+
+        <div id="diceStatus" class="dice-status-text">Испытайте удачу!</div>
+
+        <!-- Управление ставкой Dice -->
+        <div class="bet-control-group">
+          <input type="number" id="diceBetInput" class="input-styled" value="5" min="1" placeholder="Сумма ставки">
+          <div class="quick-bets">
+            <button class="btn-chip" onclick="setDiceBet(1)">1</button>
+            <button class="btn-chip" onclick="setDiceBet(5)">5</button>
+            <button class="btn-chip" onclick="setDiceBet(10)">10</button>
+            <button class="btn-chip" onclick="setDiceMaxBet()">MAX</button>
+          </div>
+        </div>
+
+        <button id="btnPlayDice" class="btn-main btn-secondary" onclick="playDice()">БРОСИТЬ КОСТИ 🎲</button>
+      </div>
+
     </section>
 
     <!-- ==================== ТАБ 2: ЗАДАНИЯ ==================== -->
@@ -100,7 +135,7 @@
               <div style="font-size: 12px; color: var(--primary); font-weight: 700;">+15 ⭐</div>
             </div>
           </div>
-          <button class="btn-chip task-btn" onclick="completeTask(this, 15)">Выполнить</button>
+          <button class="btn-chip task-btn" onclick="completeTask(this, 1, 15)">Выполнить</button>
         </div>
 
         <div class="task-item">
@@ -111,7 +146,7 @@
               <div style="font-size: 12px; color: var(--primary); font-weight: 700;">+15 ⭐</div>
             </div>
           </div>
-          <button class="btn-chip task-btn" onclick="completeTask(this, 15)">Выполнить</button>
+          <button class="btn-chip task-btn" onclick="completeTask(this, 2, 15)">Выполнить</button>
         </div>
 
         <div class="task-item">
@@ -122,7 +157,7 @@
               <div style="font-size: 12px; color: var(--primary); font-weight: 700;">+3 ⭐</div>
             </div>
           </div>
-          <button class="btn-chip task-btn" onclick="completeTask(this, 3)">Забрать</button>
+          <button class="btn-chip task-btn" onclick="completeTask(this, 3, 3)">Забрать</button>
         </div>
       </div>
     </section>
@@ -133,7 +168,7 @@
         <div style="font-size: 40px; margin-bottom: 8px;">🤝</div>
         <h3>Реферальная система</h3>
         <p style="font-size: 13px; color: var(--text-muted); margin: 8px 0 16px 0;">
-          Получай +2 ⭐ за каждого приглашенного друга!
+          Получай +3 ⭐ за каждого приглашенного друга!
         </p>
 
         <input type="text" id="refLinkInput" class="input-styled" style="font-size: 13px; padding: 12px;" readonly value="https://t.me/your_bot?start=ref12345">
@@ -141,7 +176,7 @@
       </div>
     </section>
 
-    <!-- ==================== ТАБ 4: ВЫВОД / ПРОФИЛЬ ==================== -->
+    <!-- ==================== ТАБ 4: ВЫВОД ==================== -->
     <section id="withdrawTab" class="tab-content">
       <div class="glass-card">
         <h3>Вывод средств</h3>
@@ -150,29 +185,30 @@
         </p>
 
         <div class="bet-control-group">
-          <input type="text" class="input-styled" style="font-size: 14px; text-align: left;" placeholder="Кошелек TON / Карточка">
+          <input type="text" id="withdrawWallet" class="input-styled" style="font-size: 14px; text-align: left;" placeholder="Кошелек TON / Telegram ID">
           <input type="number" id="withdrawInput" class="input-styled" style="font-size: 14px; text-align: left;" placeholder="Сумма звезд (мин. 50)">
         </div>
 
-        <button class="btn-main" onclick="requestWithdrawal()">Запросить вывод 💳</button>
+        <button class="btn-main btn-cashout" onclick="requestWithdrawal()">Запросить вывод 💳</button>
       </div>
     </section>
 
+    <!-- ==================== ТАБ 5: ПРОФИЛЬ ==================== -->
     <section id="profileTab" class="tab-content">
       <div class="glass-card">
         <h3>Статистика аккаунта</h3>
         <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 12px; font-size: 14px;">
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Всего игр:</span>
-            <span style="font-weight: 700;">0</span>
+            <span id="statTotalGames" style="font-weight: 700;">0</span>
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Макс. коэффициент:</span>
-            <span style="font-weight: 700; color: var(--accent-green);">1.00x</span>
+            <span id="statMaxMult" style="font-weight: 700; color: var(--accent-green);">1.00x</span>
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Заработано на рефералах:</span>
-            <span style="font-weight: 700; color: var(--primary);">0 ⭐</span>
+            <span id="statRefEarned" style="font-weight: 700; color: var(--primary);">0 ⭐</span>
           </div>
         </div>
       </div>
@@ -183,8 +219,8 @@
   <!-- НИЖНЯЯ НАВИГАЦИОННАЯ ПАНЕЛЬ -->
   <nav class="bottom-nav">
     <div class="nav-item active" onclick="switchTab('gameTab', this)">
-      <span class="icon">🚀</span>
-      <span>Игра</span>
+      <span class="icon">🎮</span>
+      <span>Игры</span>
     </div>
     <div class="nav-item" onclick="switchTab('tasksTab', this)">
       <span class="icon">🎯</span>
