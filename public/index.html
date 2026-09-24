@@ -3,16 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>⭐ BelCrypto Hub</title>
+    <title>⭐ BelCrypto CyberHub</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
+    <div class="cyber-bg-glow"></div>
+    <div class="cyber-bg-glow-2"></div>
+
     <div class="app-container">
-        <!-- Шапка профиля и баланса -->
-        <div class="header-card">
+        <!-- Шапка профиля и баланса (3D Card) -->
+        <div class="header-card card-3d">
             <div class="balance-info">
                 <h2>Ваш баланс</h2>
                 <div class="balance-amount">
@@ -26,7 +29,7 @@
         </div>
 
         <!-- Секция вывода средств -->
-        <div class="card-box withdraw-box">
+        <div class="card-box withdraw-box card-3d">
             <div class="box-header">
                 <div class="box-icon gold-glow">💸</div>
                 <div class="box-info">
@@ -34,7 +37,7 @@
                     <p>Мин. сумма: <span class="highlight">50 ⭐</span></p>
                 </div>
             </div>
-            <button class="btn-primary btn-gold" id="withdrawBtn">Запросить вывод</button>
+            <button class="btn-cyber btn-gold" id="withdrawBtn">Запросить вывод</button>
             <div id="withdrawStatus" class="status-msg"></div>
         </div>
 
@@ -42,7 +45,7 @@
         <div class="section-title">🔥 Задания и бонусы</div>
         
         <!-- Ежедневный бонус -->
-        <div class="card-box">
+        <div class="card-box card-3d">
             <div class="box-header">
                 <div class="box-icon">🎁</div>
                 <div class="box-info">
@@ -51,12 +54,12 @@
                 </div>
                 <div class="reward-badge">+3 ⭐</div>
             </div>
-            <button class="btn-primary btn-success" id="dailyBtn">Забрать бонус</button>
+            <button class="btn-cyber btn-success" id="dailyBtn">Забрать бонус</button>
             <div id="dailyStatus" class="status-msg"></div>
         </div>
 
         <!-- Подписка -->
-        <div class="card-box">
+        <div class="card-box card-3d">
             <div class="box-header">
                 <div class="box-icon">📢</div>
                 <div class="box-info">
@@ -65,13 +68,13 @@
                 </div>
                 <div class="reward-badge">+15 ⭐</div>
             </div>
-            <button class="btn-primary" id="subActionBtn">Подписаться</button>
-            <button class="btn-primary btn-success" id="checkSubBtn" style="display:none;">Проверить подписку</button>
+            <button class="btn-cyber" id="subActionBtn">Подписаться</button>
+            <button class="btn-cyber btn-success" id="checkSubBtn" style="display:none;">Проверить подписку</button>
             <div id="statusText" class="status-msg"></div>
         </div>
 
         <!-- Поделиться постом -->
-        <div class="card-box">
+        <div class="card-box card-3d">
             <div class="box-header">
                 <div class="box-icon">🔄</div>
                 <div class="box-info">
@@ -80,12 +83,12 @@
                 </div>
                 <div class="reward-badge">+2 ⭐</div>
             </div>
-            <button class="btn-primary" id="shareBtn">Поделиться</button>
+            <button class="btn-cyber" id="shareBtn">Поделиться</button>
             <div id="shareStatus" class="status-msg"></div>
         </div>
 
         <!-- Рефералы -->
-        <div class="card-box">
+        <div class="card-box card-3d">
             <div class="box-header">
                 <div class="box-icon">👥</div>
                 <div class="box-info">
@@ -94,15 +97,15 @@
                 </div>
                 <div class="reward-badge">+2 ⭐</div>
             </div>
-            <button class="btn-primary" id="refBtn">Скопировать реф. ссылку</button>
+            <button class="btn-cyber" id="refBtn">Скопировать реф. ссылку</button>
             <div id="refStatus" class="status-msg"></div>
         </div>
 
         <!-- РАЗДЕЛ МИНИ-ИГР -->
-        <div class="section-title games-section-title">🎮 Игровой зал</div>
+        <div class="section-title games-section-title">🎮 Кибер Игры</div>
 
         <!-- Краш Ракета -->
-        <div class="card-box game-card">
+        <div class="card-box game-card card-3d">
             <div class="box-header">
                 <div class="box-icon rocket-icon">🚀</div>
                 <div class="box-info">
@@ -120,13 +123,13 @@
             </div>
             <div class="game-controls">
                 <input type="number" id="crashBetInput" class="game-input" min="1" value="5">
-                <button class="btn-primary btn-game" id="crashPlayBtn">Запустить</button>
+                <button class="btn-cyber btn-game" id="crashPlayBtn">Запустить</button>
             </div>
             <div id="crashStatus" class="status-msg"></div>
         </div>
 
         <!-- Счастливые кости -->
-        <div class="card-box game-card">
+        <div class="card-box game-card card-3d">
             <div class="box-header">
                 <div class="box-icon">🎲</div>
                 <div class="box-info">
@@ -140,16 +143,16 @@
             </div>
             <div class="game-controls">
                 <input type="number" id="diceBetInput" class="game-input" min="1" value="5">
-                <button class="btn-primary btn-game" id="dicePlayBtn">Бросить</button>
+                <button class="btn-cyber btn-game" id="dicePlayBtn">Бросить</button>
             </div>
             <div id="diceStatus" class="status-msg"></div>
         </div>
 
         <!-- Админ панель -->
-        <div id="adminPanel" class="admin-panel">
+        <div id="adminPanel" class="admin-panel card-3d">
             <div class="admin-header"><span>🛠</span> Панель Администратора</div>
-            <p style="font-size: 13px; color: var(--hint-color); margin-bottom: 10px;">Мониторинг базы данных и пользователей.</p>
-            <button class="btn-primary" style="background: #334155; font-size: 13px; padding: 10px;" onclick="alert('Все системы работают стабильно. База подключена.')">Статистика системы</button>
+            <p style="font-size: 13px; color: var(--hint-color); margin-bottom: 12px;">Мониторинг базы данных и систем.</p>
+            <button class="btn-cyber" style="background: rgba(239, 68, 68, 0.2); border: 1px solid var(--danger); font-size: 13px; padding: 12px;" onclick="alert('Все системы работают стабильно. База подключена.')">Статистика системы</button>
         </div>
     </div>
 
