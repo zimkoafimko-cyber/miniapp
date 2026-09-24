@@ -1,7 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Получаем реальный ID пользователя из Telegram (или ставим guest_user для тестов на ПК)
     const userId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 'guest_user';
     const username = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || 'Игрок';
 
+    // Уникальные ключи с версией v2 для чистого старта у всех игроков
     const balanceKey = 'user_balance_v2_' + userId;
     const refsKey = 'user_refs_v2_' + userId;
     const tasksKey = 'completed_tasks_v2_' + userId;
@@ -9,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let balance = Number(localStorage.getItem(balanceKey)) || 0;
     let referralCount = Number(localStorage.getItem(refsKey)) || 0;
 
+    // Функция обновления интерфейса на экране
     function updateUI() {
         const balanceEls = document.querySelectorAll('#balance, #wallet-balance');
         balanceEls.forEach(el => { if (el) el.innerText = balance; });
@@ -46,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(balanceKey, balance);
     }
 
+    // Копирование реферальной ссылки
     window.copyRefLink = function() {
         const refLinkInput = document.getElementById('ref-link');
         if (refLinkInput) {
@@ -54,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Копирование уникального ID из профиля
     window.copyUserId = function() {
         const profileIdInput = document.getElementById('profile-id-input');
         if (profileIdInput) {
@@ -62,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Проверка заданий
     window.verifyTask = function(taskId, reward) {
         let completedTasks = JSON.parse(localStorage.getItem(tasksKey) || '[]');
         if (completedTasks.includes(taskId)) {
@@ -81,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 800);
     };
 
+    // Запрос на вывод средств
     window.withdrawStars = function() {
         if (balance < 50) {
             alert('❌ Недостаточно звезд! Минимум для вывода: 50 ⭐');
@@ -121,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (fire) fire.classList.add('fire-active');
             if (status) status.innerText = '🚀 Ракета набирает высоту...';
 
+            // Шанс успеха 35%
             const isLucky = Math.random() * 100 < 35;
             const crashPoint = isLucky ? (2.0 + Math.random() * 3.0) : (1.02 + Math.random() * 0.18);
 
@@ -188,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dice1) dice1.classList.remove('dice-rolling');
             if (dice2) dice2.classList.remove('dice-rolling');
 
+            // Шанс победы 30%
             const isWin = Math.random() * 100 < 30;
             let roll1, roll2, sum;
 
@@ -220,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 500);
     };
 
-    // Навигация по вкладкам
+    // Логика переключения нижних вкладок меню
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
         item.addEventListener('click', () => {
@@ -236,5 +245,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Первичный запуск интерфейса при открытии страницы
     updateUI();
 });
