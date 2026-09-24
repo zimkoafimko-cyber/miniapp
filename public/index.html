@@ -2,221 +2,113 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>⭐ BelCrypto Hub</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BelCrypto Hub</title>
+    <!-- Подключаем шрифты -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <!-- Подключаем стили с защитой от кэша -->
+    <link rel="stylesheet" href="styles.css?v=3.0">
 </head>
 <body>
 
     <div class="app-container">
-        
-        <!-- ВКЛАДКА 1: ГЛАВНАЯ / ПРОФИЛЬ -->
-        <div id="tab-home" class="tab-content active">
-            <div class="header-card">
-                <div class="balance-info">
-                    <h2>Общий баланс</h2>
-                    <div class="balance-amount">
-                        <span id="userStars">0</span> <span class="star-icon">⭐</span>
-                    </div>
-                </div>
-                <div class="user-profile-badge">
-                    <div class="user-avatar" id="userAvatar">U</div>
-                    <div class="user-name" id="userName">Загрузка...</div>
+
+        <!-- Шапка профиля и баланс -->
+        <div class="header-card">
+            <div class="balance-info">
+                <h2>Ваш баланс</h2>
+                <div class="balance-amount">
+                    <span id="balance">0</span> <span class="star-icon">⭐</span>
                 </div>
             </div>
+            <div class="user-profile-badge">
+                <div class="user-avatar">U</div>
+                <div class="user-name">Игрок</div>
+            </div>
+        </div>
 
-            <!-- Статистика / Быстрые карточки -->
+        <!-- Главная вкладка (Главная) -->
+        <div id="home" class="tab-content active">
+            <div class="screen-title-box">
+                <h2>Главная панель</h2>
+                <p>Зарабатывайте звезды и управляйте балансом</p>
+            </div>
+
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-icon">🔥</div>
+                    <div class="stat-icon gold-glow">⚡</div>
                     <div class="stat-info">
-                        <span class="stat-value" id="statTasks">0</span>
-                        <span class="stat-label">Заданий выполнено</span>
+                        <span class="stat-value" id="multiplier-val">1x</span>
+                        <span class="stat-label">Множитель</span>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">🎮</div>
+                    <div class="stat-icon">👥</div>
                     <div class="stat-info">
-                        <span class="stat-value" id="statGames">0</span>
-                        <span class="stat-label">Игр сыграно</span>
+                        <span class="stat-value">0</span>
+                        <span class="stat-label">Рефералы</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Реферальный быстрый блок -->
-            <div class="card-box">
-                <div class="box-header">
-                    <div class="box-icon">👥</div>
-                    <div class="box-info">
-                        <h3>Пригласи друга</h3>
-                        <p>Получай +2 ⭐ за каждого реферала</p>
-                    </div>
-                </div>
-                <button class="btn-primary" id="refBtnHome">Скопировать реф. ссылку</button>
-                <div id="refStatus" class="status-msg"></div>
-            </div>
+            <!-- Главная кнопка для кликов/заработка -->
+            <button class="btn-primary btn-gold" id="click-btn">🌟 Получить звезду (+1)</button>
 
-            <!-- Админ панель (если доступна) -->
-            <div id="adminPanel" class="admin-panel">
-                <div class="admin-header"><span>🛠</span> Панель Администратора</div>
-                <p style="font-size: 13px; color: var(--hint-color); margin-bottom: 10px;">Все системы работают в штатном режиме.</p>
-                <button class="btn-primary" style="background: #334155; font-size: 13px; padding: 10px;" onclick="alert('База данных активна, ошибок нет.')">Проверить систему</button>
+            <!-- Ссылка на вход в админку -->
+            <div style="text-align: center; margin-top: 8px;">
+                <a href="/admin.html" style="color: #cbd5e1; font-size: 12px; font-weight: 600; text-decoration: none; background: rgba(255,255,255,0.08); padding: 10px 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                    🔐 Войти в админ-панель
+                </a>
             </div>
         </div>
 
-        <!-- ВКЛАДКА 2: ЗАДАНИЯ -->
-        <div id="tab-tasks" class="tab-content">
+        <!-- Вкладка Кошелек / Вывод -->
+        <div id="wallet" class="tab-content">
             <div class="screen-title-box">
-                <h2>Задания и бонусы</h2>
-                <p>Выполняй задачи и зарабатывай звезды</p>
+                <h2>Кошелек</h2>
+                <p>Вывод доступен на ваш аккаунт</p>
             </div>
-
-            <!-- Ежедневный бонус -->
-            <div class="card-box">
-                <div class="box-header">
-                    <div class="box-icon">🎁</div>
-                    <div class="box-info">
-                        <h3>Ежедневный бонус</h3>
-                        <p>Бесплатные звезды каждый день</p>
-                    </div>
-                    <div class="reward-badge">+3 ⭐</div>
-                </div>
-                <button class="btn-primary btn-success" id="dailyBtn">Забрать бонус</button>
-                <div id="dailyStatus" class="status-msg"></div>
-            </div>
-
-            <!-- Подписка -->
-            <div class="card-box">
-                <div class="box-header">
-                    <div class="box-icon">📢</div>
-                    <div class="box-info">
-                        <h3>Подписка на канал</h3>
-                        <p>Канал <a href="https://t.me/belcryptoo" target="_blank" class="channel-link">@belcryptoo</a></p>
-                    </div>
-                    <div class="reward-badge">+15 ⭐</div>
-                </div>
-                <button class="btn-primary" id="subActionBtn">Подписаться</button>
-                <button class="btn-primary btn-success" id="checkSubBtn" style="display:none;">Проверить подписку</button>
-                <div id="statusText" class="status-msg"></div>
-            </div>
-
-            <!-- Поделиться постом -->
-            <div class="card-box">
-                <div class="box-header">
-                    <div class="box-icon">🔄</div>
-                    <div class="box-info">
-                        <h3>Поделиться проектом</h3>
-                        <p>Расскажи друзьям в Telegram</p>
-                    </div>
-                    <div class="reward-badge">+2 ⭐</div>
-                </div>
-                <button class="btn-primary" id="shareBtn">Поделиться</button>
-                <div id="shareStatus" class="status-msg"></div>
-            </div>
-        </div>
-
-        <!-- ВКЛАДКА 3: МИНИ-ИГРЫ -->
-        <div id="tab-games" class="tab-content">
-            <div class="screen-title-box">
-                <h2>Игровой зал</h2>
-                <p>Рискуй и приумножай свои звезды</p>
-            </div>
-
-            <!-- Краш Ракета -->
-            <div class="card-box game-card">
-                <div class="box-header">
-                    <div class="box-icon rocket-icon">🚀</div>
-                    <div class="box-info">
-                        <h3>Crash Rocket</h3>
-                        <p>Успей забрать выигрыш до краша!</p>
-                    </div>
-                </div>
-                <div class="crash-screen" id="crashScreen">
-                    <div class="space-stars" id="spaceStars"></div>
-                    <div class="rocket-container" id="rocketContainer">
-                        <div class="rocket-fire" id="rocketFire"></div>
-                        <div class="rocket-obj" id="rocket">🚀</div>
-                    </div>
-                    <div class="crash-multiplier" id="crashMultiplier">1.00x</div>
-                </div>
-                <div class="game-controls">
-                    <input type="number" id="crashBetInput" class="game-input" min="1" value="5">
-                    <button class="btn-primary btn-game" id="crashPlayBtn">Запустить</button>
-                </div>
-                <div id="crashStatus" class="status-msg"></div>
-            </div>
-
-            <!-- Счастливые кости -->
-            <div class="card-box game-card">
-                <div class="box-header">
-                    <div class="box-icon">🎲</div>
-                    <div class="box-info">
-                        <h3>Счастливые кости</h3>
-                        <p>Сумма броска > 7 дает x2</p>
-                    </div>
-                </div>
-                <div class="dice-screen">
-                    <div class="dice-box" id="dice1">⚀</div>
-                    <div class="dice-box" id="dice2">⚁</div>
-                </div>
-                <div class="game-controls">
-                    <input type="number" id="diceBetInput" class="game-input" min="1" value="5">
-                    <button class="btn-primary btn-game" id="dicePlayBtn">Бросить</button>
-                </div>
-                <div id="diceStatus" class="status-msg"></div>
-            </div>
-        </div>
-
-        <!-- ВКЛАДКА 4: КОШЕЛЕК И ВЫВОД -->
-        <div id="tab-wallet" class="tab-content">
-            <div class="screen-title-box">
-                <h2>Кошелек и Вывод</h2>
-                <p>Управление вашими накопленными звездами</p>
-            </div>
-
-            <div class="card-box wallet-main-card">
+            <div class="wallet-main-card">
                 <div class="wallet-balance-title">Доступно к выводу</div>
-                <div class="wallet-balance-val"><span id="walletStars">0</span> ⭐</div>
-                <div class="wallet-limit-info">Минимальная сумма для вывода: <b>50 ⭐</b></div>
+                <div class="wallet-balance-val"><span id="balance">0</span> ⭐</div>
+                <div class="wallet-limit-info">Минимум для вывода: 50 ⭐</div>
             </div>
+            <button class="btn-primary btn-success">Вывести звезды</button>
+        </div>
 
-            <div class="card-box withdraw-box">
-                <div class="box-header">
-                    <div class="box-icon gold-glow">💸</div>
-                    <div class="box-info">
-                        <h3>Запрос выплаты</h3>
-                        <p>Вывод средств на ваш аккаунт</p>
-                    </div>
+        <!-- Вкладка Игры -->
+        <div id="games" class="tab-content">
+            <div class="screen-title-box">
+                <h2>Игровая зона</h2>
+                <p>Испытайте удачу</p>
+            </div>
+            <div class="game-card">
+                <div class="crash-screen">
+                    <div class="crash-multiplier">1.00x</div>
                 </div>
-                <button class="btn-primary btn-gold" id="withdrawBtn">Запросить вывод звезд</button>
-                <div id="withdrawStatus" class="status-msg"></div>
+                <button class="btn-primary" style="margin-top: 8px;">Сыграть в Crash</button>
             </div>
         </div>
+
+        <!-- Нижняя навигация -->
+        <nav class="nav-bar">
+            <button class="nav-item active" data-tab="home">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">Главная</span>
+            </button>
+            <button class="nav-item" data-tab="wallet">
+                <span class="nav-icon">👛</span>
+                <span class="nav-label">Кошелек</span>
+            </button>
+            <button class="nav-item" data-tab="games">
+                <span class="nav-icon">🎮</span>
+                <span class="nav-label">Игры</span>
+            </button>
+        </nav>
 
     </div>
 
-    <!-- НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ (TabBar) -->
-    <nav class="nav-bar">
-        <button class="nav-item active" data-tab="tab-home">
-            <span class="nav-icon">🏠</span>
-            <span class="nav-label">Главная</span>
-        </button>
-        <button class="nav-item" data-tab="tab-tasks">
-            <span class="nav-icon">🔥</span>
-            <span class="nav-label">Задания</span>
-        </button>
-        <button class="nav-item" data-tab="tab-games">
-            <span class="nav-icon">🎮</span>
-            <span class="nav-label">Игры</span>
-        </button>
-        <button class="nav-item" data-tab="tab-wallet">
-            <span class="nav-icon">👛</span>
-            <span class="nav-label">Кошелек</span>
-        </button>
-    </nav>
-
-    <script src="script.js"></script>
+    <!-- Подключаем логику приложения -->
+    <script src="app.js"></script>
 </body>
 </html>
