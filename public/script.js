@@ -1,163 +1,366 @@
-const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const tg = window.Telegram.WebApp;
+tg.expand();
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+const user = tg.initDataUnsafe?.user;
+const username = user ? user.username : 'Гость';
+const firstName = user ? user.first_name : 'Пользователь';
+const userId = user ? user.id : null;
 
-// Middleware для обработки JSON запросов
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+document.getElementById('userName').innerText = firstName;
+document.getElementById('userAvatar').innerText = firstName.charAt(0).toUpperCase();
 
-// Инициализация базы данных SQLite
-const db = new sqlite3.Database('./database.db', (err) => {
-    if (err) {
-        console.error('Ошибка подключения к базе данных SQLite:', err.message);
-    } else {
-        console.log('Успешно подключено к базе данных SQLite.');
-    }
+const userStars = document.getElementById('userStars');
+const walletStars = document.getElementById('walletStars');
+const dailyBtn = document.getElementById('dailyBtn');
+const dailyStatus = document.getElementById('dailyStatus');
+const subActionBtn = document.getElementById('subActionBtn');
+const checkSubBtn = document.getElementById('checkSubBtn');
+const statusText = document.getElementById('statusText');
+const shareBtn = document.getElementById('shareBtn');
+const shareStatus = document.getElementById('shareStatus');
+const refBtnHome = document.getElementById('refBtnHome');
+const refStatus = document.getElementById('refStatus');
+const withdrawBtn = document.getElementById('withdrawBtn');
+const withdrawStatus = document.getElementById('withdrawStatus');
+const adminPanel = document.getElementById('adminPanel');
+
+let currentStars = 0;
+
+// Управление вкладками (TabBar)
+const navItems = document.querySelectorAll('.nav-item');
+const tabContents = document.querySelectorAll('.tab-content');
+
+navItems.forEach(item => {
+    item.addEventListener('click', () => {
+        const targetTabId = item.getAttribute('data-tab');
+
+        navItems.forEach(nav => nav.classList.remove('active'));
+        item.classList.add('active');
+
+        tabContents.forEach(tab => {
+            tab.classList.remove('active');
+            if (tab.id === targetTabId) {
+                tab.classList.add('active');
+            }
+        });
+    });
 });
 
-// Создание таблицы пользователей, если она еще не создана
-db.run(`CREATE TABLE IF NOT EXISTS users (
-    telegram_id TEXT PRIMARY KEY,
-    username TEXT,
-    stars INTEGER DEFAULT 0,
-    subscribed INTEGER DEFAULT 0,
-    last_daily TEXT
-)`, (err) => {
-    if (err) {
-        console.error('Ошибка создания таблицы:', err.message);
+function updateBalance(newStars) {
+    currentStars = newStars;
+    userStars.innerText = currentStars;
+    if (walletStars) walletStars.innerText = currentStars;
+
+    if (userId) {
+        fetch('/api/update-balance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userId, balance: currentStars })
+        }).catch(err => console.error('Ошибка сохранения баланса:', err));
     }
-});
+}
 
-// --- API ЭНДПОИНТЫ ---
-
-// 1. Получение данных пользователя и проверка регистрации
-app.get('/api/user', (req, res) => {
-    const userId = req.query.userId;
-    if (!userId) {
-        return res.status(400).json({ success: false, message: 'Отсутствует userId' });
-    }
-
-    db.get(`SELECT * FROM users WHERE telegram_id = ?`, [userId], (err, row) => {
-        if (err) {
-            return res.status(500).json({ success: false, message: 'Ошибка базы данных' });
-        }
-
-        if (row) {
-            res.json({
-                success: true,
-                stars: row.stars,
-                subscribed: row.subscribed === 1
-            });
-        } else {
-            // Если пользователя нет в базе — регистрируем с 0 балансом
-            db.run(`INSERT INTO users (telegram_id, stars, subscribed) VALUES (?, 0, 0)`, [userId], (insErr) => {
-                if (insErr) {
-                    return res.status(500).json({ success: false, message: 'Ошибка создания пользователя' });
+if (userId) {
+    fetch(`/api/user?userId=${userId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                currentStars = data.stars || 0;
+                userStars.innerText = currentStars;
+                if (walletStars) walletStars.innerText = currentStars;
+                if (data.subscribed) {
+                    subActionBtn.style.display = 'none';
+                    checkSubBtn.style.display = 'none';
+                    statusText.style.color = 'var(--success)';
+                    statusText.innerText = '✅ Подписка подтверждена (+15 ⭐)';
                 }
-                res.json({ success: true, stars: 0, subscribed: false });
-            });
+            }
+        })
+        .catch(err => console.error('Ошибка профиля:', err));
+}
+
+dailyBtn.addEventListener('click', async () => {
+    if (!userId) return;
+    dailyStatus.style.color = 'var(--hint-color)';
+    dailyStatus.innerText = 'Получаем бонус...';
+
+    try {
+        const res = await fetch('/api/reward-daily', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userId })
+        });
+        const data = await res.json();
+        if (data.success) {
+            updateBalance(data.stars);
+            dailyStatus.style.color = 'var(--success)';
+            dailyStatus.innerText = '🎉 Успешно! Получено +3 звезды!';
+        } else {
+            dailyStatus.style.color = 'var(--danger)';
+            dailyStatus.innerText = data.message || 'Бонус уже был получен сегодня.';
         }
+    } catch (e) {
+        dailyStatus.style.color = 'var(--danger)';
+        dailyStatus.innerText = 'Ошибка соединения';
+    }
+});
+
+subActionBtn.addEventListener('click', () => {
+    window.open('https://t.me/belcryptoo', '_blank'); 
+    subActionBtn.style.display = 'none';
+    checkSubBtn.style.display = 'flex';
+    statusText.style.color = 'var(--hint-color)';
+    statusText.innerText = 'После подписки нажмите кнопку проверки 👇';
+});
+
+checkSubBtn.addEventListener('click', async () => {
+    if (!userId) return;
+    statusText.style.color = 'var(--hint-color)';
+    statusText.innerText = 'Проверяем подписку на @belcryptoo...';
+
+    try {
+        const response = await fetch('/api/check-subscription', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userId })
+        });
+        const data = await response.json();
+
+        if (data.subscribed) {
+            updateBalance(data.stars);
+            statusText.style.color = 'var(--success)';
+            statusText.innerText = '🎉 Успешно! Начислено +15 звезд!';
+            checkSubBtn.style.display = 'none';
+        } else {
+            statusText.style.color = 'var(--danger)';
+            statusText.innerText = '❌ Вы не подписаны на канал @belcryptoo!';
+        }
+    } catch (error) {
+        statusText.style.color = 'var(--danger)';
+        statusText.innerText = 'Ошибка связи с сервером';
+    }
+});
+
+shareBtn.addEventListener('click', () => {
+    window.open(`https://t.me/share/url?url=https://t.me/belcryptoo&text=Зарабатывай%20звезды%20и%20играй%20вместе%20с%20BelCrypto!`, '_blank');
+    shareStatus.style.color = 'var(--hint-color)';
+    shareStatus.innerText = 'Подтверждаем отправку поста...';
+
+    setTimeout(async () => {
+        try {
+            const res = await fetch('/api/reward-share', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: userId })
+            });
+            const data = await res.json();
+            if (data.success) {
+                updateBalance(data.stars);
+                shareStatus.style.color = 'var(--success)';
+                shareStatus.innerText = '✅ +2 ⭐ за публикацию!';
+                setTimeout(() => shareStatus.innerText = '', 3000);
+            } else {
+                shareStatus.style.color = 'var(--danger)';
+                shareStatus.innerText = data.message || 'Слишком часто!';
+            }
+        } catch (e) {
+            shareStatus.innerText = '';
+        }
+    }, 2000);
+});
+
+refBtnHome.addEventListener('click', () => {
+    const refLink = `https://t.me/belcryptoo?start=ref_${userId}`;
+    navigator.clipboard.writeText(refLink).then(() => {
+        refStatus.style.color = 'var(--success)';
+        refStatus.innerText = 'Реферальная ссылка скопирована!';
+        setTimeout(() => refStatus.innerText = '', 3000);
     });
 });
 
-// 2. ГАРАНТИРОВАННОЕ СОХРАНЕНИЕ БАЛАНСА (исправление проблемы сброса)
-app.post('/api/update-balance', (req, res) => {
-    const { userId, balance } = req.body;
-    if (!userId || balance === undefined) {
-        return res.status(400).json({ success: false, message: 'Неверные данные' });
+withdrawBtn.addEventListener('click', () => {
+    if (currentStars < 50) {
+        withdrawStatus.style.color = 'var(--danger)';
+        withdrawStatus.innerText = `❌ Недостаточно звезд. Нужно минимум 50 ⭐ (у вас ${currentStars})`;
+    } else {
+        withdrawStatus.style.color = 'var(--success)';
+        withdrawStatus.innerText = '✅ Заявка создана! Напишите администратору @belcryptoo для вывода.';
+        setTimeout(() => {
+            window.open('https://t.me/belcryptoo', '_blank');
+        }, 1500);
+    }
+});
+
+// --- КРАШ РАКЕТА ---
+const crashPlayBtn = document.getElementById('crashPlayBtn');
+const crashBetInput = document.getElementById('crashBetInput');
+const crashMultiplier = document.getElementById('crashMultiplier');
+const rocketContainer = document.getElementById('rocketContainer');
+const rocketFire = document.getElementById('rocketFire');
+const spaceStars = document.getElementById('spaceStars');
+const crashStatus = document.getElementById('crashStatus');
+
+let crashInterval = null;
+let currentMultiplier = 1.00;
+let targetCrashAt = 1.00;
+let activeBet = 0;
+let gamePhase = 'IDLE';
+
+crashPlayBtn.addEventListener('click', () => {
+    if (gamePhase === 'IDLE') {
+        const bet = parseInt(crashBetInput.value);
+        if (isNaN(bet) || bet <= 0) {
+            crashStatus.style.color = 'var(--danger)';
+            crashStatus.innerText = 'Введите корректную ставку!';
+            return;
+        }
+        if (currentStars < bet) {
+            crashStatus.style.color = 'var(--danger)';
+            crashStatus.innerText = 'Недостаточно звезд!';
+            return;
+        }
+
+        activeBet = bet;
+        updateBalance(currentStars - activeBet);
+        
+        gamePhase = 'FLYING';
+        crashBetInput.disabled = true;
+        crashPlayBtn.innerText = 'ЗАБРАТЬ';
+        crashPlayBtn.style.background = 'var(--success)';
+        
+        rocketContainer.classList.add('rocket-flying');
+        rocketFire.classList.add('fire-active');
+        spaceStars.classList.add('stars-moving');
+        rocketContainer.classList.remove('rocket-crash');
+
+        crashStatus.style.color = 'var(--hint-color)';
+        crashStatus.innerText = 'Ракета набирает высоту...';
+
+        currentMultiplier = 1.00;
+        crashMultiplier.innerText = '1.00x';
+
+        const roll = Math.random();
+        if (roll < 0.70) {
+            targetCrashAt = parseFloat((1.00 + Math.random() * 0.35).toFixed(2));
+        } else {
+            targetCrashAt = parseFloat((1.40 + Math.random() * 3.10).toFixed(2));
+        }
+
+        crashInterval = setInterval(() => {
+            currentMultiplier += 0.03;
+            crashMultiplier.innerText = currentMultiplier.toFixed(2) + 'x';
+
+            if (currentMultiplier >= targetCrashAt) {
+                endCrashGame(false);
+            }
+        }, 90);
+
+    } else if (gamePhase === 'FLYING') {
+        clearInterval(crashInterval);
+        const winAmount = Math.floor(activeBet * currentMultiplier);
+        updateBalance(currentStars + winAmount);
+        
+        stopRocketAnimation();
+        crashStatus.style.color = 'var(--success)';
+        crashStatus.innerText = `🎯 Успешно! Вы забрали на ${currentMultiplier.toFixed(2) + 'x'} (+${winAmount} ⭐)`;
+        
+        resetCrashButton();
+    }
+});
+
+function endCrashGame(isWin) {
+    clearInterval(crashInterval);
+    rocketContainer.classList.remove('rocket-flying');
+    rocketFire.classList.remove('fire-active');
+    spaceStars.classList.remove('stars-moving');
+    rocketContainer.classList.add('rocket-crash');
+
+    crashStatus.style.color = 'var(--danger)';
+    crashStatus.innerText = `💥 КРАШ на ${targetCrashAt}x! Ракета взорвалась.`;
+    
+    resetCrashButton();
+}
+
+function stopRocketAnimation() {
+    rocketContainer.classList.remove('rocket-flying');
+    rocketFire.classList.remove('fire-active');
+    spaceStars.classList.remove('stars-moving');
+}
+
+function resetCrashButton() {
+    gamePhase = 'IDLE';
+    crashPlayBtn.innerText = 'Запустить';
+    crashPlayBtn.style.background = '';
+    crashBetInput.disabled = false;
+}
+
+// --- СЧАСТЛИВЫЕ КОСТИ ---
+const dicePlayBtn = document.getElementById('dicePlayBtn');
+const diceBetInput = document.getElementById('diceBetInput');
+const dice1 = document.getElementById('dice1');
+const dice2 = document.getElementById('dice2');
+const diceStatus = document.getElementById('diceStatus');
+const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+
+dicePlayBtn.addEventListener('click', () => {
+    const bet = parseInt(diceBetInput.value);
+    if (isNaN(bet) || bet <= 0) {
+        diceStatus.style.color = 'var(--danger)';
+        diceStatus.innerText = 'Введите ставку!';
+        return;
+    }
+    if (currentStars < bet) {
+        diceStatus.style.color = 'var(--danger)';
+        diceStatus.innerText = 'Недостаточно звезд!';
+        return;
     }
 
-    db.run(`UPDATE users SET stars = ? WHERE telegram_id = ?`, [balance, userId], function(err) {
-        if (err) {
-            console.error('Ошибка сохранения баланса:', err.message);
-            return res.status(500).json({ success: false, message: 'Ошибка базы данных' });
-        }
-        res.json({ success: true });
-    });
-});
+    updateBalance(currentStars - bet);
+    dice1.classList.add('dice-rolling');
+    dice2.classList.add('dice-rolling');
+    diceStatus.style.color = 'var(--hint-color)';
+    diceStatus.innerText = 'Бросаем кости на удачу...';
 
-// 3. Ежедневный бонус (+3 звезды)
-app.post('/api/reward-daily', (req, res) => {
-    const { userId } = req.body;
-    if (!userId) return res.status(400).json({ success: false, message: 'No userId' });
+    let rollTimer = setInterval(() => {
+        dice1.innerText = diceFaces[Math.floor(Math.random() * 6)];
+        dice2.innerText = diceFaces[Math.floor(Math.random() * 6)];
+    }, 80);
 
-    const today = new Date().toISOString().slice(0, 10); // Формат YYYY-MM-DD
+    setTimeout(() => {
+        clearInterval(rollTimer);
+        dice1.classList.remove('dice-rolling');
+        dice2.classList.remove('dice-rolling');
 
-    db.get(`SELECT last_daily, stars FROM users WHERE telegram_id = ?`, [userId], (err, row) => {
-        if (err || !row) {
-            return res.status(400).json({ success: false, message: 'Пользователь не найден' });
-        }
+        const r1 = Math.floor(Math.random() * 6) + 1;
+        const r2 = Math.floor(Math.random() * 6) + 1;
 
-        if (row.last_daily === today) {
-            return res.json({ success: false, message: 'Бонус уже получен сегодня!' });
-        }
+        dice1.innerText = diceFaces[r1 - 1];
+        dice2.innerText = diceFaces[r2 - 1];
 
-        const newStars = row.stars + 3;
-        db.run(`UPDATE users SET stars = ?, last_daily = ? WHERE telegram_id = ?`, [newStars, today, userId], (updErr) => {
-            if (updErr) return res.status(500).json({ success: false, message: 'Ошибка базы данных' });
-            res.json({ success: true, stars: newStars });
-        });
-    });
-});
-
-// 4. Проверка подписки на канал
-app.post('/api/check-subscription', (req, res) => {
-    const { userId } = req.body;
-    if (!userId) return res.status(400).json({ success: false, message: 'No userId' });
-
-    db.get(`SELECT stars, subscribed FROM users WHERE telegram_id = ?`, [userId], (err, row) => {
-        if (err || !row) return res.status(400).json({ success: false, message: 'User not found' });
-
-        if (row.subscribed === 1) {
-            return res.json({ subscribed: true, stars: row.stars });
-        }
-
-        // Здесь можно добавить реальный запрос через Telegram Bot API (telegraf / node-telegram-bot-api)
-        // Для примера симулируем успешную подписку и начисление +15 звезд:
-        const isSubscribed = true; // Замените на реальную проверку Telegram API при необходимости
-        
-        if (isSubscribed) {
-            const newStars = row.stars + 15;
-            db.run(`UPDATE users SET stars = ?, subscribed = 1 WHERE telegram_id = ?`, [newStars, userId], (updErr) => {
-                if (updErr) return res.status(500).json({ success: false, message: 'DB error' });
-                res.json({ subscribed: true, stars: newStars });
-            });
+        const sum = r1 + r2;
+        if (sum > 7) {
+            const winAmount = bet * 2;
+            updateBalance(currentStars + winAmount);
+            diceStatus.style.color = 'var(--success)';
+            diceStatus.innerText = `🎲 Сумма ${sum} (> 7)! Победа: +${winAmount} ⭐`;
         } else {
-            res.json({ subscribed: false });
+            diceStatus.style.color = 'var(--danger)';
+            diceStatus.innerText = `🎲 Сумма ${sum}. Проигрыш, попробуйте еще!`;
         }
-    });
+    }, 700);
 });
 
-// 5. Награда за репост / поделиться (+2 звезды)
-app.post('/api/reward-share', (req, res) => {
-    const { userId } = req.body;
-    if (!userId) return res.status(400).json({ success: false, message: 'No userId' });
-
-    db.get(`SELECT stars FROM users WHERE telegram_id = ?`, [userId], (err, row) => {
-        if (err || !row) return res.status(400).json({ success: false, message: 'User not found' });
-
-        const newStars = row.stars + 2;
-        db.run(`UPDATE users SET stars = ? WHERE telegram_id = ?`, [newStars, userId], (updErr) => {
-            if (updErr) return res.status(500).json({ success: false, message: 'DB error' });
-            res.json({ success: true, stars: newStars });
-        });
-    });
-});
-
-// 6. Проверка прав администратора
-app.post('/api/check-admin', (req, res) => {
-    const { username } = req.body;
-    // Укажите свой юзернейм администратора без символа @
-    const adminUsername = 'your_admin_username'; 
-
-    const isAdmin = username && username.toLowerCase() === adminUsername.toLowerCase();
-    res.json({ isAdmin });
-});
-
-// Запуск сервера
-app.listen(PORT, () => {
-    console.log(`Сервер успешно запущен на порту ${PORT}`);
-});
+if (username) {
+    fetch('/api/check-admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.isAdmin) {
+            adminPanel.style.display = 'block';
+        }
+    })
+    .catch(err => console.error(err));
+}
