@@ -18,9 +18,11 @@
     font-family: 'Outfit', sans-serif;
 }
 
-/* Космический фон с переливом */
+/* ==========================================
+   КОСМИЧЕСКИЙ ФОН И ПАДАЮЩИЕ ЗВЕЗДЫ
+   ========================================== */
 body {
-    background: linear-gradient(135deg, #050811 0%, #0f172a 50%, #1e1b4b 100%);
+    background: linear-gradient(135deg, #050811 0%, #0f172a 50%, #1e1b4b 100%) !important;
     color: var(--text-main);
     padding: 16px;
     display: flex;
@@ -31,43 +33,36 @@ body {
     position: relative;
 }
 
-/* Контейнер для падающих звезд на заднем фоне */
 .stars-container {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     pointer-events: none;
-    z-index: 0;
+    z-index: 999;
     overflow: hidden;
 }
 
-.star {
+.star-bg {
     position: absolute;
     background: #ffffff;
     border-radius: 50%;
     animation: fall linear infinite;
-    opacity: 0.8;
+    opacity: 0.9;
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
 }
 
 @keyframes fall {
-    0% {
-        transform: translateY(-20px) translateX(0);
-        opacity: 0;
-    }
-    20% {
-        opacity: 1;
-    }
-    80% {
-        opacity: 0.7;
-    }
-    100% {
-        transform: translateY(105vh) translateX(20px);
-        opacity: 0;
-    }
+    0% { transform: translateY(-20px) translateX(0); opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 0.8; }
+    100% { transform: translateY(105vh) translateX(20px); opacity: 0; }
 }
 
+/* ==========================================
+   ОБЩИЕ КОНТЕЙНЕРЫ И СТРУКТУРА
+   ========================================== */
 .app-container {
     width: 100%;
     max-width: 480px;
@@ -75,10 +70,9 @@ body {
     flex-direction: column;
     padding-bottom: 90px;
     position: relative;
-    z-index: 1; /* Чтобы интерфейс был поверх звезд */
+    z-index: 1000;
 }
 
-/* Переключение вкладок */
 .tab-content {
     display: none;
     flex-direction: column;
@@ -95,7 +89,9 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Шапка профиля */
+/* ==========================================
+   ВХОДНЫЕ ДАННЫЕ И ШАПКА
+   ========================================== */
 .header-card {
     background: linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(29, 78, 216, 0.9) 100%);
     backdrop-filter: blur(10px);
@@ -126,8 +122,8 @@ body {
     gap: 6px;
 }
 
-.star-icon {
-    font-size: 26px;
+.star-icon { 
+    font-size: 26px; 
 }
 
 .user-profile-badge {
@@ -162,7 +158,6 @@ body {
     text-overflow: ellipsis;
 }
 
-/* Заголовки экранов */
 .screen-title-box {
     margin-bottom: 4px;
 }
@@ -179,25 +174,35 @@ body {
     color: var(--hint-color);
 }
 
-/* Сетка статистики */
+/* ==========================================
+   КАРТОЧКИ И СЕТКИ СТАТИСТИКИ
+   ========================================== */
 .stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
 }
 
-.stat-card {
+.stat-card, .card-box {
     background-color: var(--card-bg);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
     border: 1px solid var(--card-border);
     border-radius: 16px;
     padding: 16px;
     display: flex;
-    align-items: center;
     gap: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-.stat-icon {
+.stat-card { 
+    align-items: center; 
+}
+
+.card-box { 
+    flex-direction: column; 
+}
+
+.stat-icon, .box-icon {
     font-size: 22px;
     background: rgba(255, 255, 255, 0.05);
     width: 40px;
@@ -206,64 +211,67 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
-.stat-info {
-    display: flex;
-    flex-direction: column;
+.box-icon { 
+    width: 44px; 
+    height: 44px; 
+    font-size: 24px; 
 }
 
-.stat-value {
-    font-size: 18px;
-    font-weight: 800;
-    font-family: 'Orbitron', sans-serif;
-    color: #fff;
+.gold-glow { 
+    background: rgba(245, 158, 11, 0.15); 
 }
 
-.stat-label {
-    font-size: 11px;
-    color: var(--hint-color);
+.stat-info { 
+    display: flex; 
+    flex-direction: column; 
 }
 
-/* Карточки блоков */
-.card-box {
-    background-color: var(--card-bg);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--card-border);
-    border-radius: 16px;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+.stat-value { 
+    font-size: 18px; 
+    font-weight: 800; 
+    font-family: 'Orbitron', sans-serif; 
+    color: #fff; 
 }
 
+.stat-label { 
+    font-size: 11px; 
+    color: var(--hint-color); 
+}
+
+/* ==========================================
+   КОШЕЛЕК И ВЫВОД
+   ========================================== */
 .wallet-main-card {
     background: linear-gradient(135deg, rgba(30, 27, 75, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
     text-align: center;
     padding: 24px;
     border: 1px solid rgba(99, 102, 241, 0.4);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.wallet-balance-title {
-    font-size: 13px;
-    color: var(--hint-color);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 6px;
+.wallet-balance-title { 
+    font-size: 13px; 
+    color: var(--hint-color); 
+    text-transform: uppercase; 
+    margin-bottom: 6px; 
 }
 
-.wallet-balance-val {
-    font-size: 38px;
-    font-weight: 900;
-    font-family: 'Orbitron', sans-serif;
-    color: var(--gold);
-    margin-bottom: 8px;
+.wallet-balance-val { 
+    font-size: 38px; 
+    font-weight: 900; 
+    font-family: 'Orbitron', sans-serif; 
+    color: var(--gold); 
+    margin-bottom: 8px; 
 }
 
-.wallet-limit-info {
-    font-size: 12px;
-    color: var(--hint-color);
+.wallet-limit-info { 
+    font-size: 12px; 
+    color: var(--hint-color); 
 }
 
 .withdraw-box {
@@ -271,48 +279,33 @@ body {
     background: linear-gradient(180deg, rgba(19, 27, 46, 0.9) 0%, rgba(41, 37, 22, 0.6) 100%);
 }
 
-.box-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+.box-header { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    width: 100%; 
 }
 
-.box-icon {
-    font-size: 24px;
-    width: 44px;
-    height: 44px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+.box-info { 
+    flex-grow: 1; 
 }
 
-.gold-glow {
-    background: rgba(245, 158, 11, 0.15);
+.box-info h3 { 
+    font-size: 15px; 
+    font-weight: 600; 
+    color: var(--text-main); 
+    margin-bottom: 2px; 
 }
 
-.box-info {
-    flex-grow: 1;
+.box-info p { 
+    font-size: 12px; 
+    color: var(--hint-color); 
 }
 
-.box-info h3 {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text-main);
-    margin-bottom: 2px;
-}
-
-.box-info p {
-    font-size: 12px;
-    color: var(--hint-color);
-}
-
-.channel-link {
-    color: #38bdf8;
-    text-decoration: none;
-    font-weight: 600;
+.channel-link { 
+    color: #38bdf8; 
+    text-decoration: none; 
+    font-weight: 600; 
 }
 
 .reward-badge {
@@ -325,7 +318,9 @@ body {
     white-space: nowrap;
 }
 
-/* Кнопки */
+/* ==========================================
+   КНОПКИ И СТАТУСЫ
+   ========================================== */
 .btn-primary {
     background-color: var(--primary);
     color: #fff;
@@ -345,36 +340,30 @@ body {
     transform: scale(0.98);
 }
 
-.btn-primary:hover {
-    background-color: var(--primary-hover);
+.btn-success { 
+    background-color: var(--success); 
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); 
 }
 
-.btn-success {
-    background-color: var(--success);
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+.btn-gold { 
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); 
+    color: #000; 
+    font-weight: 700; 
 }
 
-.btn-success:hover {
-    background-color: #16a34a;
+.status-msg { 
+    font-size: 12px; 
+    text-align: center; 
+    font-weight: 500; 
+    min-height: 16px; 
+    margin-top: 4px;
 }
 
-.btn-gold {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    color: #000;
-    font-weight: 700;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-}
-
-.status-msg {
-    font-size: 12px;
-    text-align: center;
-    font-weight: 500;
-    min-height: 16px;
-}
-
-/* Игровой зал */
-.game-card {
-    background: linear-gradient(180deg, rgba(19, 27, 46, 0.9) 0%, rgba(11, 15, 25, 0.9) 100%);
+/* ==========================================
+   МИНИ-ИГРЫ (КРАШ И КОСТИ)
+   ========================================== */
+.game-card { 
+    background: linear-gradient(180deg, rgba(19, 27, 46, 0.9) 0%, rgba(11, 15, 25, 0.9) 100%); 
 }
 
 .crash-screen {
@@ -388,24 +377,6 @@ body {
     position: relative;
     overflow: hidden;
     border: 1px solid rgba(99, 102, 241, 0.3);
-}
-
-.space-stars {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-image: radial-gradient(white 1px, transparent 0);
-    background-size: 25px 25px;
-    opacity: 0.15;
-}
-
-.stars-moving {
-    animation: moveStars 0.6s linear infinite;
-}
-
-@keyframes moveStars {
-    0% { background-position: 0 0; }
-    100% { background-position: 0 35px; }
 }
 
 .crash-multiplier {
@@ -424,51 +395,40 @@ body {
     flex-direction: column;
     align-items: center;
     z-index: 2;
-    transition: transform 0.2s ease;
 }
 
-.rocket-obj {
-    font-size: 32px;
-    filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.8));
+.rocket-obj { 
+    font-size: 32px; 
+    filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.8)); 
 }
 
-.rocket-fire {
-    width: 8px;
-    height: 0px;
-    background: linear-gradient(180deg, #f59e0b 0%, #ef4444 100%);
-    border-radius: 50%;
-    filter: blur(2px);
-    transition: height 0.3s ease;
-    margin-top: -4px;
+.rocket-fire { 
+    width: 8px; 
+    height: 0px; 
+    background: linear-gradient(180deg, #f59e0b 0%, #ef4444 100%); 
+    border-radius: 50%; 
+    filter: blur(2px); 
+    margin-top: -4px; 
+    transition: height 0.3s; 
 }
 
-.fire-active {
-    height: 24px;
-    animation: flamePulse 0.15s infinite alternate ease-in-out;
+.fire-active { 
+    height: 24px; 
+    animation: flamePulse 0.15s infinite alternate ease-in-out; 
 }
 
-@keyframes flamePulse {
-    0% { height: 20px; opacity: 0.8; }
-    100% { height: 32px; opacity: 1; transform: scaleX(1.3); }
+@keyframes flamePulse { 
+    0% { height: 20px; } 
+    100% { height: 32px; } 
 }
 
-.rocket-flying {
-    animation: rocketSway 0.35s infinite alternate ease-in-out;
+.rocket-flying { 
+    animation: rocketSway 0.35s infinite alternate ease-in-out; 
 }
 
-@keyframes rocketSway {
-    0% { transform: translateY(0px) translateX(-2px) rotate(-2deg); }
-    100% { transform: translateY(-4px) translateX(2px) rotate(2deg); }
-}
-
-.rocket-crash {
-    animation: explosionAnim 0.5s ease forwards;
-}
-
-@keyframes explosionAnim {
-    0% { transform: scale(1) rotate(0deg); opacity: 1; filter: drop-shadow(0 0 10px #ef4444); }
-    50% { transform: scale(2.5) rotate(20deg); opacity: 0.8; filter: drop-shadow(0 0 20px #f59e0b); }
-    100% { transform: scale(3.0) rotate(35deg); opacity: 0; }
+@keyframes rocketSway { 
+    0% { transform: translateY(0) rotate(-2deg); } 
+    100% { transform: translateY(-4px) rotate(2deg); } 
 }
 
 .dice-screen {
@@ -492,26 +452,21 @@ body {
     justify-content: center;
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    transition: transform 0.2s;
 }
 
-.dice-rolling {
-    animation: diceSpin3D 0.3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-    border-color: var(--primary);
-    box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+.dice-rolling { 
+    animation: diceSpin 0.3s infinite linear; 
+    border-color: var(--primary); 
 }
 
-@keyframes diceSpin3D {
-    0% { transform: scale(1) rotate(0deg) translateY(0); }
-    33% { transform: scale(1.15) rotate(-18deg) translateY(-8px); }
-    66% { transform: scale(0.9) rotate(18deg) translateY(6px); }
-    100% { transform: scale(1) rotate(360deg) translateY(0); }
+@keyframes diceSpin { 
+    0% { transform: rotate(0deg); } 
+    100% { transform: rotate(360deg); } 
 }
 
-.game-controls {
-    display: flex;
-    gap: 10px;
+.game-controls { 
+    display: flex; 
+    gap: 10px; 
 }
 
 .game-input {
@@ -527,15 +482,13 @@ body {
     outline: none;
 }
 
-.game-input:focus {
-    border-color: var(--primary);
+.btn-game { 
+    flex-grow: 1; 
 }
 
-.btn-game {
-    flex-grow: 1;
-}
-
-/* Нижняя панель навигации (TabBar) */
+/* ==========================================
+   НИЖНЕЕ МЕНЮ НАВИГАЦИИ
+   ========================================== */
 .nav-bar {
     position: fixed;
     bottom: 0;
@@ -543,13 +496,13 @@ body {
     transform: translateX(-50%);
     width: 100%;
     max-width: 480px;
-    background: rgba(11, 15, 25, 0.9);
+    background: rgba(11, 15, 25, 0.95);
     backdrop-filter: blur(15px);
     border-top: 1px solid var(--card-border);
     display: flex;
     justify-content: space-around;
     padding: 10px 10px 18px 10px;
-    z-index: 100;
+    z-index: 1000;
 }
 
 .nav-item {
@@ -562,27 +515,24 @@ body {
     color: var(--hint-color);
     cursor: pointer;
     flex: 1;
-    transition: color 0.2s;
 }
 
-.nav-icon {
-    font-size: 20px;
+.nav-icon { 
+    font-size: 20px; 
 }
 
-.nav-label {
-    font-size: 11px;
-    font-weight: 500;
+.nav-label { 
+    font-size: 11px; 
+    font-weight: 500; 
 }
 
-.nav-item.active {
-    color: var(--primary);
+.nav-item.active { 
+    color: var(--primary); 
 }
 
-.nav-item.active .nav-icon {
-    filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.8));
-}
-
-/* Админ панель */
+/* ==========================================
+   ПАНЕЛЬ АДМИНИСТРАТОРА
+   ========================================== */
 .admin-panel {
     display: none;
     background: rgba(239, 68, 68, 0.1);
@@ -592,12 +542,12 @@ body {
     margin-top: 6px;
 }
 
-.admin-header {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--danger);
-    margin-bottom: 6px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+.admin-header { 
+    font-size: 14px; 
+    font-weight: 700; 
+    color: var(--danger); 
+    margin-bottom: 6px; 
+    display: flex; 
+    align-items: center; 
+    gap: 6px; 
 }
