@@ -3,238 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>⭐ Звезды за задание</title>
+    <title>⭐ BelCrypto Hub</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root {
-            --bg-color: var(--tg-theme-bg-color, #0f172a);
-            --card-bg: var(--tg-theme-secondary-bg-color, #1e293b);
-            --text-color: var(--tg-theme-text-color, #f8fafc);
-            --hint-color: var(--tg-theme-hint-color, #94a3b8);
-            --button-bg: var(--tg-theme-button-color, #3b82f6);
-            --button-text: var(--tg-theme-button-text-color, #ffffff);
-            --accent: #f59e0b;
-            --success: #10b981;
-            --danger: #ef4444;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            transition: all 0.2s ease;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        .app-container {
-            width: 100%;
-            max-width: 440px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        /* Шапка с балансом */
-        .header-card {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-            border-radius: 20px;
-            padding: 20px;
-            color: #fff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header-card::after {
-            content: '⭐';
-            position: absolute;
-            right: -10px;
-            bottom: -15px;
-            font-size: 80px;
-            opacity: 0.15;
-            transform: rotate(15deg);
-        }
-
-        .balance-info h2 {
-            font-size: 14px;
-            font-weight: 500;
-            opacity: 0.9;
-            margin-bottom: 4px;
-        }
-
-        .balance-amount {
-            font-size: 28px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .user-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: bold;
-            border: 2px solid rgba(255, 255, 255, 0.4);
-        }
-
-        /* Секция заданий */
-        .section-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-top: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .task-card {
-            background-color: var(--card-bg);
-            border-radius: 16px;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            position: relative;
-        }
-
-        .task-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .task-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            background: rgba(245, 158, 11, 0.15);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-        }
-
-        .task-info h3 {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 2px;
-        }
-
-        .task-info p {
-            font-size: 13px;
-            color: var(--hint-color);
-        }
-
-        .task-reward {
-            margin-left: auto;
-            background: rgba(245, 158, 11, 0.2);
-            color: var(--accent);
-            padding: 6px 10px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        /* Кнопки */
-        .btn {
-            background-color: var(--button-bg);
-            color: var(--button-text);
-            border: none;
-            border-radius: 12px;
-            padding: 14px;
-            font-size: 15px;
-            font-weight: 600;
-            width: 100%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .btn-success {
-            background-color: var(--success);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        }
-
-        .status-msg {
-            font-size: 13px;
-            text-align: center;
-            min-height: 18px;
-            font-weight: 500;
-        }
-
-        /* Админ панель */
-        .admin-panel {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            border: 2px dashed var(--accent);
-            border-radius: 16px;
-            padding: 16px;
-            display: none;
-            animation: slideUp 0.4s ease-out;
-        }
-
-        .admin-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--accent);
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-
-        /* Анимации */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .pulse {
-            animation: pulseAnim 1.5s infinite;
-        }
-
-        @keyframes pulseAnim {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.03); }
-            100% { transform: scale(1); }
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -244,123 +16,139 @@
             <div class="balance-info">
                 <h2>Ваш баланс</h2>
                 <div class="balance-amount">
-                    <span id="userStars">0</span> ⭐
+                    <span id="userStars">0</span> <span class="star-icon">⭐</span>
                 </div>
             </div>
-            <div class="user-avatar" id="userAvatar">U</div>
+            <div class="user-profile-badge">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <div class="user-name" id="userName">Загрузка...</div>
+            </div>
         </div>
 
-        <!-- Основное задание -->
-        <div class="section-title">🔥 Активные задания</div>
-        
-        <div class="task-card">
-            <div class="task-header">
-                <div class="task-icon">📢</div>
-                <div class="task-info">
-                    <h3>Подпишись на канал</h3>
-                    <p>Будь в курсе всех новостей и наград</p>
+        <!-- Секция вывода средств -->
+        <div class="card-box withdraw-box">
+            <div class="box-header">
+                <div class="box-icon gold-glow">💸</div>
+                <div class="box-info">
+                    <h3>Вывод звезд</h3>
+                    <p>Мин. сумма: <span class="highlight">50 ⭐</span></p>
                 </div>
-                <div class="task-reward">+10 ⭐</div>
             </div>
-            
-            <button class="btn" id="subActionBtn">Подписаться на канал</button>
-            <button class="btn btn-success" id="checkSubBtn" style="display:none;">Проверить подписку</button>
-            
+            <button class="btn-primary btn-gold" id="withdrawBtn">Запросить вывод</button>
+            <div id="withdrawStatus" class="status-msg"></div>
+        </div>
+
+        <!-- Секция заданий -->
+        <div class="section-title">🔥 Задания и бонусы</div>
+        
+        <!-- Ежедневный бонус -->
+        <div class="card-box">
+            <div class="box-header">
+                <div class="box-icon">🎁</div>
+                <div class="box-info">
+                    <h3>Ежедневный бонус</h3>
+                    <p>Бесплатные звезды каждый день</p>
+                </div>
+                <div class="reward-badge">+3 ⭐</div>
+            </div>
+            <button class="btn-primary btn-success" id="dailyBtn">Забрать бонус</button>
+            <div id="dailyStatus" class="status-msg"></div>
+        </div>
+
+        <!-- Подписка -->
+        <div class="card-box">
+            <div class="box-header">
+                <div class="box-icon">📢</div>
+                <div class="box-info">
+                    <h3>Подписка на канал</h3>
+                    <p>Канал <a href="https://t.me/belcryptoo" target="_blank" class="channel-link">@belcryptoo</a></p>
+                </div>
+                <div class="reward-badge">+15 ⭐</div>
+            </div>
+            <button class="btn-primary" id="subActionBtn">Подписаться</button>
+            <button class="btn-primary btn-success" id="checkSubBtn" style="display:none;">Проверить подписку</button>
             <div id="statusText" class="status-msg"></div>
         </div>
 
-        <!-- Панель Администратора -->
-        <div id="adminPanel" class="admin-panel">
-            <div class="admin-header">
-                <span>🛠</span> Панель Администратора
+        <!-- Поделиться постом -->
+        <div class="card-box">
+            <div class="box-header">
+                <div class="box-icon">🔄</div>
+                <div class="box-info">
+                    <h3>Поделиться проектом</h3>
+                    <p>Расскажи друзьям в Telegram</p>
+                </div>
+                <div class="reward-badge">+2 ⭐</div>
             </div>
-            <p style="font-size: 13px; color: var(--hint-color); margin-bottom: 10px;">
-                Управление ботом и мониторинг пользователей активны.
-            </p>
-            <button class="btn" style="background: #334155; font-size: 13px; padding: 10px;" onclick="alert('Статистика бэкенда в норме!')">Статистика системы</button>
+            <button class="btn-primary" id="shareBtn">Поделиться</button>
+            <div id="shareStatus" class="status-msg"></div>
+        </div>
+
+        <!-- Рефералы -->
+        <div class="card-box">
+            <div class="box-header">
+                <div class="box-icon">👥</div>
+                <div class="box-info">
+                    <h3>Пригласи друга</h3>
+                    <p>Реферальный бонус</p>
+                </div>
+                <div class="reward-badge">+2 ⭐</div>
+            </div>
+            <button class="btn-primary" id="refBtn">Скопировать реф. ссылку</button>
+            <div id="refStatus" class="status-msg"></div>
+        </div>
+
+        <!-- РАЗДЕЛ МИНИ-ИГР -->
+        <div class="section-title games-section-title">🎮 Игровой зал</div>
+
+        <!-- Краш Ракета -->
+        <div class="card-box game-card">
+            <div class="box-header">
+                <div class="box-icon rocket-icon">🚀</div>
+                <div class="box-info">
+                    <h3>Crash Rocket</h3>
+                    <p>Умножай звезды на взлёте</p>
+                </div>
+            </div>
+            <div class="crash-screen" id="crashScreen">
+                <div class="rocket-obj" id="rocket">🚀</div>
+                <div class="crash-multiplier" id="crashMultiplier">1.00x</div>
+            </div>
+            <div class="game-controls">
+                <input type="number" id="crashBetInput" class="game-input" min="1" value="5">
+                <button class="btn-primary btn-game" id="crashPlayBtn">Запустить</button>
+            </div>
+            <div id="crashStatus" class="status-msg"></div>
+        </div>
+
+        <!-- Счастливые кости -->
+        <div class="card-box game-card">
+            <div class="box-header">
+                <div class="box-icon">🎲</div>
+                <div class="box-info">
+                    <h3>Счастливые кости</h3>
+                    <p>Сумма броска > 7 дает x2</p>
+                </div>
+            </div>
+            <div class="dice-screen">
+                <div class="dice-box" id="dice1">⚀</div>
+                <div class="dice-box" id="dice2">⚁</div>
+            </div>
+            <div class="game-controls">
+                <input type="number" id="diceBetInput" class="game-input" min="1" value="5">
+                <button class="btn-primary btn-game" id="dicePlayBtn">Бросить</button>
+            </div>
+            <div id="diceStatus" class="status-msg"></div>
+        </div>
+
+        <!-- Админ панель -->
+        <div id="adminPanel" class="admin-panel">
+            <div class="admin-header"><span>🛠</span> Панель Администратора</div>
+            <p style="font-size: 13px; color: var(--hint-color); margin-bottom: 10px;">Мониторинг базы данных и пользователей.</p>
+            <button class="btn-primary" style="background: #334155; font-size: 13px; padding: 10px;" onclick="alert('Все системы работают стабильно. База подключена.')">Статистика системы</button>
         </div>
     </div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-
-        const user = tg.initDataUnsafe?.user;
-        const username = user ? user.username : 'Гость';
-        const firstName = user ? user.first_name : 'Пользователь';
-        const userId = user ? user.id : null;
-
-        // Оформляем аватарку и имя
-        document.getElementById('userAvatar').innerText = firstName.charAt(0).toUpperCase();
-
-        const subActionBtn = document.getElementById('subActionBtn');
-        const checkSubBtn = document.getElementById('checkSubBtn');
-        const statusText = document.getElementById('statusText');
-        const adminPanel = document.getElementById('adminPanel');
-        const userStars = document.getElementById('userStars');
-
-        let isSubscribedState = false;
-
-        // Кнопка перехода на канал (замените ссылку на ваш канал)
-        subActionBtn.addEventListener('click', () => {
-            window.open('https://t.me/your_channel_username', '_blank'); // Ссылка на ваш канал
-            subActionBtn.style.display = 'none';
-            checkSubBtn.style.display = 'flex';
-            checkSubBtn.classList.add('pulse');
-            statusText.style.color = 'var(--hint-color)';
-            statusText.innerText = 'После подписки нажмите кнопку проверки ниже 👇';
-        });
-
-        // Проверка подписки через сервер
-        checkSubBtn.addEventListener('click', async () => {
-            if (!userId) {
-                statusText.style.color = 'var(--danger)';
-                statusText.innerText = 'Ошибка: не удалось определить профиль Telegram';
-                return;
-            }
-
-            statusText.style.color = 'var(--hint-color)';
-            statusText.innerText = 'Проверяем статус подписки...';
-
-            try {
-                const response = await fetch('/api/check-subscription', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: userId })
-                });
-                const data = await response.json();
-
-                if (data.subscribed) {
-                    isSubscribedState = true;
-                    statusText.style.color = 'var(--success)';
-                    statusText.innerText = '🎉 Успешно! Вам начислено +10 звезд!';
-                    userStars.innerText = '10';
-                    checkSubBtn.style.display = 'none';
-                } else {
-                    statusText.style.color = 'var(--danger)';
-                    statusText.innerText = '❌ Вы еще не подписались на канал!';
-                }
-            } catch (error) {
-                statusText.style.color = 'var(--danger)';
-                statusText.innerText = 'Ошибка связи с сервером проверки';
-            }
-        });
-
-        // Проверка прав администратора
-        if (username) {
-            fetch('/api/check-admin', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: username })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.isAdmin) {
-                    adminPanel.style.display = 'block';
-                }
-            })
-            .catch(err => console.error('Ошибка проверки админа:', err));
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
