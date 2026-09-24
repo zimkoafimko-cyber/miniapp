@@ -1,56 +1,54 @@
 const express = require('express');
-const session = require('express-session');
-const bodyParser = require('body-parser');
 const path = require('path');
-
 const app = express();
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(session({
-    secret: 'super-secret-key-12345',
-    resave: false,
-    saveUninitialized: false
-}));
-
+app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Данные админа
-const ADMIN_LOGIN = 'admin';
-const ADMIN_PASSWORD = '12345';
-
-// База данных балансов для админки
+// Серверное хранилище в памяти (ID пользователя -> Баланс)
 const userBalances = {};
+const completedTasksDB = {};
 
-function checkAuth(req, res, next) {
-    if (req.session && req.session.isAdmin) return next();
-    res.status(401).json({ success: false, error: 'Не авторизован' });
-}
-
-// Авторизация
+// Админ-авторизация
 app.post('/api/admin/login', (req, res) => {
     const { username, password } = req.body;
-    if (username === ADMIN_LOGIN && password === ADMIN_PASSWORD) {
-        req.session.isAdmin = true;
-        return res.json({ success: true });
+    if (username === 'alina' && password === 'opelve') {
+        res.json({ success: true });
+    } else {
+        res.json({ success: false, message: 'Неверный логин или пароль!' });
     }
-    res.status(400).json({ success: false, message: 'Неверный логин или пароль!' });
 });
 
-app.get('/api/admin/logout', (req, res) => {
-    req.session.destroy();
-    res.json({ success: true });
-});
-
-// Управление балансами
-app.post('/api/admin/set-balance', checkAuth, (req, res) => {
+// Выдача баланса из админки
+app.post('/api/admin/set-balance', (req, res) => {
     const { userId, amount } = req.body;
-    userBalances[userId] = Number(amount);
+    if (!userId) return res.json({ success: false });
+    
+    userBalances[userId] = Number(amount) || 0;
     res.json({ success: true, balances: userBalances });
 });
 
-app.get('/api/admin/users', checkAuth, (req, res) => {
+// Получение списка всех пользователей для админки
+app.get('/api/admin/users', (req, res) => {
     res.json({ success: true, balances: userBalances });
+});
+
+// Получение баланса пользователя для мини-приложения
+app.get('/api/user/balance/:userId', (req, res) => {
+    const userId = req.params.userId;
+    const balance = userBalances[userId] !== undefined ? userBalances[userId] : 0;
+    res.json({ success: true, balance });
+});
+
+// Синхронизация баланса с клиентом (когда игрок играет или выполняет задания)
+app.post('/api/user/sync', (req, res) => {
+    const { userId, balance } = req.body;
+    if (userId) {
+        userBalances[userId] = Number(balance) || 0;
+        res.json({ success: true });
+    } else {
+        res.json({ success: false });
+    }
 });
 
 const PORT = process.env.PORT || 3000;
