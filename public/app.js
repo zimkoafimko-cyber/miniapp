@@ -1,17 +1,40 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Получаем реальный ID пользователя из Telegram (или ставим guest_user для тестов на ПК)
+document.addEventListener('DOMContentLoaded', async () => {
     const userId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 'guest_user';
     const username = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || 'Игрок';
 
-    // Уникальные ключи с версией v2 для чистого старта у всех игроков
-    const balanceKey = 'user_balance_v2_' + userId;
     const refsKey = 'user_refs_v2_' + userId;
     const tasksKey = 'completed_tasks_v2_' + userId;
 
-    let balance = Number(localStorage.getItem(balanceKey)) || 0;
+    let balance = 0;
     let referralCount = Number(localStorage.getItem(refsKey)) || 0;
 
-    // Функция обновления интерфейса на экране
+    // Загружаем актуальный баланс с сервера при старте
+    async function loadServerBalance() {
+        try {
+            const res = await fetch(`/api/user/balance/${userId}`);
+            const data = await res.json();
+            if (data.success) {
+                balance = data.balance;
+                updateUI();
+            }
+        } catch (e) {
+            console.error('Ошибка загрузки баланса с сервера', e);
+        }
+    }
+
+    // Синхронизируем баланс с сервером при изменениях
+    async function syncBalanceToServer() {
+        try {
+            await fetch('/api/user/sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, balance })
+            });
+        } catch (e) {
+            console.error('Ошибка синхронизации', e);
+        }
+    }
+
     function updateUI() {
         const balanceEls = document.querySelectorAll('#balance, #wallet-balance');
         balanceEls.forEach(el => { if (el) el.innerText = balance; });
@@ -23,9 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
         avatarEls.forEach(el => { if (el) el.innerText = username.charAt(0).toUpperCase(); });
 
         const profileIdInput = document.getElementById('profile-id-input');
-        if (profileIdInput) {
-            profileIdInput.value = userId;
-        }
+        if (profileIdInput) profileIdInput.value = userId;
 
         const refCountEl = document.getElementById('ref-count');
         if (refCountEl) refCountEl.innerText = referralCount;
@@ -46,10 +67,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        localStorage.setItem(balanceKey, balance);
+        syncBalanceToServer();
     }
 
-    // Копирование реферальной ссылки
     window.copyRefLink = function() {
         const refLinkInput = document.getElementById('ref-link');
         if (refLinkInput) {
@@ -58,20 +78,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Копирование уникального ID из профиля
     window.copyUserId = function() {
         const profileIdInput = document.getElementById('profile-id-input');
         if (profileIdInput) {
             navigator.clipboard.writeText(profileIdInput.value);
-            alert('📋 Ваш ID успешно скопирован в буфер обмена!');
+            alert('📋 Ваш ID успешно скопирован!');
         }
     };
 
-    // Проверка заданий
     window.verifyTask = function(taskId, reward) {
         let completedTasks = JSON.parse(localStorage.getItem(tasksKey) || '[]');
         if (completedTasks.includes(taskId)) {
-            alert('Вы уже получили награду за это задание!');
+            alert('Вы уже получили награду!');
             return;
         }
 
@@ -83,20 +101,19 @@ document.addEventListener('DOMContentLoaded', () => {
             completedTasks.push(taskId);
             localStorage.setItem(tasksKey, JSON.stringify(completedTasks));
             updateUI();
-            alert(`🎉 Подписка подтверждена! Начислено +${reward} ⭐`);
+            alert(`🎉 Начислено +${reward} ⭐`);
         }, 800);
     };
 
-    // Запрос на вывод средств
     window.withdrawStars = function() {
         if (balance < 50) {
-            alert('❌ Недостаточно звезд! Минимум для вывода: 50 ⭐');
+            alert('❌ Минимум для вывода: 50 ⭐');
             return;
         }
         alert(`✅ Заявка на вывод отправлена на аккаунт @AlinaResseler!\nСумма: ${balance} ⭐`);
     };
 
-    // === ИГРА: КРАШ (РАКЕТА) — Шанс выигрыша 35% ===
+    // === КРАШ ИГРА (35% win) ===
     let crashInterval = null;
     let currentMultiplier = 1.00;
     let isPlayingCrash = false;
@@ -113,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isPlayingCrash) {
             crashBetAmount = Number(betInput.value);
             if (crashBetAmount > balance || crashBetAmount <= 0) {
-                alert('Недостаточно звезд для ставки!');
+                alert('Недостаточно звезд!');
                 return;
             }
 
@@ -126,31 +143,25 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.style.background = 'linear-gradient(135deg, #22c55e 0%, #15803d 100%)';
             betInput.disabled = true;
             if (fire) fire.classList.add('fire-active');
-            if (status) status.innerText = '🚀 Ракета набирает высоту...';
+            if (status) status.innerText = '🚀 Ракета летит...';
 
-            // Шанс успеха 35%
             const isLucky = Math.random() * 100 < 35;
             const crashPoint = isLucky ? (2.0 + Math.random() * 3.0) : (1.02 + Math.random() * 0.18);
 
             crashInterval = setInterval(() => {
                 currentMultiplier += 0.05;
                 if (multDisplay) multDisplay.innerText = currentMultiplier.toFixed(2) + 'x';
-                
-                if (rocketObj) {
-                    const randomOffset = (Math.random() - 0.5) * 6;
-                    rocketObj.style.transform = `translateY(-${(currentMultiplier - 1) * 15}px) translateX(${randomOffset}px)`;
-                }
 
                 if (currentMultiplier >= crashPoint) {
                     clearInterval(crashInterval);
                     isPlayingCrash = false;
                     if (fire) fire.classList.remove('fire-active');
-                    if (rocketObj) rocketObj.style.transform = 'translateY(0px)';
                     if (multDisplay) multDisplay.innerText = 'CRASH 💥';
-                    if (status) status.innerText = `💥 Ракета взорвалась на ${crashPoint.toFixed(2)}x! Ставка сгорела.`;
+                    if (status) status.innerText = `💥 Взрыв на ${crashPoint.toFixed(2)}x! Ставка сгорела.`;
                     btn.innerText = 'Запустить';
                     btn.style.background = '';
                     betInput.disabled = false;
+                    updateUI();
                 }
             }, 120);
 
@@ -158,21 +169,19 @@ document.addEventListener('DOMContentLoaded', () => {
             clearInterval(crashInterval);
             isPlayingCrash = false;
             if (fire) fire.classList.remove('fire-active');
-            if (rocketObj) rocketObj.style.transform = 'translateY(0px)';
 
             const winAmount = Math.floor(crashBetAmount * currentMultiplier);
             balance += winAmount;
             updateUI();
 
-            if (status) status.innerText = `🎉 Успех! Вы забрали +${winAmount} ⭐`;
-            if (multDisplay) multDisplay.innerText = '+' + winAmount;
+            if (status) status.innerText = `🎉 Вы забрали +${winAmount} ⭐`;
             btn.innerText = 'Запустить';
             btn.style.background = '';
             betInput.disabled = false;
         }
     };
 
-    // === ИГРА: КОСТИ — Шанс выигрыша 30% ===
+    // === КОСТИ ИГРА (30% win) ===
     window.playDice = function() {
         const betInput = document.getElementById('dice-bet');
         const status = document.getElementById('dice-status');
@@ -187,16 +196,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         balance -= bet;
         updateUI();
-        if (status) status.innerText = '🎲 Бросаем кости...';
-
-        if (dice1) dice1.classList.add('dice-rolling');
-        if (dice2) dice2.classList.add('dice-rolling');
+        if (status) status.innerText = '🎲 Бросаем...';
 
         setTimeout(() => {
-            if (dice1) dice1.classList.remove('dice-rolling');
-            if (dice2) dice2.classList.remove('dice-rolling');
-
-            // Шанс победы 30%
             const isWin = Math.random() * 100 < 30;
             let roll1, roll2, sum;
 
@@ -221,15 +223,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (sum > 7) {
                 const win = bet * 2;
                 balance += win;
-                if (status) status.innerText = `🎉 Сумма ${sum} (больше 7)! Вы выиграли +${win} ⭐`;
+                if (status) status.innerText = `🎉 Сумма ${sum} (>7)! Выиграно +${win} ⭐`;
             } else {
-                if (status) status.innerText = `❌ Сумма ${sum}. К сожалению, вы проиграли.`;
+                if (status) status.innerText = `❌ Сумма ${sum}. Проигрыш.`;
             }
             updateUI();
         }, 500);
     };
 
-    // Логика переключения нижних вкладок меню
+    // Навигация по вкладкам
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
         item.addEventListener('click', () => {
@@ -245,6 +247,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Первичный запуск интерфейса при открытии страницы
-    updateUI();
+    // Запуск загрузки баланса с сервера
+    await loadServerBalance();
 });
