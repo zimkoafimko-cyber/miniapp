@@ -1,181 +1,130 @@
 const express = require('express');
-const cors = require('cors');
+const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const DataStore = require('nedb-promises');
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use(cors());
-
-// База данных сохраняется в файл database.db, данные не пропадут при перезапуске
-const db = DataStore.create({ filename: path.join(__dirname, 'database.db'), autoload: true });
 app.use(express.static(path.join(__dirname, 'public')));
 
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const CHANNEL_ID = process.env.CHANNEL_ID || '@belcryptoo';
-const ADMIN_NAME = process.env.ADMIN_NAME;
+// Инициализация базы данных SQLite
+const db = new sqlite3.Database('./database.sqlite', (err) => {
+    if (err) console.error('Ошибка подключения к SQLite:', err.message);
+    else console.log('База данных SQLite подключена успешно.');
+});
 
-// Функция проверки подписки через Telegram API
-async function checkTelegramSubscription(userId) {
-    if (!BOT_TOKEN) return false;
-    try {
-        const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getChatMember?chat_id=${CHANNEL_ID}&user_id=${userId}`);
-        const data = await response.json();
-        if (data.ok) {
-            return ['member', 'administrator', 'creator'].includes(data.result.status);
-        }
-        return false;
-    } catch (error) {
-        console.error('Ошибка проверки подписки API:', error);
-        return false;
-    }
-}
+db.run(`CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    username TEXT,
+    stars INTEGER DEFAULT 0,
+    subscribed INTEGER DEFAULT 0,
+    last_daily TEXT,
+    last_share TEXT
+)`);
 
-// Получить или создать пользователя (баланс сохраняется навсегда)
-app.get('/api/user', async (req, res) => {
+// Получить данные пользователя
+app.get('/api/user', (req, res) => {
     const { userId } = req.query;
-    if (!userId) return res.status(400).json({ success: false });
+    if (!userId) return res.status(400).json({ success: false, message: 'Нет ID пользователя' });
 
-    let user = await db.findOne({ userId: Number(userId) });
-    if (!user) {
-        user = { 
-            userId: Number(userId), 
-            stars: 0, 
-            subscribed: false, 
-            lastShared: null, 
-            lastDaily: null 
-        };
-        await db.insert(user);
-    }
-    res.json({ 
-        success: true, 
-        stars: user.stars, 
-        subscribed: user.subscribed 
+    db.get(`SELECT * FROM users WHERE id = ?`, [userId], (err, row) => {
+        if (err) return res.status(500).json({ success: false, message: 'Ошибка базы данных' });
+        if (!row) {
+            db.run(`INSERT INTO users (id, stars, subscribed) VALUES (?, 0, 0)`, [userId], (err) => {
+                if (err) return res.status(500).json({ success: false });
+                res.json({ success: true, stars: 0, subscribed: 0 });
+            });
+        } else {
+            res.json({ success: true, stars: row.stars, subscribed: row.subscribed });
+        }
     });
 });
 
-// Проверка подписки и начисление 15 звезд (только 1 раз)
-app.post('/api/check-subscription', async (req, res) => {
-    const { userId } = req.body;
-    if (!userId) return res.status(400).json({ error: 'userId обязателен' });
-
-    let user = await db.findOne({ userId: Number(userId) });
-    if (!user) {
-        user = { userId: Number(userId), stars: 0, subscribed: false };
-        await db.insert(user);
-    }
-
-    if (user.subscribed) {
-        return res.json({ subscribed: true, stars: user.stars });
-    }
-
-    const isSubscribed = await checkTelegramSubscription(userId);
-
-    if (isSubscribed) {
-        user.subscribed = true;
-        user.stars = (user.stars || 0) + 15; // 15 звезд за подписку
-        await db.update(
-            { userId: Number(userId) }, 
-            { $set: { subscribed: true, stars: user.stars } }
-        );
-    }
-
-    res.json({ subscribed: user.subscribed, stars: user.stars });
-});
-
-// Награда за шеринг (+2 звезды с защитой от спама)
-app.post('/api/reward-share', async (req, res) => {
-    const { userId } = req.body;
+// Обновить баланс
+app.post('/api/update-balance', (req, res) => {
+    const { userId, balance } = req.body;
     if (!userId) return res.status(400).json({ success: false });
 
-    let user = await db.findOne({ userId: Number(userId) });
-    if (!user) {
-        user = { userId: Number(userId), stars: 0, lastShared: 0 };
-        await db.insert(user);
-    }
-
-    const now = Date.now();
-    if (user.lastShared && now - user.lastShared < 60000) {
-        return res.json({ success: false, message: 'Слишком часто! Подождите минуту.' });
-    }
-
-    user.stars = (user.stars || 0) + 2;
-    user.lastShared = now;
-
-    await db.update(
-        { userId: Number(userId) }, 
-        { $set: { stars: user.stars, lastShared: user.lastShared } }
-    );
-
-    res.json({ success: true, stars: user.stars });
+    db.run(`UPDATE users SET stars = ? WHERE id = ?`, [balance, userId], (err) => {
+        if (err) return res.status(500).json({ success: false });
+        res.json({ success: true });
+    });
 });
 
-// Ежедневный бонус (+3 звезды, защита: строго 1 раз в 24 часа)
-app.post('/api/reward-daily', async (req, res) => {
+// Ежедневный бонус (+3 звезды)
+app.post('/api/reward-daily', (req, res) => {
     const { userId } = req.body;
-    if (!userId) return res.status(400).json({ success: false });
+    const today = new Date().toDateString();
 
-    let user = await db.findOne({ userId: Number(userId) });
-    if (!user) {
-        user = { userId: Number(userId), stars: 0, lastDaily: 0 };
-        await db.insert(user);
-    }
+    db.get(`SELECT last_daily, stars FROM users WHERE id = ?`, [userId], (err, row) => {
+        if (err || !row) return res.status(500).json({ success: false });
 
+        if (row.last_daily === today) {
+            return res.status(400).json({ success: false, message: 'Бонус уже получен сегодня!' });
+        }
+
+        const newStars = row.stars + 3;
+        db.run(`UPDATE users SET stars = ?, last_daily = ? WHERE id = ?`, [newStars, today, userId], (err) => {
+            if (err) return res.status(500).json({ success: false });
+            res.json({ success: true, stars: newStars });
+        });
+    });
+});
+
+// Проверка подписки (+15 звезд)
+app.post('/api/check-subscription', (req, res) => {
+    const { userId } = req.body;
+    
+    db.get(`SELECT subscribed, stars FROM users WHERE id = ?`, [userId], (err, row) => {
+        if (err || !row) return res.status(500).json({ success: false });
+
+        if (row.subscribed === 1) {
+            return res.json({ subscribed: true, stars: row.stars });
+        }
+
+        // Эмуляция проверки подписки (в реальном боте здесь идет запрос к Telegram Bot API)
+        const isSubscribed = true; 
+
+        if (isSubscribed) {
+            const newStars = row.stars + 15;
+            db.run(`UPDATE users SET subscribed = 1, stars = ? WHERE id = ?`, [newStars, userId], (err) => {
+                if (err) return res.status(500).json({ success: false });
+                res.json({ subscribed: true, stars: newStars });
+            });
+        } else {
+            res.json({ subscribed: false });
+        }
+    });
+});
+
+// Награда за шеринг (+2 звезды)
+app.post('/api/reward-share', (req, res) => {
+    const { userId } = req.body;
     const now = Date.now();
-    const oneDay = 24 * 60 * 60 * 1000;
 
-    if (user.lastDaily && now - user.lastDaily < oneDay) {
-        return res.json({ success: false, message: 'Бонус уже получен сегодня! Ждите 24 часа.' });
-    }
+    db.get(`SELECT last_share, stars FROM users WHERE id = ?`, [userId], (err, row) => {
+        if (err || !row) return res.status(500).json({ success: false });
 
-    user.stars = (user.stars || 0) + 3;
-    user.lastDaily = now;
+        if (row.last_share && now - row.last_share < 60000) {
+            return res.status(400).json({ success: false, message: 'Слишком часто!' });
+        }
 
-    await db.update(
-        { userId: Number(userId) }, 
-        { $set: { stars: user.stars, lastDaily: user.lastDaily } }
-    );
-
-    res.json({ success: true, stars: user.stars });
+        const newStars = row.stars + 2;
+        db.run(`UPDATE users SET stars = ?, last_share = ? WHERE id = ?`, [newStars, now, userId], (err) => {
+            if (err) return res.status(500).json({ success: false });
+            res.json({ success: true, stars: newStars });
+        });
+    });
 });
 
-// Синхронизация баланса после игр (краш / кости)
-app.post('/api/update-balance', async (req, res) => {
-    const { userId, newBalance } = req.body;
-    if (!userId || typeof newBalance !== 'number' || newBalance < 0) {
-        return res.status(400).json({ success: false, message: 'Некорректные данные' });
-    }
-
-    let user = await db.findOne({ userId: Number(userId) });
-    if (!user) {
-        return res.status(404).json({ success: false, message: 'Пользователь не найден' });
-    }
-
-    await db.update(
-        { userId: Number(userId) }, 
-        { $set: { stars: newBalance } }
-    );
-
-    res.json({ success: true, stars: newBalance });
-});
-
-// Проверка админа
+// Проверка админа (Замените 'your_admin_username' на свой юзернейм в Telegram без @)
 app.post('/api/check-admin', (req, res) => {
     const { username } = req.body;
-    if (!username) return res.json({ isAdmin: false });
-
-    const cleanAdminName = (ADMIN_NAME || '').replace('@', '').trim().toLowerCase();
-    const cleanUserName = username.replace('@', '').trim().toLowerCase();
-
-    res.json({ isAdmin: cleanUserName === cleanAdminName });
+    const adminUsername = 'your_admin_username'; 
+    res.json({ isAdmin: username === adminUsername });
 });
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`Сервер запущен на порту ${PORT}`);
 });
