@@ -1,7 +1,7 @@
 {
   "name": "star-rewards-app",
   "version": "1.0.0",
-  "description": "Star Rewards Mini App",
+  "description": "Telegram Mini App for Star Rewards",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
