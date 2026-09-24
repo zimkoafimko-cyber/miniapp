@@ -3,11 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BelCrypto Hub</title>
-    <!-- Подключаем шрифты -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
-    <!-- Подключаем стили с защитой от кэша -->
-    <link rel="stylesheet" href="styles.css?v=3.0">
+    <title>Задания с проверкой</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=5.0">
+    <style>
+        .task-card {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 14px;
+            border-radius: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .task-info h4 { margin: 0 0 4px 0; font-size: 14px; color: #fff; }
+        .task-info p { margin: 0; font-size: 11px; color: #cbd5e1; }
+        .task-actions { display: flex; gap: 6px; }
+        .task-btn {
+            background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 700;
+            font-size: 11px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        .task-btn.check-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            display: none;
+        }
+        .task-btn.completed {
+            background: rgba(255, 255, 255, 0.15);
+            color: #94a3b8;
+            cursor: default;
+            display: inline-block !important;
+        }
+    </style>
 </head>
 <body>
 
@@ -16,29 +52,29 @@
         <!-- Шапка профиля и баланс -->
         <div class="header-card">
             <div class="balance-info">
-                <h2>Ваш баланс</h2>
+                <h2>ВАШ БАЛАНС</h2>
                 <div class="balance-amount">
                     <span id="balance">0</span> <span class="star-icon">⭐</span>
                 </div>
             </div>
             <div class="user-profile-badge">
-                <div class="user-avatar">U</div>
-                <div class="user-name">Игрок</div>
+                <div class="user-avatar" id="user-initial">U</div>
+                <div class="user-name" id="user-nicename">Игрок</div>
             </div>
         </div>
 
-        <!-- Главная вкладка (Главная) -->
+        <!-- Главная вкладка -->
         <div id="home" class="tab-content active">
             <div class="screen-title-box">
                 <h2>Главная панель</h2>
-                <p>Зарабатывайте звезды и управляйте балансом</p>
+                <p>Зарабатывайте звезды за выполнение заданий</p>
             </div>
 
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon gold-glow">⚡</div>
                     <div class="stat-info">
-                        <span class="stat-value" id="multiplier-val">1x</span>
+                        <span class="stat-value">1x</span>
                         <span class="stat-label">Множитель</span>
                     </div>
                 </div>
@@ -51,42 +87,64 @@
                 </div>
             </div>
 
-            <!-- Главная кнопка для кликов/заработка -->
-            <button class="btn-primary btn-gold" id="click-btn">🌟 Получить звезду (+1)</button>
-
-            <!-- Ссылка на вход в админку -->
-            <div style="text-align: center; margin-top: 8px;">
-                <a href="/admin.html" style="color: #cbd5e1; font-size: 12px; font-weight: 600; text-decoration: none; background: rgba(255,255,255,0.08); padding: 10px 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+            <div style="text-align: center; margin-top: 25px;">
+                <a href="/admin.html" style="color: #cbd5e1; font-size: 12px; font-weight: 600; text-decoration: none; background: rgba(255,255,255,0.08); padding: 10px 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); display: inline-block;">
                     🔐 Войти в админ-панель
                 </a>
             </div>
         </div>
 
-        <!-- Вкладка Кошелек / Вывод -->
+        <!-- ВКЛАДКА: ЗАДАНИЯ С ПРОВЕРКОЙ -->
+        <div id="tasks" class="tab-content">
+            <div class="screen-title-box">
+                <h2>Задания с проверкой</h2>
+                <p>Подпишитесь и нажмите «Проверить»</p>
+            </div>
+
+            <div id="tasks-list">
+                <!-- Задание 1 -->
+                <div class="task-card" data-task-id="task_1">
+                    <div class="task-info">
+                        <h4>Подписаться на канал</h4>
+                        <p>Награда: <strong>+10 ⭐</strong></p>
+                    </div>
+                    <div class="task-actions">
+                        <a href="https://t.me/" target="_blank" class="task-btn go-btn" onclick="startCheck('task_1')">Подписаться</a>
+                        <button class="task-btn check-btn" onclick="verifyTask('task_1', 10)">Проверить</button>
+                    </div>
+                </div>
+
+                <!-- Задание 2 -->
+                <div class="task-card" data-task-id="task_2">
+                    <div class="task-info">
+                        <h4>Посетить сайт партнера</h4>
+                        <p>Награда: <strong>+15 ⭐</strong></p>
+                    </div>
+                    <div class="task-actions">
+                        <a href="https://google.com" target="_blank" class="task-btn go-btn" onclick="startCheck('task_2')">Перейти</a>
+                        <button class="task-btn check-btn" onclick="verifyTask('task_2', 15)">Проверить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка Кошелек -->
         <div id="wallet" class="tab-content">
             <div class="screen-title-box">
                 <h2>Кошелек</h2>
-                <p>Вывод доступен на ваш аккаунт</p>
+                <p>Ваши накопленные звезды</p>
             </div>
-            <div class="wallet-main-card">
-                <div class="wallet-balance-title">Доступно к выводу</div>
-                <div class="wallet-balance-val"><span id="balance">0</span> ⭐</div>
-                <div class="wallet-limit-info">Минимум для вывода: 50 ⭐</div>
+            <div class="wallet-main-card" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 14px; text-align: center; margin-bottom: 15px;">
+                <div style="font-size: 13px; color: #94a3b8;">Доступно к выводу</div>
+                <div style="font-size: 28px; font-weight: 800; margin: 5px 0;"><span id="wallet-balance">0</span> ⭐</div>
             </div>
-            <button class="btn-primary btn-success">Вывести звезды</button>
         </div>
 
         <!-- Вкладка Игры -->
         <div id="games" class="tab-content">
             <div class="screen-title-box">
-                <h2>Игровая зона</h2>
-                <p>Испытайте удачу</p>
-            </div>
-            <div class="game-card">
-                <div class="crash-screen">
-                    <div class="crash-multiplier">1.00x</div>
-                </div>
-                <button class="btn-primary" style="margin-top: 8px;">Сыграть в Crash</button>
+                <h2>Игры</h2>
+                <p>Скоро здесь появятся мини-игры</p>
             </div>
         </div>
 
@@ -95,6 +153,10 @@
             <button class="nav-item active" data-tab="home">
                 <span class="nav-icon">🏠</span>
                 <span class="nav-label">Главная</span>
+            </button>
+            <button class="nav-item" data-tab="tasks">
+                <span class="nav-icon">📋</span>
+                <span class="nav-label">Задания</span>
             </button>
             <button class="nav-item" data-tab="wallet">
                 <span class="nav-icon">👛</span>
@@ -108,7 +170,6 @@
 
     </div>
 
-    <!-- Подключаем логику приложения -->
     <script src="app.js"></script>
 </body>
 </html>
