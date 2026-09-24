@@ -11,8 +11,8 @@ app.use(cors());
 // Инициализация базы данных (файл базы сохранится локально на сервере)
 const db = DataStore.create({ filename: path.join(__dirname, 'database.db'), autoload: true });
 
-// Раздаем статические файлы (index.html, styles.css, script.js) из корня проекта
-app.use(express.static(path.join(__dirname)));
+// Раздаем статические файлы из папки public
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Читаем переменные окружения из Render
 const BOT_TOKEN = process.env.BOT_TOKEN;
@@ -50,7 +50,7 @@ app.post('/api/check-subscription', async (req, res) => {
 
     const isSubscribed = await checkTelegramSubscription(userId);
     
-    // Если подписан, можно зафиксировать это в базе данных nedb
+    // Если подписан, фиксируем это в базе данных nedb
     if (isSubscribed) {
         await db.update(
             { userId: userId },
@@ -76,9 +76,9 @@ app.post('/api/check-admin', (req, res) => {
     res.json({ isAdmin });
 });
 
-// Главная страница — возвращает index.html
+// Главная страница — возвращает index.html из папки public
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Запуск сервера на порту, который выделяет Render
