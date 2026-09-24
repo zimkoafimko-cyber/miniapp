@@ -229,7 +229,6 @@ body {
     min-height: 16px;
 }
 
-/* СУПЕР-АНИМАЦИЯ КОСМИЧЕСКОЙ РАКЕТЫ */
 .game-card {
     background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
 }
@@ -276,7 +275,7 @@ body {
 
 .rocket-container {
     position: absolute;
-    bottom: 20px;
+    bottom: 30px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -314,8 +313,8 @@ body {
 }
 
 @keyframes rocketSway {
-    0% { transform: translateY(-4px) translateX(-3px) rotate(-6deg); }
-    100% { transform: translateY(-16px) translateX(3px) rotate(6deg); }
+    0% { transform: translateY(0px) translateX(-2px) rotate(-2deg); }
+    100% { transform: translateY(-4px) translateX(2px) rotate(2deg); }
 }
 
 .rocket-crash {
@@ -324,11 +323,10 @@ body {
 
 @keyframes explosionAnim {
     0% { transform: scale(1) rotate(0deg); opacity: 1; filter: drop-shadow(0 0 10px #ef4444); }
-    50% { transform: scale(2.8) rotate(25deg); opacity: 0.8; filter: drop-shadow(0 0 25px #f59e0b); }
-    100% { transform: scale(3.5) rotate(45deg); opacity: 0; }
+    50% { transform: scale(2.5) rotate(20deg); opacity: 0.8; filter: drop-shadow(0 0 20px #f59e0b); }
+    100% { transform: scale(3.0) rotate(35deg); opacity: 0; }
 }
 
-/* СУПЕР-АНИМАЦИЯ КОСТЕЙ */
 .dice-screen {
     background: #0b0f19;
     border-radius: 12px;
