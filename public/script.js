@@ -25,7 +25,6 @@ const adminPanel = document.getElementById('adminPanel');
 
 let currentStars = 0;
 
-// Надежная функция сохранения баланса с синхронизацией
 function updateBalance(newStars) {
     currentStars = newStars;
     userStars.innerText = currentStars;
@@ -39,7 +38,6 @@ function updateBalance(newStars) {
     }
 }
 
-// Загрузка данных пользователя при входе
 if (userId) {
     fetch(`/api/user?userId=${userId}`)
         .then(res => res.json())
@@ -170,7 +168,7 @@ withdrawBtn.addEventListener('click', () => {
     }
 });
 
-// --- КРАШ РАКЕТА (Исправленная анимация в пределах экрана и шанс ~30%) ---
+// --- КРАШ РАКЕТА ---
 const crashPlayBtn = document.getElementById('crashPlayBtn');
 const crashBetInput = document.getElementById('crashBetInput');
 const crashMultiplier = document.getElementById('crashMultiplier');
@@ -218,7 +216,6 @@ crashPlayBtn.addEventListener('click', () => {
         currentMultiplier = 1.00;
         crashMultiplier.innerText = '1.00x';
 
-        // Шанс победы около 30%
         const roll = Math.random();
         if (roll < 0.70) {
             targetCrashAt = parseFloat((1.00 + Math.random() * 0.35).toFixed(2));
@@ -242,7 +239,7 @@ crashPlayBtn.addEventListener('click', () => {
         
         stopRocketAnimation();
         crashStatus.style.color = 'var(--success)';
-        crashStatus.innerText = `🎯 Успешно! Вы забрали на ${currentMultiplier.toFixed(2)}x (+${winAmount} ⭐)`;
+        crashStatus.innerText = `🎯 Успешно! Вы забрали на ${currentMultiplier.toFixed(2) + 'x'} (+${winAmount} ⭐)`;
         
         resetCrashButton();
     }
@@ -329,3 +326,18 @@ dicePlayBtn.addEventListener('click', () => {
         }
     }, 700);
 });
+
+if (username) {
+    fetch('/api/check-admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.isAdmin) {
+            adminPanel.style.display = 'block';
+        }
+    })
+    .catch(err => console.error(err));
+}
