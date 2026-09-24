@@ -2,81 +2,282 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Звезды за задание</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>⭐ Звезды за задание</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        :root {
+            --bg-color: var(--tg-theme-bg-color, #0f172a);
+            --card-bg: var(--tg-theme-secondary-bg-color, #1e293b);
+            --text-color: var(--tg-theme-text-color, #f8fafc);
+            --hint-color: var(--tg-theme-hint-color, #94a3b8);
+            --button-bg: var(--tg-theme-button-color, #3b82f6);
+            --button-text: var(--tg-theme-button-text-color, #ffffff);
+            --accent: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: all 0.2s ease;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--tg-theme-bg-color, #18222d);
-            color: var(--tg-theme-text-color, #ffffff);
-            margin: 0;
-            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 16px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             min-height: 100vh;
-            box-sizing: border-box;
+            overflow-x: hidden;
         }
-        .container {
+
+        .app-container {
             width: 100%;
-            max-width: 400px;
-            background: var(--tg-theme-secondary-bg-color, #232e3c);
+            max-width: 440px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Шапка с балансом */
+        .header-card {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border-radius: 20px;
             padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            text-align: center;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+            position: relative;
+            overflow: hidden;
         }
-        h1 {
-            font-size: 22px;
-            margin-bottom: 10px;
+
+        .header-card::after {
+            content: '⭐';
+            position: absolute;
+            right: -10px;
+            bottom: -15px;
+            font-size: 80px;
+            opacity: 0.15;
+            transform: rotate(15deg);
         }
-        p {
+
+        .balance-info h2 {
             font-size: 14px;
-            color: var(--tg-theme-hint-color, #a8b2bc);
-            margin-bottom: 20px;
+            font-weight: 500;
+            opacity: 0.9;
+            margin-bottom: 4px;
         }
-        button {
-            background-color: var(--tg-theme-button-color, #3390ec);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            border: none;
-            border-radius: 8px;
-            padding: 12px 20px;
+
+        .balance-amount {
+            font-size: 28px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+        }
+
+        /* Секция заданий */
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .task-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+
+        .task-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .task-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: rgba(245, 158, 11, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .task-info h3 {
             font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .task-info p {
+            font-size: 13px;
+            color: var(--hint-color);
+        }
+
+        .task-reward {
+            margin-left: auto;
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--accent);
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Кнопки */
+        .btn {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 15px;
             font-weight: 600;
             width: 100%;
             cursor: pointer;
-            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
-        button:active {
-            opacity: 0.8;
+
+        .btn:active {
+            transform: scale(0.98);
         }
-        .status {
-            margin-top: 15px;
-            font-size: 14px;
+
+        .btn-success {
+            background-color: var(--success);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .status-msg {
+            font-size: 13px;
+            text-align: center;
+            min-height: 18px;
             font-weight: 500;
         }
+
+        /* Админ панель */
         .admin-panel {
-            margin-top: 25px;
-            padding-top: 15px;
-            border-top: 1px solid rgba(255,255,255,0.1);
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 2px dashed var(--accent);
+            border-radius: 16px;
+            padding: 16px;
             display: none;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        .admin-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent);
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        /* Анимации */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pulse {
+            animation: pulseAnim 1.5s infinite;
+        }
+
+        @keyframes pulseAnim {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>⭐ Звезды за задание</h1>
-        <p>Подпишитесь на наш канал, чтобы получить награду!</p>
-        
-        <button id="checkSubBtn">Проверить подписку</button>
-        <div id="statusText" class="status"></div>
+    <div class="app-container">
+        <!-- Шапка профиля и баланса -->
+        <div class="header-card">
+            <div class="balance-info">
+                <h2>Ваш баланс</h2>
+                <div class="balance-amount">
+                    <span id="userStars">0</span> ⭐
+                </div>
+            </div>
+            <div class="user-avatar" id="userAvatar">U</div>
+        </div>
 
+        <!-- Основное задание -->
+        <div class="section-title">🔥 Активные задания</div>
+        
+        <div class="task-card">
+            <div class="task-header">
+                <div class="task-icon">📢</div>
+                <div class="task-info">
+                    <h3>Подпишись на канал</h3>
+                    <p>Будь в курсе всех новостей и наград</p>
+                </div>
+                <div class="task-reward">+10 ⭐</div>
+            </div>
+            
+            <button class="btn" id="subActionBtn">Подписаться на канал</button>
+            <button class="btn btn-success" id="checkSubBtn" style="display:none;">Проверить подписку</button>
+            
+            <div id="statusText" class="status-msg"></div>
+        </div>
+
+        <!-- Панель Администратора -->
         <div id="adminPanel" class="admin-panel">
-            <h3>🛠 Панель администратора</h3>
-            <p>Добро пожаловать, босс! У вас полный доступ.</p>
+            <div class="admin-header">
+                <span>🛠</span> Панель Администратора
+            </div>
+            <p style="font-size: 13px; color: var(--hint-color); margin-bottom: 10px;">
+                Управление ботом и мониторинг пользователей активны.
+            </p>
+            <button class="btn" style="background: #334155; font-size: 13px; padding: 10px;" onclick="alert('Статистика бэкенда в норме!')">Статистика системы</button>
         </div>
     </div>
 
@@ -85,12 +286,65 @@
         tg.expand();
 
         const user = tg.initDataUnsafe?.user;
+        const username = user ? user.username : 'Гость';
+        const firstName = user ? user.first_name : 'Пользователь';
         const userId = user ? user.id : null;
-        const username = user ? user.username : null;
 
+        // Оформляем аватарку и имя
+        document.getElementById('userAvatar').innerText = firstName.charAt(0).toUpperCase();
+
+        const subActionBtn = document.getElementById('subActionBtn');
         const checkSubBtn = document.getElementById('checkSubBtn');
         const statusText = document.getElementById('statusText');
         const adminPanel = document.getElementById('adminPanel');
+        const userStars = document.getElementById('userStars');
+
+        let isSubscribedState = false;
+
+        // Кнопка перехода на канал (замените ссылку на ваш канал)
+        subActionBtn.addEventListener('click', () => {
+            window.open('https://t.me/your_channel_username', '_blank'); // Ссылка на ваш канал
+            subActionBtn.style.display = 'none';
+            checkSubBtn.style.display = 'flex';
+            checkSubBtn.classList.add('pulse');
+            statusText.style.color = 'var(--hint-color)';
+            statusText.innerText = 'После подписки нажмите кнопку проверки ниже 👇';
+        });
+
+        // Проверка подписки через сервер
+        checkSubBtn.addEventListener('click', async () => {
+            if (!userId) {
+                statusText.style.color = 'var(--danger)';
+                statusText.innerText = 'Ошибка: не удалось определить профиль Telegram';
+                return;
+            }
+
+            statusText.style.color = 'var(--hint-color)';
+            statusText.innerText = 'Проверяем статус подписки...';
+
+            try {
+                const response = await fetch('/api/check-subscription', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: userId })
+                });
+                const data = await response.json();
+
+                if (data.subscribed) {
+                    isSubscribedState = true;
+                    statusText.style.color = 'var(--success)';
+                    statusText.innerText = '🎉 Успешно! Вам начислено +10 звезд!';
+                    userStars.innerText = '10';
+                    checkSubBtn.style.display = 'none';
+                } else {
+                    statusText.style.color = 'var(--danger)';
+                    statusText.innerText = '❌ Вы еще не подписались на канал!';
+                }
+            } catch (error) {
+                statusText.style.color = 'var(--danger)';
+                statusText.innerText = 'Ошибка связи с сервером проверки';
+            }
+        });
 
         // Проверка прав администратора
         if (username) {
@@ -107,38 +361,6 @@
             })
             .catch(err => console.error('Ошибка проверки админа:', err));
         }
-
-        // Проверка подписки по кнопке
-        checkSubBtn.addEventListener('click', async () => {
-            if (!userId) {
-                statusText.style.color = '#ff5959';
-                statusText.innerText = 'Не удалось определить пользователя Telegram';
-                return;
-            }
-
-            statusText.style.color = '#a8b2bc';
-            statusText.innerText = 'Проверяем подписку...';
-
-            try {
-                const response = await fetch('/api/check-subscription', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: userId })
-                });
-                const data = await response.json();
-
-                if (data.subscribed) {
-                    statusText.style.color = '#4cd964';
-                    statusText.innerText = '✅ Вы подписаны! Награда зачислена.';
-                } else {
-                    statusText.style.color = '#ff5959';
-                    statusText.innerText = '❌ Вы не подписаны на канал!';
-                }
-            } catch (error) {
-                statusText.style.color = '#ff5959';
-                statusText.innerText = 'Ошибка соединения с сервером';
-            }
-        });
     </script>
 </body>
 </html>
