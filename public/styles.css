@@ -1,282 +1,327 @@
 :root {
---card-bg: rgba(18, 22, 38, 0.95);
---card-border: rgba(255, 255, 255, 0.15);
---text-main: #ffffff;
---hint-color: #94a3b8;
---primary: #8b5cf6;
---success: #10b981;
---gold: #f59e0b;
+    --card-bg: rgba(18, 22, 38, 0.95);
+    --card-border: rgba(255, 255, 255, 0.15);
+    --text-main: #ffffff;
+    --hint-color: #94a3b8;
+    --primary: #8b5cf6;
+    --success: #10b981;
+    --gold: #f59e0b;
 }
-￼ {
-box-sizing: border-box;
-margin: 0;
-padding: 0;
-font-family: 'Outfit', sans-serif;
--webkit-tap-highlight-color: transparent;
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Outfit', sans-serif;
+    -webkit-tap-highlight-color: transparent;
 }
+
 body {
-background: linear-gradient(135deg, #1e0b36 0%, #31105c 35%, #581c87 70%, #1e3a8a 100%) !important;
-color: var(--text-main);
-padding: 8px;
-display: flex;
-justify-content: center;
--webkit-font-smoothing: antialiased;
-min-height: 100vh;
-overflow-x: hidden;
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%) !important;
+    color: var(--text-main);
+    padding: 12px;
+    display: flex;
+    justify-content: center;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
 }
+
 .app-container {
-width: 100%;
-max-width: 480px;
-display: flex;
-flex-direction: column;
-gap: 8px;
-padding-bottom: 70px;
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 85px;
 }
-/* Единая анимация и поведение ВСЕХ страниц */
+
 .tab-content {
-display: none;
-flex-direction: column;
-gap: 8px;
-animation: smoothScaleFade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    animation: fadeIn 0.2s ease-out forwards;
 }
+
 .tab-content.active {
-display: flex;
+    display: flex;
 }
-@keyframes smoothScaleFade {
-0% { opacity: 0; transform: scale(0.96) translateY(8px); }
-100% { opacity: 1; transform: scale(1) translateY(0); }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
 }
-/* Шапка профиля */
+
+/* Крупная шапка профиля */
 .header-card {
-background: linear-gradient(135deg, rgba(124, 58, 237, 0.95) 0%, rgba(79, 70, 229, 0.95) 100%);
-backdrop-filter: blur(12px);
-border-radius: 14px;
-padding: 12px 14px;
-display: flex;
-justify-content: space-between;
-align-items: center;
-box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4);
-border: 1px solid rgba(255, 255, 255, 0.25);
+    background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.25);
 }
+
 .balance-info h2 {
-font-size: 10px;
-text-transform: uppercase;
-letter-spacing: 1px;
-color: rgba(255, 255, 255, 0.75);
-margin-bottom: 2px;
-font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.75);
+    margin-bottom: 2px;
+    font-weight: 700;
 }
+
 .balance-amount {
-font-size: 26px;
-font-weight: 900;
-font-family: 'Orbitron', sans-serif;
-color: #fff;
-display: flex;
-align-items: center;
-gap: 6px;
-text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    font-size: 30px;
+    font-weight: 900;
+    font-family: 'Orbitron', sans-serif;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
-.star-icon { font-size: 20px; }
+
+.star-icon { font-size: 22px; }
+
 .user-profile-badge {
-display: flex;
-align-items: center;
-gap: 8px;
-background: rgba(0, 0, 0, 0.35);
-padding: 6px 12px;
-border-radius: 20px;
-border: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.35);
+    padding: 6px 12px;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
+
 .user-avatar {
-width: 28px;
-height: 28px;
-background: var(--gold);
-color: #000;
-font-weight: 900;
-border-radius: 50%;
-display: flex;
-align-items: center;
-justify-content: center;
-font-size: 12px;
-font-family: 'Orbitron', sans-serif;
+    width: 32px;
+    height: 32px;
+    background: var(--gold);
+    color: #000;
+    font-weight: 900;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-family: 'Orbitron', sans-serif;
 }
+
 .user-name {
-font-size: 12px;
-font-weight: 700;
-max-width: 90px;
-white-space: nowrap;
-overflow: hidden;
-text-overflow: ellipsis;
+    font-size: 13px;
+    font-weight: 700;
+    max-width: 90px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
+
 .screen-title-box h2 {
-font-size: 16px;
-font-weight: 900;
-letter-spacing: 0.4px;
-font-family: 'Orbitron', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
 }
+
 .screen-title-box p {
-font-size: 11px;
-color: var(--hint-color);
-font-weight: 500;
+    font-size: 12px;
+    color: var(--hint-color);
 }
-/* Сетки */
+
+/* Крупные сетки и блоки */
 .stats-grid {
-display: grid;
-grid-template-columns: 1fr 1fr;
-gap: 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
 }
+
 .stat-card {
-background-color: var(--card-bg);
-backdrop-filter: blur(10px);
-border: 1px solid var(--card-border);
-border-radius: 12px;
-padding: 10px 12px;
-display: flex;
-align-items: center;
-gap: 10px;
-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
+
 .stat-icon {
-font-size: 18px;
-background: rgba(255, 255, 255, 0.08);
-width: 34px;
-height: 34px;
-border-radius: 10px;
-display: flex;
-align-items: center;
-justify-content: center;
-flex-shrink: 0;
+    font-size: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .gold-glow { background: rgba(245, 158, 11, 0.2); }
+
 .stat-info { display: flex; flex-direction: column; }
-.stat-value { font-size: 15px; font-weight: 900; font-family: 'Orbitron', sans-serif; color: #fff; }
+.stat-value { font-size: 18px; font-weight: 900; font-family: 'Orbitron', sans-serif; color: #fff; }
 .stat-label { font-size: 10px; color: var(--hint-color); font-weight: 700; text-transform: uppercase; }
-/* Универсальные карточки для всех страниц (Задания, Кошелек, Рефералы, Игры) */
-.task-card, .ref-box, .game-card {
-background: var(--card-bg);
-border: 1px solid var(--card-border);
-padding: 12px 14px;
-border-radius: 12px;
-display: flex;
-justify-content: space-between;
-align-items: center;
-box-shadow: 0 6px 15px rgba(0,0,0,0.2);
-transition: transform 0.2s ease;
+
+.mobile-box {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    padding: 14px;
+    border-radius: 14px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
+.mobile-box h4 { font-size: 14px; font-family: 'Orbitron', sans-serif; }
+.mobile-box p { font-size: 11px; color: var(--hint-color); }
+#ref-link {
+    width: 100%;
+    padding: 10px;
+    background: #0b0f19;
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 11px;
+    text-align: center;
+    outline: none;
+}
+
+.admin-link {
+    color: var(--hint-color);
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    background: rgba(255,255,255,0.08);
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: 1px solid var(--card-border);
+    display: inline-block;
+}
+
+/* Большие удобные кнопки */
+.btn-primary {
+    background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    width: 100%;
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+    transition: transform 0.1s ease;
+}
+.btn-primary:active { transform: scale(0.96); }
+.btn-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4); }
+
+/* Карточка заданий с крупными кнопками */
+.task-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    padding: 14px;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.task-info-block h4 { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+.task-info-block p { font-size: 11px; color: var(--hint-color); }
+.task-btns { display: flex; gap: 8px; }
+.task-btns .btn-primary { padding: 12px; font-size: 13px; flex: 1; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+
+/* Кошелек */
 .wallet-main-card {
-background: linear-gradient(135deg, rgba(30, 27, 75, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
-text-align: center;
-padding: 18px;
-border: 1px solid rgba(124, 58, 237, 0.5);
-border-radius: 14px;
-box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+    background: linear-gradient(135deg, rgba(30, 27, 75, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
+    text-align: center;
+    padding: 20px;
+    border: 1px solid rgba(124, 58, 237, 0.5);
+    border-radius: 16px;
 }
 .wallet-balance-title { font-size: 11px; color: var(--hint-color); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
-.wallet-balance-val { font-size: 32px; font-weight: 900; font-family: 'Orbitron', sans-serif; color: var(--gold); margin-bottom: 4px; text-shadow: 0 2px 12px rgba(245,158,11,0.4); }
-.wallet-limit-info { font-size: 10px; color: var(--hint-color); font-weight: 600; }
-/* Премиальные жирные кнопки */
-.btn-primary {
-background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
-color: #fff;
-border: 1px solid rgba(255, 255, 255, 0.25);
-border-radius: 12px;
-padding: 12px;
-font-size: 13px;
-font-weight: 900;
-font-family: 'Orbitron', sans-serif;
-letter-spacing: 0.3px;
-cursor: pointer;
-width: 100%;
-box-shadow: 0 4px 16px rgba(124, 58, 237, 0.45);
-transition: transform 0.1s ease, filter 0.1s ease;
+.wallet-balance-val { font-size: 36px; font-weight: 900; font-family: 'Orbitron', sans-serif; color: var(--gold); margin-bottom: 4px; }
+.wallet-limit-info { font-size: 11px; color: var(--hint-color); }
+
+/* Игры под мобилки */
+.game-card { 
+    background: var(--card-bg); 
+    border-radius: 14px;
+    padding: 12px;
+    border: 1px solid var(--card-border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
-.btn-primary:active { transform: scale(0.96); filter: brightness(1.15); }
-.btn-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 16px rgba(16, 185, 129, 0.45); }
-.status-msg { font-size: 11px; text-align: center; min-height: 14px; margin-top: 4px; font-weight: 700; color: var(--hint-color); }
-/* Игры */
-.game-card {
-display: flex;
-flex-direction: column;
-align-items: stretch;
-gap: 8px;
-padding: 12px;
-}
+.game-title { font-size: 14px; font-weight: 800; font-family: 'Orbitron', sans-serif; color: #fff; }
+
 .crash-screen {
-background: radial-gradient(circle at center, #3b0764 0%, #030712 100%);
-border-radius: 10px;
-height: 100px;
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-position: relative;
-border: 1px solid rgba(124, 58, 237, 0.5);
-overflow: hidden;
+    background: radial-gradient(circle at center, #2e1065 0%, #030712 100%);
+    border-radius: 12px;
+    height: 110px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 1px solid rgba(124, 58, 237, 0.4);
+    overflow: hidden;
 }
-.crash-multiplier {
-font-family: 'Orbitron', sans-serif;
-font-size: 30px;
-font-weight: 900;
-color: var(--gold);
-text-shadow: 0 0 20px rgba(245,158,11,0.6);
-animation: pulseMult 1.2s infinite alternate;
+
+.crash-multiplier { 
+    font-family: 'Orbitron', sans-serif; 
+    font-size: 32px; 
+    font-weight: 900; 
+    color: var(--gold); 
 }
-@keyframes pulseMult {
-from { transform: scale(1); }
-to { transform: scale(1.06); }
-}
-.rocket-container { position: absolute; bottom: 14px; display: flex; flex-direction: column; align-items: center; }
-.rocket-obj { font-size: 24px; transition: transform 0.2s; }
-.rocket-fire { width: 5px; height: 0px; background: #f59e0b; border-radius: 50%; box-shadow: 0 0 12px #f59e0b; transition: height 0.3s; }
-.fire-active { height: 18px; animation: flameFlicker 0.1s infinite alternate; }
-@keyframes flameFlicker {
-from { height: 16px; opacity: 0.8; }
-to { height: 22px; opacity: 1; }
-}
+
+.rocket-container { position: absolute; bottom: 12px; display: flex; flex-direction: column; align-items: center; }
+.rocket-obj { font-size: 26px; }
+.rocket-fire { width: 5px; height: 0px; background: #f59e0b; border-radius: 50%; transition: height 0.3s; }
+.fire-active { height: 22px; }
+
 .dice-screen {
-background: #0b0f19;
-border-radius: 10px;
-height: 70px;
-display: flex;
-align-items: center;
-justify-content: center;
-gap: 12px;
-border: 1px solid var(--card-border);
+    background: #0b0f19;
+    border-radius: 12px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    border: 1px solid var(--card-border);
 }
-.dice-box {
-font-size: 30px;
-background: rgba(255, 255, 255, 0.05);
-width: 44px;
-height: 44px;
-display: flex;
-align-items: center;
-justify-content: center;
-border-radius: 8px;
-animation: bounceDice 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+.dice-box { 
+    font-size: 36px; 
+    background: rgba(255, 255, 255, 0.05); 
+    width: 50px; 
+    height: 50px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    border-radius: 10px; 
 }
-@keyframes bounceDice {
-0% { transform: scale(0.7); opacity: 0; }
-100% { transform: scale(1); opacity: 1; }
-}
-.game-controls { display: flex; gap: 8px; align-items: center; }
-.game-input { background: #0b0f19; border: 1px solid var(--card-border); border-radius: 10px; color: #fff; padding: 0 10px; font-size: 14px; font-weight: 900; font-family: 'Orbitron', sans-serif; width: 80px; height: 42px; text-align: center; outline: none; }
-.btn-game { flex-grow: 1; height: 42px; padding: 0; font-size: 13px; }
-/* Нижняя навигация */
+
+.game-action-row { display: flex; gap: 8px; align-items: center; }
+.game-input { background: #0b0f19; border: 1px solid var(--card-border); border-radius: 12px; color: #fff; padding: 0 10px; font-size: 16px; font-weight: 900; font-family: 'Orbitron', sans-serif; width: 85px; height: 48px; text-align: center; outline: none; }
+.btn-game { flex-grow: 1; height: 48px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.status-msg { font-size: 11px; text-align: center; font-weight: 700; color: var(--hint-color); }
+
+/* Нижняя крупная навигация */
 .nav-bar {
-position: fixed;
-bottom: 0;
-left: 50%;
-transform: translateX(-50%);
-width: 100%;
-max-width: 480px;
-background: rgba(11, 15, 25, 0.98);
-backdrop-filter: blur(14px);
-border-top: 1px solid var(--card-border);
-display: flex;
-justify-content: space-around;
-padding: 8px 6px 10px 6px;
-z-index: 1000;
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: rgba(11, 15, 25, 0.98);
+    backdrop-filter: blur(16px);
+    border-top: 1px solid var(--card-border);
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 8px 14px 8px;
+    z-index: 1000;
 }
-.nav-item { background: transparent; border: none; display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--hint-color); cursor: pointer; flex: 1; transition: all 0.2s ease; }
-.nav-icon { font-size: 18px; }
-.nav-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px; font-family: 'Orbitron', sans-serif; }
-.nav-item.active { color: #c084fc; text-shadow: 0 0 12px rgba(192,132,252,0.5); transform: translateY(-2px); }
+
+.nav-item { background: transparent; border: none; display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--hint-color); cursor: pointer; flex: 1; }
+.nav-icon { font-size: 22px; }
+.nav-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px; }
+.nav-item.active { color: #c084fc; text-shadow: 0 0 12px rgba(192,132,252,0.5); }
