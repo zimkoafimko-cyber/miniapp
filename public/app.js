@@ -2,17 +2,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const userId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 'guest_user';
     const username = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || 'Игрок';
 
-    // Ключ для хранения баланса именно для этого пользователя
-    const balanceKey = 'user_balance_' + userId;
+    // Добавили суффикс _v2 — это создаст абсолютно чистые профили с 0 балансом для ВСЕХ пользователей
+    const balanceKey = 'user_balance_v2_' + userId;
+    const refsKey = 'user_refs_v2_' + userId;
+    const tasksKey = 'completed_tasks_v2_' + userId;
 
-    // Принудительно очищаем старое значение 100 при первом запуске нового кода
-    if (localStorage.getItem(balanceKey) === '100') {
-        localStorage.setItem(balanceKey, '0');
-    }
-
-    // Теперь стартовый баланс строго 0 (если в памяти ничего не было сохранено)
     let balance = Number(localStorage.getItem(balanceKey)) || 0;
-    let referralCount = Number(localStorage.getItem('user_refs_' + userId)) || 0;
+    let referralCount = Number(localStorage.getItem(refsKey)) || 0;
 
     function updateUI() {
         const balanceEls = document.querySelectorAll('#balance, #wallet-balance');
@@ -32,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
             refLinkInput.value = `https://t.me/belcryptoo_bot?start=ref_${userId}`;
         }
 
-        const completedTasks = JSON.parse(localStorage.getItem('completed_tasks_' + userId) || '[]');
+        const completedTasks = JSON.parse(localStorage.getItem(tasksKey) || '[]');
         completedTasks.forEach(taskId => {
             const btn = document.getElementById(`check-btn-${taskId}`);
             if (btn) {
@@ -55,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.verifyTask = function(taskId, reward) {
-        let completedTasks = JSON.parse(localStorage.getItem('completed_tasks_' + userId) || '[]');
+        let completedTasks = JSON.parse(localStorage.getItem(tasksKey) || '[]');
         if (completedTasks.includes(taskId)) {
             alert('Вы уже получили награду за это задание!');
             return;
@@ -67,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             balance += reward;
             completedTasks.push(taskId);
-            localStorage.setItem('completed_tasks_' + userId, JSON.stringify(completedTasks));
+            localStorage.setItem(tasksKey, JSON.stringify(completedTasks));
             updateUI();
             alert(`🎉 Подписка подтверждена! Начислено +${reward} ⭐`);
         }, 800);
