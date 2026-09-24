@@ -1,5 +1,5 @@
 :root {
-    --card-bg: rgba(18, 22, 38, 0.9);
+    --card-bg: rgba(18, 22, 38, 0.92);
     --card-border: rgba(255, 255, 255, 0.12);
     --text-main: #ffffff;
     --hint-color: #94a3b8;
@@ -36,11 +36,12 @@ body {
     padding-bottom: 65px;
 }
 
+/* Общие стили для ВСЕХ страниц/вкладок */
 .tab-content {
     display: none;
     flex-direction: column;
     gap: 6px;
-    animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .tab-content.active {
@@ -48,8 +49,8 @@ body {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.98) translateY(4px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* Шапка профиля */
@@ -168,7 +169,7 @@ body {
 .stat-value { font-size: 14px; font-weight: 900; font-family: 'Orbitron', sans-serif; color: #fff; }
 .stat-label { font-size: 9px; color: var(--hint-color); font-weight: 600; text-transform: uppercase; }
 
-/* Карточки заданий и рефералов */
+/* Карточки */
 .task-card, .ref-box {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
@@ -192,7 +193,7 @@ body {
 .wallet-balance-val { font-size: 28px; font-weight: 900; font-family: 'Orbitron', sans-serif; color: var(--gold); margin-bottom: 2px; text-shadow: 0 2px 10px rgba(245,158,11,0.3); }
 .wallet-limit-info { font-size: 9px; color: var(--hint-color); font-weight: 500; }
 
-/* Кнопки с анимацией нажатия */
+/* Кнопки */
 .btn-primary {
     background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
     color: #fff;
@@ -211,7 +212,7 @@ body {
 
 .status-msg { font-size: 10px; text-align: center; min-height: 12px; margin-top: 2px; font-weight: 600; color: var(--hint-color); }
 
-/* Игры с анимациями */
+/* Игры */
 .game-card { 
     background: var(--card-bg); 
     border-radius: 10px;
