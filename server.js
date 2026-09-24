@@ -8,18 +8,21 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Раздаем статические файлы (index.html) из корня проекта
+// Инициализация базы данных (файл базы сохранится локально на сервере)
+const db = DataStore.create({ filename: path.join(__dirname, 'database.db'), autoload: true });
+
+// Раздаем статические файлы (index.html, styles.css, script.js) из корня проекта
 app.use(express.static(path.join(__dirname)));
 
-// Переменные окружения из Render
+// Читаем переменные окружения из Render
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const CHANNEL_ID = process.env.CHANNEL_ID;
 const ADMIN_NAME = process.env.ADMIN_NAME;
 
-// Функция проверки подписки на канал через Telegram API
+// Функция проверки подписки на канал через Telegram Bot API
 async function checkTelegramSubscription(userId) {
     if (!BOT_TOKEN || !CHANNEL_ID) {
-        console.error('BOT_TOKEN или CHANNEL_ID не заданы!');
+        console.error('BOT_TOKEN или CHANNEL_ID не заданы в переменных окружения!');
         return false;
     }
     try {
@@ -28,6 +31,7 @@ async function checkTelegramSubscription(userId) {
         
         if (data.ok) {
             const status = data.result.status;
+            // Пользователь считается подписанным, если он участник, админ или создатель канала
             return ['member', 'administrator', 'creator'].includes(status);
         }
         return false;
@@ -37,7 +41,7 @@ async function checkTelegramSubscription(userId) {
     }
 }
 
-// Эндпоинт проверки подписки
+// Эндпоинт для проверки подписки
 app.post('/api/check-subscription', async (req, res) => {
     const { userId } = req.body;
     if (!userId) {
@@ -45,10 +49,20 @@ app.post('/api/check-subscription', async (req, res) => {
     }
 
     const isSubscribed = await checkTelegramSubscription(userId);
+    
+    // Если подписан, можно зафиксировать это в базе данных nedb
+    if (isSubscribed) {
+        await db.update(
+            { userId: userId },
+            { $set: { subscribed: true, updatedAt: new Date() } },
+            { upsert: true }
+        );
+    }
+
     res.json({ subscribed: isSubscribed });
 });
 
-// Эндпоинт проверки прав администратора (сравнение без учета собачки и регистра)
+// Эндпоинт для проверки прав администратора (сравнение без учета символа @ и регистра)
 app.post('/api/check-admin', (req, res) => {
     const { username } = req.body;
     if (!username) {
@@ -62,12 +76,12 @@ app.post('/api/check-admin', (req, res) => {
     res.json({ isAdmin });
 });
 
-// Главная страница — отдает index.html
+// Главная страница — возвращает index.html
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Запуск сервера с учетом порта Render
+// Запуск сервера на порту, который выделяет Render
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
