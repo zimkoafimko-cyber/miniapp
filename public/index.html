@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BelCrypto Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=11.0">
+    <link rel="stylesheet" href="styles.css?v=12.0">
 </head>
 <body>
 
@@ -91,12 +91,9 @@
             <div class="wallet-main-card">
                 <div class="wallet-balance-title">Доступно к выводу</div>
                 <div class="wallet-balance-val"><span id="wallet-balance">0</span> ⭐</div>
-                
-                <!-- Указан твой телеграм -->
                 <div class="wallet-target-tg">
                     Куда выводим: <span class="tg-tag">@AlinaResseler</span>
                 </div>
-                
                 <div class="wallet-limit-info">Минимум для вывода: 50 ⭐</div>
             </div>
             <button class="btn-primary btn-success btn-lg" onclick="withdrawStars()">Вывести звёзды</button>
@@ -123,7 +120,7 @@
                     <input type="number" id="crash-bet" class="game-input" value="10" min="1">
                     <button class="btn-primary btn-game" id="crash-btn" onclick="toggleCrashGame()">Запустить</button>
                 </div>
-                <div class="status-msg" id="crash-status">Сделайте ставку и поймай множитель!</div>
+                <div class="status-msg" id="crash-status">Шанс успеха 35%! Сделайте ставку.</div>
             </div>
 
             <!-- Игра 2: Кости (Dice) -->
@@ -137,11 +134,39 @@
                     <input type="number" id="dice-bet" class="game-input" value="10" min="1">
                     <button class="btn-primary btn-game btn-success" onclick="playDice()">Бросить</button>
                 </div>
-                <div class="status-msg" id="dice-status">Шанс выиграть x2 при сумме очков больше 7!</div>
+                <div class="status-msg" id="dice-status">Шанс победы 30% (сумма > 7 дает x2)!</div>
             </div>
         </div>
 
-        <!-- Нижняя навигация -->
+        <!-- Вкладка: Профиль -->
+        <div id="profile" class="tab-content">
+            <div class="screen-title-box">
+                <h2>Профиль игрока</h2>
+                <p>Ваши персональные данные в системе</p>
+            </div>
+
+            <div class="mobile-box" style="text-align: left;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
+                    <div class="user-avatar" id="profile-initial" style="width: 48px; height: 48px; font-size: 20px;">U</div>
+                    <div>
+                        <h4 id="profile-name" style="font-size: 16px;">Игрок</h4>
+                        <p style="font-size: 11px; color: #38bdf8;">Активный участник</p>
+                    </div>
+                </div>
+                
+                <hr style="border: none; border-top: 1px solid var(--card-border); margin: 10px 0;">
+
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <span style="font-size: 11px; color: var(--hint-color); font-weight: 700; text-transform: uppercase;">Ваш уникальный ID:</span>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="profile-id-input" readonly style="flex: 1; padding: 12px; background: rgba(0,0,0,0.4); border: 1px solid var(--card-border); border-radius: 12px; color: #fff; font-size: 13px; font-family: 'Orbitron', sans-serif; outline: none;">
+                        <button class="btn-primary" style="width: auto; padding: 0 18px;" onclick="copyUserId()">📋</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Нижняя навигация (5 вкладок) -->
         <nav class="nav-bar">
             <button class="nav-item active" data-tab="home">
                 <span class="nav-icon">🏠</span>
@@ -158,6 +183,10 @@
             <button class="nav-item" data-tab="games">
                 <span class="nav-icon">🎮</span>
                 <span class="nav-label">Игры</span>
+            </button>
+            <button class="nav-item" data-tab="profile">
+                <span class="nav-icon">👤</span>
+                <span class="nav-label">Профиль</span>
             </button>
         </nav>
 
