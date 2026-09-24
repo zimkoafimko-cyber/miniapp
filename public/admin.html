@@ -28,6 +28,7 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.4);
         }
         h2 { margin-bottom: 14px; font-size: 18px; text-align: center; }
+        h3 { font-size: 14px; margin-top: 15px; margin-bottom: 8px; color: #cbd5e1; }
         input {
             width: 100%;
             padding: 12px;
@@ -71,66 +72,69 @@
 
     <div id="admin-panel" class="card hidden">
         <h2>⚡ Управление балансом</h2>
-        <input type="text" id="target-user" placeholder="ID игрока">
+        <input type="text" id="target-user" placeholder="ID игрока (например, ваш ID)">
         <input type="number" id="target-amount" placeholder="Количество звезд">
         <button onclick="setBalance()" style="margin-bottom: 14px;">Выдать баланс</button>
         
-        <h3>Список игроков:</h3>
+        <h3>Игроки в памяти устройства:</h3>
         <div id="users-list" style="margin-top: 8px; max-height: 140px; overflow-y: auto;"></div>
         <button onclick="logout()" style="background: #ef4444; margin-top: 14px;">Выйти</button>
     </div>
 
     <script>
-        async function login() {
+        function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('admin-password').value;
-            const res = await fetch('/api/admin/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
-            const data = await res.json();
-            if (data.success) {
+            
+            // Простейшая проверка логина/пароля прямо в клиенте
+            if (username === 'alina' && password === 'opelve') {
                 document.getElementById('login-container').classList.add('hidden');
                 document.getElementById('admin-panel').classList.remove('hidden');
                 loadUsers();
             } else {
-                document.getElementById('error-msg').innerText = data.message;
+                document.getElementById('error-msg').innerText = 'Неверный логин или пароль!';
             }
         }
 
-        async function setBalance() {
-            const userId = document.getElementById('target-user').value;
-            const amount = document.getElementById('target-amount').value;
-            if (!userId || !amount) return alert('Заполните поля!');
-            const res = await fetch('/api/admin/set-balance', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, amount })
-            });
-            const data = await res.json();
-            if (data.success) {
-                alert('Готово!');
-                renderUsers(data.balances);
+        function setBalance() {
+            const userId = document.getElementById('target-user').value.trim();
+            const amount = Number(document.getElementById('target-amount').value);
+            
+            if (!userId || isNaN(amount)) {
+                alert('Заполните корректно ID игрока и сумму!');
+                return;
             }
+
+            // Записываем баланс напрямую в localStorage по новому ключу v2
+            const balanceKey = 'user_balance_v2_' + userId;
+            localStorage.setItem(balanceKey, amount);
+            
+            alert(`✅ Успешно! Игроку ${userId} выдано ${amount} ⭐`);
+            loadUsers();
         }
 
-        async function loadUsers() {
-            const res = await fetch('/api/admin/users');
-            const data = await res.json();
-            if (data.success) renderUsers(data.balances);
-        }
-
-        function renderUsers(balances) {
+        function loadUsers() {
             const list = document.getElementById('users-list');
             list.innerHTML = '';
-            for (const [id, amount] of Object.entries(balances)) {
-                list.innerHTML += `<div class="user-row"><span>ID: ${id}</span> <b>${amount} ⭐</b></div>`;
+            
+            let found = false;
+            // Ищем все сохраненные балансы пользователей с версией v2 в localStorage
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('user_balance_v2_')) {
+                    const userId = key.replace('user_balance_v2_', '');
+                    const amount = localStorage.getItem(key);
+                    list.innerHTML += `<div class="user-row"><span>ID: ${userId}</span> <b>${amount} ⭐</b></div>`;
+                    found = true;
+                }
+            }
+
+            if (!found) {
+                list.innerHTML = '<div style="color: #94a3b8; font-size: 12px; text-align: center; padding: 10px;">Пока нет активных игроков в памяти.</div>';
             }
         }
 
-        async function logout() {
-            await fetch('/api/admin/logout');
+        function logout() {
             location.reload();
         }
     </script>
