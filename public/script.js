@@ -29,7 +29,6 @@ function updateBalance(newStars) {
     currentStars = newStars;
     userStars.innerText = currentStars;
 
-    // Автоматически синхронизируем баланс с сервером (защита от сбросов и абуза)
     if (userId) {
         fetch('/api/update-balance', {
             method: 'POST',
@@ -39,7 +38,6 @@ function updateBalance(newStars) {
     }
 }
 
-// Загружаем профиль при старте
 if (userId) {
     fetch(`/api/user?userId=${userId}`)
         .then(res => res.json())
@@ -58,10 +56,8 @@ if (userId) {
         .catch(err => console.error('Ошибка профиля:', err));
 }
 
-// Ежедневный бонус (+3 звезды)
 dailyBtn.addEventListener('click', async () => {
     if (!userId) return;
-
     dailyStatus.style.color = 'var(--hint-color)';
     dailyStatus.innerText = 'Получаем бонус...';
 
@@ -72,7 +68,6 @@ dailyBtn.addEventListener('click', async () => {
             body: JSON.stringify({ userId: userId })
         });
         const data = await res.json();
-
         if (data.success) {
             updateBalance(data.stars);
             dailyStatus.style.color = 'var(--success)';
@@ -87,7 +82,6 @@ dailyBtn.addEventListener('click', async () => {
     }
 });
 
-// Подписка на @belcryptoo
 subActionBtn.addEventListener('click', () => {
     window.open('https://t.me/belcryptoo', '_blank'); 
     subActionBtn.style.display = 'none';
@@ -96,10 +90,8 @@ subActionBtn.addEventListener('click', () => {
     statusText.innerText = 'После подписки нажмите кнопку проверки 👇';
 });
 
-// Проверка подписки через сервер
 checkSubBtn.addEventListener('click', async () => {
     if (!userId) return;
-
     statusText.style.color = 'var(--hint-color)';
     statusText.innerText = 'Проверяем подписку на @belcryptoo...';
 
@@ -126,10 +118,8 @@ checkSubBtn.addEventListener('click', async () => {
     }
 });
 
-// Поделиться проектом (+2 звезды с задержкой для подтверждения)
 shareBtn.addEventListener('click', () => {
     window.open(`https://t.me/share/url?url=https://t.me/belcryptoo&text=Зарабатывай%20звезды%20и%20играй%20вместе%20с%20BelCrypto!`, '_blank');
-
     shareStatus.style.color = 'var(--hint-color)';
     shareStatus.innerText = 'Подтверждаем отправку поста...';
 
@@ -156,7 +146,6 @@ shareBtn.addEventListener('click', () => {
     }, 2000);
 });
 
-// Реферальная ссылка (+2 звезды)
 refBtn.addEventListener('click', () => {
     const refLink = `https://t.me/belcryptoo?start=ref_${userId}`;
     navigator.clipboard.writeText(refLink).then(() => {
@@ -166,7 +155,6 @@ refBtn.addEventListener('click', () => {
     });
 });
 
-// Кнопка ВЫВОДА (Строго от 50 звезд)
 withdrawBtn.addEventListener('click', () => {
     if (currentStars < 50) {
         withdrawStatus.style.color = 'var(--danger)';
@@ -180,68 +168,114 @@ withdrawBtn.addEventListener('click', () => {
     }
 });
 
-// --- МИНИ-ИГРА 1: КРАШ РАКЕТА ---
+// --- КРАШ РАКЕТА (Шанс победы ~30%, крутая плавная анимация) ---
 const crashPlayBtn = document.getElementById('crashPlayBtn');
 const crashBetInput = document.getElementById('crashBetInput');
 const crashMultiplier = document.getElementById('crashMultiplier');
-const rocket = document.getElementById('rocket');
+const rocketContainer = document.getElementById('rocketContainer');
+const rocketFire = document.getElementById('rocketFire');
+const spaceStars = document.getElementById('spaceStars');
 const crashStatus = document.getElementById('crashStatus');
 
-let isPlayingCrash = false;
+let crashInterval = null;
+let currentMultiplier = 1.00;
+let targetCrashAt = 1.00;
+let activeBet = 0;
+let gamePhase = 'IDLE';
 
-crashPlayBtn.addEventListener('click', async () => {
-    if (isPlayingCrash) return;
-    const bet = parseInt(crashBetInput.value);
-
-    if (isNaN(bet) || bet <= 0) {
-        crashStatus.style.color = 'var(--danger)';
-        crashStatus.innerText = 'Введите корректную ставку!';
-        return;
-    }
-    if (currentStars < bet) {
-        crashStatus.style.color = 'var(--danger)';
-        crashStatus.innerText = 'Недостаточно звезд!';
-        return;
-    }
-
-    updateBalance(currentStars - bet);
-    isPlayingCrash = true;
-    crashPlayBtn.disabled = true;
-    crashBetInput.disabled = true;
-    rocket.classList.add('rocket-flying');
-    crashStatus.style.color = 'var(--hint-color)';
-    crashStatus.innerText = 'Ракета набирает высоту...';
-
-    let mult = 1.00;
-    const crashAt = parseFloat((Math.random() * 2.5 + 1.1).toFixed(2));
-
-    const interval = setInterval(() => {
-        mult += 0.04;
-        crashMultiplier.innerText = mult.toFixed(2) + 'x';
-
-        if (mult >= crashAt) {
-            clearInterval(interval);
-            rocket.classList.remove('rocket-flying');
-
-            const won = crashAt > 1.4;
-            if (won) {
-                const winAmount = Math.floor(bet * crashAt);
-                updateBalance(currentStars + winAmount);
-                crashStatus.style.color = 'var(--success)';
-                crashStatus.innerText = `💥 Ракета улетела на ${crashAt}x! Выигрыш: +${winAmount} ⭐`;
-            } else {
-                crashStatus.style.color = 'var(--danger)';
-                crashStatus.innerText = `💥 Ранний краш на ${crashAt}x! Ставка сгорела.`;
-            }
-
-            isPlayingCrash = false;
-            crashPlayBtn.disabled = false;
-            crashBetInput.disabled = false;
+crashPlayBtn.addEventListener('click', () => {
+    if (gamePhase === 'IDLE') {
+        const bet = parseInt(crashBetInput.value);
+        if (isNaN(bet) || bet <= 0) {
+            crashStatus.style.color = 'var(--danger)';
+            crashStatus.innerText = 'Введите корректную ставку!';
+            return;
         }
-    }, 140);
+        if (currentStars < bet) {
+            crashStatus.style.color = 'var(--danger)';
+            crashStatus.innerText = 'Недостаточно звезд!';
+            return;
+        }
+
+        activeBet = bet;
+        updateBalance(currentStars - activeBet);
+        
+        gamePhase = 'FLYING';
+        crashBetInput.disabled = true;
+        crashPlayBtn.innerText = 'ЗАБРАТЬ';
+        crashPlayBtn.style.background = 'var(--success)';
+        
+        rocketContainer.classList.add('rocket-flying');
+        rocketFire.classList.add('fire-active');
+        spaceStars.classList.add('stars-moving');
+        rocketContainer.classList.remove('rocket-crash');
+
+        crashStatus.style.color = 'var(--hint-color)';
+        crashStatus.innerText = 'Ракета набирает высоту...';
+
+        currentMultiplier = 1.00;
+        crashMultiplier.innerText = '1.00x';
+
+        // Шанс победы около 30%
+        const roll = Math.random();
+        if (roll < 0.70) {
+            targetCrashAt = parseFloat((1.00 + Math.random() * 0.35).toFixed(2));
+        } else {
+            targetCrashAt = parseFloat((1.40 + Math.random() * 3.10).toFixed(2));
+        }
+
+        crashInterval = setInterval(() => {
+            currentMultiplier += 0.03;
+            crashMultiplier.innerText = currentMultiplier.toFixed(2) + 'x';
+
+            if (currentMultiplier >= targetCrashAt) {
+                endCrashGame(false);
+            }
+        }, 90);
+
+    } else if (gamePhase === 'FLYING') {
+        clearInterval(crashInterval);
+        const winAmount = Math.floor(activeBet * currentMultiplier);
+        updateBalance(currentStars + winAmount);
+        
+        stopRocketAnimation();
+        crashStatus.style.color = 'var(--success)';
+        crashStatus.innerText = `🎯 Успешно! Вы забрали на ${currentMultiplier.toFixed(2)}x (+${winAmount} ⭐)`;
+        
+        resetCrashButton();
+    }
 });
 
-// --- МИНИ-ИГРА 2: СЧАСТЛИВЫЕ КОСТИ ---
+function endCrashGame(isWin) {
+    clearInterval(crashInterval);
+    rocketContainer.classList.remove('rocket-flying');
+    rocketFire.classList.remove('fire-active');
+    spaceStars.classList.remove('stars-moving');
+    rocketContainer.classList.add('rocket-crash');
+
+    if (isWin) {
+        // не используется напрямую, т.к победа обрабатывается кликом по кнопке
+    } else {
+        crashStatus.style.color = 'var(--danger)';
+        crashStatus.innerText = `💥 КРАШ на ${targetCrashAt}x! Ракета взорвалась.`;
+    }
+    resetCrashButton();
+}
+
+function stopRocketAnimation() {
+    rocketContainer.classList.remove('rocket-flying');
+    rocketFire.classList.remove('fire-active');
+    spaceStars.classList.remove('stars-moving');
+}
+
+function resetCrashButton() {
+    gamePhase = 'IDLE';
+    crashPlayBtn.innerText = 'Запустить';
+    crashPlayBtn.style.background = '';
+    crashBetInput.disabled = false;
+}
+
+// --- СЧАСТЛИВЫЕ КОСТИ (Супер-анимация вращения) ---
 const dicePlayBtn = document.getElementById('dicePlayBtn');
 const diceBetInput = document.getElementById('diceBetInput');
 const dice1 = document.getElementById('dice1');
@@ -251,7 +285,6 @@ const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 
 dicePlayBtn.addEventListener('click', () => {
     const bet = parseInt(diceBetInput.value);
-
     if (isNaN(bet) || bet <= 0) {
         diceStatus.style.color = 'var(--danger)';
         diceStatus.innerText = 'Введите ставку!';
@@ -264,14 +297,21 @@ dicePlayBtn.addEventListener('click', () => {
     }
 
     updateBalance(currentStars - bet);
-    dice1.classList.add('dice-anim');
-    dice2.classList.add('dice-anim');
+    dice1.classList.add('dice-rolling');
+    dice2.classList.add('dice-rolling');
     diceStatus.style.color = 'var(--hint-color)';
-    diceStatus.innerText = 'Бросаем кости...';
+    diceStatus.innerText = 'Бросаем кости на удачу...';
+
+    // Рандомная смена граней во время полета
+    let rollTimer = setInterval(() => {
+        dice1.innerText = diceFaces[Math.floor(Math.random() * 6)];
+        dice2.innerText = diceFaces[Math.floor(Math.random() * 6)];
+    }, 80);
 
     setTimeout(() => {
-        dice1.classList.remove('dice-anim');
-        dice2.classList.remove('dice-anim');
+        clearInterval(rollTimer);
+        dice1.classList.remove('dice-rolling');
+        dice2.classList.remove('dice-rolling');
 
         const r1 = Math.floor(Math.random() * 6) + 1;
         const r2 = Math.floor(Math.random() * 6) + 1;
@@ -287,9 +327,9 @@ dicePlayBtn.addEventListener('click', () => {
             diceStatus.innerText = `🎲 Сумма ${sum} (> 7)! Победа: +${winAmount} ⭐`;
         } else {
             diceStatus.style.color = 'var(--danger)';
-            diceStatus.innerText = `🎲 Сумма ${sum}. Проигрыш, пробуйте еще!`;
+            diceStatus.innerText = `🎲 Сумма ${sum}. Проигрыш, попробуйте еще!`;
         }
-    }, 500);
+    }, 700);
 });
 
 // Проверка админа
