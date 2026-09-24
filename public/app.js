@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const userId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 'guest_user';
     const username = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || 'Игрок';
 
-    // Добавили суффикс _v2 — это создаст абсолютно чистые профили с 0 балансом для ВСЕХ пользователей
     const balanceKey = 'user_balance_v2_' + userId;
     const refsKey = 'user_refs_v2_' + userId;
     const tasksKey = 'completed_tasks_v2_' + userId;
@@ -77,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         alert(`✅ Заявка на вывод отправлена на аккаунт @AlinaResseler!\nСумма: ${balance} ⭐`);
     };
 
-    // === ИГРА: КРАШ (РАКЕТА) ===
+    // === ИГРА: КРАШ (РАКЕТА) — Шанс выигрыша 35% ===
     let crashInterval = null;
     let currentMultiplier = 1.00;
     let isPlayingCrash = false;
@@ -109,7 +108,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (fire) fire.classList.add('fire-active');
             if (status) status.innerText = '🚀 Ракета набирает высоту...';
 
-            const crashPoint = 1.25 + Math.random() * 2.75;
+            // Генерируем случайное число от 0 до 100
+            // Шанс 35% означает, что в 35% случаев ракета улетит высоко (до 3.5x - 5x),
+            // а в 65% случаев сорвется почти сразу (на 1.02x - 1.20x)
+            const isLucky = Math.random() * 100 < 35;
+            const crashPoint = isLucky ? (2.0 + Math.random() * 3.0) : (1.02 + Math.random() * 0.18);
 
             crashInterval = setInterval(() => {
                 currentMultiplier += 0.05;
@@ -151,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // === ИГРА: КОСТИ ===
+    // === ИГРА: КОСТИ — Шанс выигрыша 30% ===
     window.playDice = function() {
         const betInput = document.getElementById('dice-bet');
         const status = document.getElementById('dice-status');
@@ -175,9 +178,25 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dice1) dice1.classList.remove('dice-rolling');
             if (dice2) dice2.classList.remove('dice-rolling');
 
-            const roll1 = Math.floor(Math.random() * 6) + 1;
-            const roll2 = Math.floor(Math.random() * 6) + 1;
-            const sum = roll1 + roll2;
+            // Шанс выигрыша ровно 30% (30 из 100)
+            const isWin = Math.random() * 100 < 30;
+            let roll1, roll2, sum;
+
+            if (isWin) {
+                // Принудительно генерируем комбинацию, где сумма строго больше 7 (например, 8, 9, 10, 11, 12)
+                do {
+                    roll1 = Math.floor(Math.random() * 6) + 1;
+                    roll2 = Math.floor(Math.random() * 6) + 1;
+                    sum = roll1 + roll2;
+                } while (sum <= 7);
+            } else {
+                // Принудительно генерируем комбинацию, где сумма 7 или меньше
+                do {
+                    roll1 = Math.floor(Math.random() * 6) + 1;
+                    roll2 = Math.floor(Math.random() * 6) + 1;
+                    sum = roll1 + roll2;
+                } while (sum > 7);
+            }
 
             const symbols = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
             if (dice1) dice1.innerText = symbols[roll1 - 1];
