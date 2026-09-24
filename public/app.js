@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const userId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 'guest_user';
     const username = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || 'Игрок';
 
-    let balance = Number(localStorage.getItem('user_balance_' + userId)) || 100;
+    let balance = Number(localStorage.getItem('user_balance_' + userId)) || 0;
     let referralCount = Number(localStorage.getItem('user_refs_' + userId)) || 0;
 
     function updateUI() {
