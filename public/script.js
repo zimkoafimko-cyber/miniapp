@@ -25,6 +25,7 @@ const adminPanel = document.getElementById('adminPanel');
 
 let currentStars = 0;
 
+// Надежная функция сохранения баланса с синхронизацией
 function updateBalance(newStars) {
     currentStars = newStars;
     userStars.innerText = currentStars;
@@ -33,11 +34,12 @@ function updateBalance(newStars) {
         fetch('/api/update-balance', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: userId, newBalance: currentStars })
+            body: JSON.stringify({ userId: userId, balance: currentStars })
         }).catch(err => console.error('Ошибка сохранения баланса:', err));
     }
 }
 
+// Загрузка данных пользователя при входе
 if (userId) {
     fetch(`/api/user?userId=${userId}`)
         .then(res => res.json())
@@ -168,7 +170,7 @@ withdrawBtn.addEventListener('click', () => {
     }
 });
 
-// --- КРАШ РАКЕТА (Шанс победы ~30%, крутая плавная анимация) ---
+// --- КРАШ РАКЕТА (Исправленная анимация в пределах экрана и шанс ~30%) ---
 const crashPlayBtn = document.getElementById('crashPlayBtn');
 const crashBetInput = document.getElementById('crashBetInput');
 const crashMultiplier = document.getElementById('crashMultiplier');
@@ -253,12 +255,9 @@ function endCrashGame(isWin) {
     spaceStars.classList.remove('stars-moving');
     rocketContainer.classList.add('rocket-crash');
 
-    if (isWin) {
-        // не используется напрямую, т.к победа обрабатывается кликом по кнопке
-    } else {
-        crashStatus.style.color = 'var(--danger)';
-        crashStatus.innerText = `💥 КРАШ на ${targetCrashAt}x! Ракета взорвалась.`;
-    }
+    crashStatus.style.color = 'var(--danger)';
+    crashStatus.innerText = `💥 КРАШ на ${targetCrashAt}x! Ракета взорвалась.`;
+    
     resetCrashButton();
 }
 
@@ -275,7 +274,7 @@ function resetCrashButton() {
     crashBetInput.disabled = false;
 }
 
-// --- СЧАСТЛИВЫЕ КОСТИ (Супер-анимация вращения) ---
+// --- СЧАСТЛИВЫЕ КОСТИ ---
 const dicePlayBtn = document.getElementById('dicePlayBtn');
 const diceBetInput = document.getElementById('diceBetInput');
 const dice1 = document.getElementById('dice1');
@@ -302,7 +301,6 @@ dicePlayBtn.addEventListener('click', () => {
     diceStatus.style.color = 'var(--hint-color)';
     diceStatus.innerText = 'Бросаем кости на удачу...';
 
-    // Рандомная смена граней во время полета
     let rollTimer = setInterval(() => {
         dice1.innerText = diceFaces[Math.floor(Math.random() * 6)];
         dice2.innerText = diceFaces[Math.floor(Math.random() * 6)];
@@ -331,19 +329,3 @@ dicePlayBtn.addEventListener('click', () => {
         }
     }, 700);
 });
-
-// Проверка админа
-if (username) {
-    fetch('/api/check-admin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.isAdmin) {
-            adminPanel.style.display = 'block';
-        }
-    })
-    .catch(err => console.error(err));
-}
