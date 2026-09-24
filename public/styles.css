@@ -1,11 +1,11 @@
 :root {
     --bg-color: #0b0f19;
-    --card-bg: rgba(19, 27, 46, 0.85);
-    --card-border: rgba(255, 255, 255, 0.08);
+    --card-bg: rgba(20, 24, 40, 0.75);
+    --card-border: rgba(255, 255, 255, 0.1);
     --text-main: #f8fafc;
     --hint-color: #94a3b8;
-    --primary: #6366f1;
-    --primary-hover: #4f46e5;
+    --primary: #7c3aed;
+    --primary-hover: #6d28d9;
     --success: #22c55e;
     --danger: #ef4444;
     --gold: #f59e0b;
@@ -19,12 +19,12 @@
 }
 
 /* ==========================================
-   ФОН КАК НА КАРТИНКЕ (ФИОЛЕТОВО-РОЗОВЫЙ КОСМОС)
+   ФОН
    ========================================== */
 body {
     background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 35%, #ec4899 70%, #3b82f6 100%) !important;
     color: var(--text-main);
-    padding: 16px;
+    padding: 12px;
     display: flex;
     justify-content: center;
     -webkit-font-smoothing: antialiased;
@@ -34,14 +34,15 @@ body {
 }
 
 /* ==========================================
-   ОБЩИЕ КОНТЕЙНЕРЫ И СТРУКТУРА
+   КОНТЕЙНЕРЫ (уменьшили пустые места)
    ========================================== */
 .app-container {
     width: 100%;
     max-width: 480px;
     display: flex;
     flex-direction: column;
-    padding-bottom: 90px;
+    gap: 10px;
+    padding-bottom: 75px;
     position: relative;
     z-index: 10;
 }
@@ -49,8 +50,8 @@ body {
 .tab-content {
     display: none;
     flex-direction: column;
-    gap: 14px;
-    animation: fadeIn 0.25s ease-in-out;
+    gap: 10px;
+    animation: fadeIn 0.2s ease-in-out;
 }
 
 .tab-content.active {
@@ -66,27 +67,27 @@ body {
    ШАПКА И ПРОФИЛЬ
    ========================================== */
 .header-card {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(29, 78, 216, 0.9) 100%);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 20px;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.85) 0%, rgba(79, 70, 229, 0.85) 100%);
+    backdrop-filter: blur(12px);
+    border-radius: 18px;
+    padding: 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 20px -4px rgba(124, 58, 237, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .balance-info h2 {
-    font-size: 13px;
+    font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: rgba(255, 255, 255, 0.8);
-    margin-bottom: 4px;
+    color: rgba(255, 255, 255, 0.75);
+    margin-bottom: 2px;
 }
 
 .balance-amount {
-    font-size: 32px;
+    font-size: 28px;
     font-weight: 900;
     font-family: 'Orbitron', sans-serif;
     color: #fff;
@@ -96,22 +97,23 @@ body {
 }
 
 .star-icon { 
-    font-size: 26px; 
+    font-size: 24px; 
 }
 
 .user-profile-badge {
     display: flex;
     align-items: center;
-    gap: 10px;
-    background: rgba(0, 0, 0, 0.25);
-    padding: 8px 12px;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 6px 10px;
     border-radius: 30px;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .user-avatar {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     background: var(--gold);
     color: #000;
     font-weight: 800;
@@ -119,31 +121,31 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .user-name {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
-    max-width: 100px;
+    max-width: 90px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .screen-title-box {
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 }
 
 .screen-title-box h2 {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--text-main);
     margin-bottom: 2px;
 }
 
 .screen-title-box p {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--hint-color);
 }
 
@@ -153,7 +155,7 @@ body {
 .stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 10px;
 }
 
 .stat-card, .card-box {
@@ -161,10 +163,10 @@ body {
     backdrop-filter: blur(12px);
     border: 1px solid var(--card-border);
     border-radius: 16px;
-    padding: 16px;
+    padding: 14px;
     display: flex;
-    gap: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }
 
 .stat-card { 
@@ -176,11 +178,11 @@ body {
 }
 
 .stat-icon, .box-icon {
-    font-size: 22px;
-    background: rgba(255, 255, 255, 0.05);
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
+    font-size: 20px;
+    background: rgba(255, 255, 255, 0.06);
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -188,9 +190,9 @@ body {
 }
 
 .box-icon { 
-    width: 44px; 
-    height: 44px; 
-    font-size: 24px; 
+    width: 40px; 
+    height: 40px; 
+    font-size: 22px; 
 }
 
 .gold-glow { 
@@ -203,14 +205,14 @@ body {
 }
 
 .stat-value { 
-    font-size: 18px; 
+    font-size: 16px; 
     font-weight: 800; 
     font-family: 'Orbitron', sans-serif; 
     color: #fff; 
 }
 
 .stat-label { 
-    font-size: 11px; 
+    font-size: 10px; 
     color: var(--hint-color); 
 }
 
@@ -218,44 +220,47 @@ body {
    КОШЕЛЕК И ВЫВОД
    ========================================== */
 .wallet-main-card {
-    background: linear-gradient(135deg, rgba(30, 27, 75, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
+    background: linear-gradient(135deg, rgba(30, 27, 75, 0.85) 0%, rgba(15, 23, 42, 0.85) 100%);
     text-align: center;
-    padding: 24px;
-    border: 1px solid rgba(99, 102, 241, 0.4);
+    padding: 20px;
+    border: 1px solid rgba(124, 58, 237, 0.4);
     display: flex;
     flex-direction: column;
     align-items: center;
+    border-radius: 18px;
 }
 
 .wallet-balance-title { 
-    font-size: 13px; 
+    font-size: 12px; 
     color: var(--hint-color); 
     text-transform: uppercase; 
-    margin-bottom: 6px; 
+    margin-bottom: 4px; 
 }
 
 .wallet-balance-val { 
-    font-size: 38px; 
+    font-size: 34px; 
     font-weight: 900; 
     font-family: 'Orbitron', sans-serif; 
     color: var(--gold); 
-    margin-bottom: 8px; 
+    margin-bottom: 6px; 
 }
 
 .wallet-limit-info { 
-    font-size: 12px; 
+    font-size: 11px; 
     color: var(--hint-color); 
 }
 
 .withdraw-box {
-    border: 1px solid rgba(245, 158, 11, 0.4);
-    background: linear-gradient(180deg, rgba(19, 27, 46, 0.9) 0%, rgba(41, 37, 22, 0.6) 100%);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    background: linear-gradient(180deg, rgba(20, 24, 40, 0.85) 0%, rgba(41, 37, 22, 0.5) 100%);
+    border-radius: 16px;
+    padding: 14px;
 }
 
 .box-header { 
     display: flex; 
     align-items: center; 
-    gap: 12px; 
+    gap: 10px; 
     width: 100%; 
 }
 
@@ -264,14 +269,14 @@ body {
 }
 
 .box-info h3 { 
-    font-size: 15px; 
+    font-size: 14px; 
     font-weight: 600; 
     color: var(--text-main); 
     margin-bottom: 2px; 
 }
 
 .box-info p { 
-    font-size: 12px; 
+    font-size: 11px; 
     color: var(--hint-color); 
 }
 
@@ -284,86 +289,91 @@ body {
 .reward-badge {
     background: rgba(245, 158, 11, 0.15);
     color: var(--gold);
-    padding: 4px 10px;
+    padding: 4px 8px;
     border-radius: 20px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     white-space: nowrap;
 }
 
 /* ==========================================
-   КНОПКИ И СТАТУСЫ
+   КРАСИВЫЕ КНОПКИ С ГРАДИЕНТОМ И СВЕЧЕНИЕМ
    ========================================== */
 .btn-primary {
-    background-color: var(--primary);
+    background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
     color: #fff;
-    border: none;
-    border-radius: 12px;
-    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 14px;
+    padding: 13px;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.2s ease;
     text-align: center;
     width: 100%;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 6px 18px rgba(124, 58, 237, 0.4);
 }
 
 .btn-primary:active {
-    transform: scale(0.98);
+    transform: scale(0.97);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
 }
 
 .btn-success { 
-    background-color: var(--success); 
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); 
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.4); 
 }
 
 .btn-gold { 
     background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); 
     color: #000; 
-    font-weight: 700; 
+    font-weight: 800; 
+    box-shadow: 0 6px 18px rgba(245, 158, 11, 0.4);
 }
 
 .status-msg { 
-    font-size: 12px; 
+    font-size: 11px; 
     text-align: center; 
     font-weight: 500; 
-    min-height: 16px; 
-    margin-top: 4px;
+    min-height: 14px; 
+    margin-top: 2px;
 }
 
 /* ==========================================
-   МИНИ-ИГРЫ (КРАШ И КОСТИ)
+   МИНИ-ИГРЫ
    ========================================== */
 .game-card { 
-    background: linear-gradient(180deg, rgba(19, 27, 46, 0.9) 0%, rgba(11, 15, 25, 0.9) 100%); 
+    background: linear-gradient(180deg, rgba(20, 24, 40, 0.85) 0%, rgba(11, 15, 25, 0.85) 100%); 
+    border-radius: 16px;
+    padding: 14px;
+    border: 1px solid var(--card-border);
 }
 
 .crash-screen {
-    background: radial-gradient(circle at center, #1e1b4b 0%, #030712 100%);
-    border-radius: 14px;
-    height: 135px;
+    background: radial-gradient(circle at center, #2e1065 0%, #030712 100%);
+    border-radius: 12px;
+    height: 120px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     position: relative;
     overflow: hidden;
-    border: 1px solid rgba(99, 102, 241, 0.3);
+    border: 1px solid rgba(124, 58, 237, 0.3);
 }
 
 .crash-multiplier {
     font-family: 'Orbitron', sans-serif;
-    font-size: 34px;
+    font-size: 30px;
     font-weight: 900;
     color: var(--gold);
     z-index: 3;
-    text-shadow: 0 0 18px rgba(245, 158, 11, 0.6);
+    text-shadow: 0 0 15px rgba(245, 158, 11, 0.6);
 }
 
 .rocket-container {
     position: absolute;
-    bottom: 30px;
+    bottom: 25px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -371,28 +381,28 @@ body {
 }
 
 .rocket-obj { 
-    font-size: 32px; 
-    filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.8)); 
+    font-size: 28px; 
+    filter: drop-shadow(0 0 8px rgba(124, 58, 237, 0.8)); 
 }
 
 .rocket-fire { 
-    width: 8px; 
+    width: 6px; 
     height: 0px; 
     background: linear-gradient(180deg, #f59e0b 0%, #ef4444 100%); 
     border-radius: 50%; 
     filter: blur(2px); 
-    margin-top: -4px; 
+    margin-top: -3px; 
     transition: height 0.3s; 
 }
 
 .fire-active { 
-    height: 24px; 
+    height: 20px; 
     animation: flamePulse 0.15s infinite alternate ease-in-out; 
 }
 
 @keyframes flamePulse { 
-    0% { height: 20px; } 
-    100% { height: 32px; } 
+    0% { height: 18px; } 
+    100% { height: 28px; } 
 }
 
 .rocket-flying { 
@@ -407,23 +417,23 @@ body {
 .dice-screen {
     background: #0b0f19;
     border-radius: 12px;
-    height: 95px;
+    height: 85px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 20px;
+    gap: 15px;
     border: 1px solid var(--card-border);
 }
 
 .dice-box {
-    font-size: 42px;
+    font-size: 38px;
     background: rgba(255, 255, 255, 0.04);
-    width: 60px;
-    height: 60px;
+    width: 52px;
+    height: 52px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 12px;
+    border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -439,7 +449,7 @@ body {
 
 .game-controls { 
     display: flex; 
-    gap: 10px; 
+    gap: 8px; 
 }
 
 .game-input {
@@ -447,10 +457,10 @@ body {
     border: 1px solid var(--card-border);
     border-radius: 12px;
     color: #fff;
-    padding: 0 14px;
-    font-size: 16px;
+    padding: 0 12px;
+    font-size: 15px;
     font-weight: 600;
-    width: 90px;
+    width: 80px;
     text-align: center;
     outline: none;
 }
@@ -469,12 +479,12 @@ body {
     transform: translateX(-50%);
     width: 100%;
     max-width: 480px;
-    background: rgba(11, 15, 25, 0.95);
+    background: rgba(11, 15, 25, 0.92);
     backdrop-filter: blur(15px);
     border-top: 1px solid var(--card-border);
     display: flex;
     justify-content: space-around;
-    padding: 10px 10px 18px 10px;
+    padding: 8px 8px 14px 8px;
     z-index: 1000;
 }
 
@@ -484,23 +494,24 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3px;
+    gap: 2px;
     color: var(--hint-color);
     cursor: pointer;
     flex: 1;
+    transition: color 0.2s;
 }
 
 .nav-icon { 
-    font-size: 20px; 
+    font-size: 19px; 
 }
 
 .nav-label { 
-    font-size: 11px; 
+    font-size: 10px; 
     font-weight: 500; 
 }
 
 .nav-item.active { 
-    color: var(--primary); 
+    color: #c084fc; 
 }
 
 /* ==========================================
@@ -510,16 +521,16 @@ body {
     display: none;
     background: rgba(239, 68, 68, 0.1);
     border: 1px dashed var(--danger);
-    border-radius: 16px;
-    padding: 16px;
-    margin-top: 6px;
+    border-radius: 14px;
+    padding: 14px;
+    margin-top: 4px;
 }
 
 .admin-header { 
-    font-size: 14px; 
+    font-size: 13px; 
     font-weight: 700; 
     color: var(--danger); 
-    margin-bottom: 6px; 
+    margin-bottom: 4px; 
     display: flex; 
     align-items: center; 
     gap: 6px; 
