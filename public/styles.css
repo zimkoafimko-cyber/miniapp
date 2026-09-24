@@ -1,7 +1,7 @@
 :root {
-    --bg-color: #0f172a;
-    --card-bg: #1e293b;
-    --card-border: #334155;
+    --bg-color: #0b0f19;
+    --card-bg: #131b2e;
+    --card-border: #1e293b;
     --text-main: #f8fafc;
     --hint-color: #94a3b8;
     --primary: #6366f1;
@@ -32,10 +32,27 @@ body {
     max-width: 480px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    padding-bottom: 30px;
+    padding-bottom: 90px; /* Место под фиксированный нижний таб-бар */
 }
 
+/* Переключение вкладок */
+.tab-content {
+    display: none;
+    flex-direction: column;
+    gap: 14px;
+    animation: fadeIn 0.25s ease-in-out;
+}
+
+.tab-content.active {
+    display: flex;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Шапка профиля */
 .header-card {
     background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     border-radius: 20px;
@@ -100,17 +117,69 @@ body {
     text-overflow: ellipsis;
 }
 
-.section-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text-main);
-    margin-top: 6px;
-    margin-bottom: -2px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+/* Заголовки экранов */
+.screen-title-box {
+    margin-bottom: 4px;
 }
 
+.screen-title-box h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 2px;
+}
+
+.screen-title-box p {
+    font-size: 13px;
+    color: var(--hint-color);
+}
+
+/* Сетка статистики */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.stat-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.stat-icon {
+    font-size: 22px;
+    background: rgba(255, 255, 255, 0.05);
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: 800;
+    font-family: 'Orbitron', sans-serif;
+    color: #fff;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: var(--hint-color);
+}
+
+/* Карточки блоков */
 .card-box {
     background-color: var(--card-bg);
     border: 1px solid var(--card-border);
@@ -122,9 +191,37 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+.wallet-main-card {
+    background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+    text-align: center;
+    padding: 24px;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.wallet-balance-title {
+    font-size: 13px;
+    color: var(--hint-color);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.wallet-balance-val {
+    font-size: 38px;
+    font-weight: 900;
+    font-family: 'Orbitron', sans-serif;
+    color: var(--gold);
+    margin-bottom: 8px;
+}
+
+.wallet-limit-info {
+    font-size: 12px;
+    color: var(--hint-color);
+}
+
 .withdraw-box {
     border: 1px solid rgba(245, 158, 11, 0.4);
-    background: linear-gradient(180deg, rgba(30, 41, 59, 1) 0%, rgba(41, 37, 22, 0.4) 100%);
+    background: linear-gradient(180deg, rgba(19, 27, 46, 1) 0%, rgba(41, 37, 22, 0.4) 100%);
 }
 
 .box-header {
@@ -165,11 +262,6 @@ body {
     color: var(--hint-color);
 }
 
-.highlight {
-    color: var(--gold);
-    font-weight: 700;
-}
-
 .channel-link {
     color: #38bdf8;
     text-decoration: none;
@@ -186,6 +278,7 @@ body {
     white-space: nowrap;
 }
 
+/* Кнопки */
 .btn-primary {
     background-color: var(--primary);
     color: #fff;
@@ -229,8 +322,9 @@ body {
     min-height: 16px;
 }
 
+/* Игровой зал */
 .game-card {
-    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    background: linear-gradient(180deg, #131b2e 0%, #0b0f19 100%);
 }
 
 .crash-screen {
@@ -391,13 +485,61 @@ body {
     flex-grow: 1;
 }
 
+/* Нижняя панель навигации (TabBar) */
+.nav-bar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: rgba(19, 27, 46, 0.95);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--card-border);
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 10px 14px 10px;
+    z-index: 100;
+}
+
+.nav-item {
+    background: transparent;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    color: var(--hint-color);
+    cursor: pointer;
+    flex: 1;
+    transition: color 0.2s;
+}
+
+.nav-icon {
+    font-size: 20px;
+}
+
+.nav-label {
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.nav-item.active {
+    color: var(--primary);
+}
+
+.nav-item.active .nav-icon {
+    filter: drop-shadow(0 0 6px rgba(99, 102, 241, 0.6));
+}
+
+/* Админ панель */
 .admin-panel {
     display: none;
     background: rgba(239, 68, 68, 0.1);
     border: 1px dashed var(--danger);
     border-radius: 16px;
     padding: 16px;
-    margin-top: 10px;
+    margin-top: 6px;
 }
 
 .admin-header {
