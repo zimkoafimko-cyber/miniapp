@@ -1,11 +1,9 @@
 :root {
-    --bg-color: #0b0f19;
-    --card-bg: rgba(20, 24, 40, 0.75);
+    --card-bg: rgba(20, 24, 40, 0.8);
     --card-border: rgba(255, 255, 255, 0.1);
     --text-main: #f8fafc;
     --hint-color: #94a3b8;
     --primary: #7c3aed;
-    --primary-hover: #6d28d9;
     --success: #22c55e;
     --danger: #ef4444;
     --gold: #f59e0b;
@@ -18,13 +16,10 @@
     font-family: 'Outfit', sans-serif;
 }
 
-/* ==========================================
-   ФОН
-   ========================================== */
 body {
     background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 35%, #ec4899 70%, #3b82f6 100%) !important;
     color: var(--text-main);
-    padding: 12px;
+    padding: 10px;
     display: flex;
     justify-content: center;
     -webkit-font-smoothing: antialiased;
@@ -33,16 +28,13 @@ body {
     position: relative;
 }
 
-/* ==========================================
-   КОНТЕЙНЕРЫ (уменьшили пустые места)
-   ========================================== */
 .app-container {
     width: 100%;
     max-width: 480px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding-bottom: 75px;
+    gap: 8px;
+    padding-bottom: 65px;
     position: relative;
     z-index: 10;
 }
@@ -50,8 +42,8 @@ body {
 .tab-content {
     display: none;
     flex-direction: column;
-    gap: 10px;
-    animation: fadeIn 0.2s ease-in-out;
+    gap: 8px;
+    animation: fadeIn 0.15s ease-in-out;
 }
 
 .tab-content.active {
@@ -59,61 +51,54 @@ body {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
-/* ==========================================
-   ШАПКА И ПРОФИЛЬ
-   ========================================== */
 .header-card {
     background: linear-gradient(135deg, rgba(124, 58, 237, 0.85) 0%, rgba(79, 70, 229, 0.85) 100%);
-    backdrop-filter: blur(12px);
-    border-radius: 18px;
-    padding: 16px;
+    backdrop-filter: blur(10px);
+    border-radius: 14px;
+    padding: 12px 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 8px 20px -4px rgba(124, 58, 237, 0.4);
+    box-shadow: 0 6px 15px rgba(124, 58, 237, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .balance-info h2 {
-    font-size: 11px;
+    font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: rgba(255, 255, 255, 0.75);
-    margin-bottom: 2px;
 }
 
 .balance-amount {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 900;
     font-family: 'Orbitron', sans-serif;
     color: #fff;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
 }
 
-.star-icon { 
-    font-size: 24px; 
-}
+.star-icon { font-size: 20px; }
 
 .user-profile-badge {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     background: rgba(0, 0, 0, 0.3);
-    padding: 6px 10px;
-    border-radius: 30px;
-    backdrop-filter: blur(6px);
+    padding: 5px 10px;
+    border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .user-avatar {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     background: var(--gold);
     color: #000;
     font-weight: 800;
@@ -121,357 +106,150 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .user-name {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
-    max-width: 90px;
+    max-width: 80px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.screen-title-box {
-    margin-bottom: 2px;
-}
-
 .screen-title-box h2 {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
-    color: var(--text-main);
-    margin-bottom: 2px;
 }
 
 .screen-title-box p {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--hint-color);
 }
 
-/* ==========================================
-   КАРТОЧКИ И СЕТКИ СТАТИСТИКИ
-   ========================================== */
 .stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 8px;
 }
 
 .stat-card, .card-box {
     background-color: var(--card-bg);
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(10px);
     border: 1px solid var(--card-border);
-    border-radius: 16px;
-    padding: 14px;
+    border-radius: 12px;
+    padding: 10px 12px;
     display: flex;
-    gap: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    gap: 8px;
 }
 
-.stat-card { 
-    align-items: center; 
-}
-
-.card-box { 
-    flex-direction: column; 
-}
+.stat-card { align-items: center; }
+.card-box { flex-direction: column; }
 
 .stat-icon, .box-icon {
-    font-size: 20px;
+    font-size: 18px;
     background: rgba(255, 255, 255, 0.06);
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
 }
+.box-icon { width: 36px; height: 36px; font-size: 20px; }
+.gold-glow { background: rgba(245, 158, 11, 0.15); }
 
-.box-icon { 
-    width: 40px; 
-    height: 40px; 
-    font-size: 22px; 
-}
+.stat-info { display: flex; flex-direction: column; }
+.stat-value { font-size: 15px; font-weight: 800; font-family: 'Orbitron', sans-serif; color: #fff; }
+.stat-label { font-size: 10px; color: var(--hint-color); }
 
-.gold-glow { 
-    background: rgba(245, 158, 11, 0.15); 
-}
-
-.stat-info { 
-    display: flex; 
-    flex-direction: column; 
-}
-
-.stat-value { 
-    font-size: 16px; 
-    font-weight: 800; 
-    font-family: 'Orbitron', sans-serif; 
-    color: #fff; 
-}
-
-.stat-label { 
-    font-size: 10px; 
-    color: var(--hint-color); 
-}
-
-/* ==========================================
-   КОШЕЛЕК И ВЫВОД
-   ========================================== */
 .wallet-main-card {
     background: linear-gradient(135deg, rgba(30, 27, 75, 0.85) 0%, rgba(15, 23, 42, 0.85) 100%);
     text-align: center;
-    padding: 20px;
+    padding: 16px;
     border: 1px solid rgba(124, 58, 237, 0.4);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border-radius: 18px;
+    border-radius: 14px;
 }
 
-.wallet-balance-title { 
-    font-size: 12px; 
-    color: var(--hint-color); 
-    text-transform: uppercase; 
-    margin-bottom: 4px; 
-}
-
-.wallet-balance-val { 
-    font-size: 34px; 
-    font-weight: 900; 
-    font-family: 'Orbitron', sans-serif; 
-    color: var(--gold); 
-    margin-bottom: 6px; 
-}
-
-.wallet-limit-info { 
-    font-size: 11px; 
-    color: var(--hint-color); 
-}
+.wallet-balance-title { font-size: 11px; color: var(--hint-color); text-transform: uppercase; margin-bottom: 2px; }
+.wallet-balance-val { font-size: 30px; font-weight: 900; font-family: 'Orbitron', sans-serif; color: var(--gold); margin-bottom: 4px; }
+.wallet-limit-info { font-size: 10px; color: var(--hint-color); }
 
 .withdraw-box {
     border: 1px solid rgba(245, 158, 11, 0.3);
     background: linear-gradient(180deg, rgba(20, 24, 40, 0.85) 0%, rgba(41, 37, 22, 0.5) 100%);
-    border-radius: 16px;
-    padding: 14px;
+    border-radius: 12px;
+    padding: 10px 12px;
 }
 
-.box-header { 
-    display: flex; 
-    align-items: center; 
-    gap: 10px; 
-    width: 100%; 
-}
+.box-header { display: flex; align-items: center; gap: 8px; width: 100%; }
+.box-info h3 { font-size: 13px; font-weight: 600; margin-bottom: 1px; }
+.box-info p { font-size: 10px; color: var(--hint-color); }
+.channel-link { color: #38bdf8; text-decoration: none; font-weight: 600; }
+.reward-badge { background: rgba(245, 158, 11, 0.15); color: var(--gold); padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
 
-.box-info { 
-    flex-grow: 1; 
-}
-
-.box-info h3 { 
-    font-size: 14px; 
-    font-weight: 600; 
-    color: var(--text-main); 
-    margin-bottom: 2px; 
-}
-
-.box-info p { 
-    font-size: 11px; 
-    color: var(--hint-color); 
-}
-
-.channel-link { 
-    color: #38bdf8; 
-    text-decoration: none; 
-    font-weight: 600; 
-}
-
-.reward-badge {
-    background: rgba(245, 158, 11, 0.15);
-    color: var(--gold);
-    padding: 4px 8px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 700;
-    white-space: nowrap;
-}
-
-/* ==========================================
-   КРАСИВЫЕ КНОПКИ С ГРАДИЕНТОМ И СВЕЧЕНИЕМ
-   ========================================== */
 .btn-primary {
     background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
     color: #fff;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 14px;
-    padding: 13px;
-    font-size: 14px;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 13px;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: center;
     width: 100%;
-    box-shadow: 0 6px 18px rgba(124, 58, 237, 0.4);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
 }
+.btn-primary:active { transform: scale(0.97); }
+.btn-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+.btn-gold { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #000; font-weight: 800; }
 
-.btn-primary:active {
-    transform: scale(0.97);
-    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
-}
+.status-msg { font-size: 10px; text-align: center; min-height: 12px; margin-top: 2px; }
 
-.btn-success { 
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
-    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.4); 
-}
-
-.btn-gold { 
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); 
-    color: #000; 
-    font-weight: 800; 
-    box-shadow: 0 6px 18px rgba(245, 158, 11, 0.4);
-}
-
-.status-msg { 
-    font-size: 11px; 
-    text-align: center; 
-    font-weight: 500; 
-    min-height: 14px; 
-    margin-top: 2px;
-}
-
-/* ==========================================
-   МИНИ-ИГРЫ
-   ========================================== */
 .game-card { 
     background: linear-gradient(180deg, rgba(20, 24, 40, 0.85) 0%, rgba(11, 15, 25, 0.85) 100%); 
-    border-radius: 16px;
-    padding: 14px;
+    border-radius: 12px;
+    padding: 10px;
     border: 1px solid var(--card-border);
 }
 
 .crash-screen {
     background: radial-gradient(circle at center, #2e1065 0%, #030712 100%);
-    border-radius: 12px;
-    height: 120px;
+    border-radius: 10px;
+    height: 100px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     position: relative;
-    overflow: hidden;
     border: 1px solid rgba(124, 58, 237, 0.3);
 }
 
-.crash-multiplier {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 30px;
-    font-weight: 900;
-    color: var(--gold);
-    z-index: 3;
-    text-shadow: 0 0 15px rgba(245, 158, 11, 0.6);
-}
-
-.rocket-container {
-    position: absolute;
-    bottom: 25px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    z-index: 2;
-}
-
-.rocket-obj { 
-    font-size: 28px; 
-    filter: drop-shadow(0 0 8px rgba(124, 58, 237, 0.8)); 
-}
-
-.rocket-fire { 
-    width: 6px; 
-    height: 0px; 
-    background: linear-gradient(180deg, #f59e0b 0%, #ef4444 100%); 
-    border-radius: 50%; 
-    filter: blur(2px); 
-    margin-top: -3px; 
-    transition: height 0.3s; 
-}
-
-.fire-active { 
-    height: 20px; 
-    animation: flamePulse 0.15s infinite alternate ease-in-out; 
-}
-
-@keyframes flamePulse { 
-    0% { height: 18px; } 
-    100% { height: 28px; } 
-}
-
-.rocket-flying { 
-    animation: rocketSway 0.35s infinite alternate ease-in-out; 
-}
-
-@keyframes rocketSway { 
-    0% { transform: translateY(0) rotate(-2deg); } 
-    100% { transform: translateY(-4px) rotate(2deg); } 
-}
+.crash-multiplier { font-family: 'Orbitron', sans-serif; font-size: 26px; font-weight: 900; color: var(--gold); }
+.rocket-container { position: absolute; bottom: 20px; display: flex; flex-direction: column; align-items: center; }
+.rocket-obj { font-size: 24px; }
+.rocket-fire { width: 4px; height: 0px; background: #f59e0b; border-radius: 50%; transition: height 0.3s; }
+.fire-active { height: 16px; }
 
 .dice-screen {
     background: #0b0f19;
-    border-radius: 12px;
-    height: 85px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-    border: 1px solid var(--card-border);
-}
-
-.dice-box {
-    font-size: 38px;
-    background: rgba(255, 255, 255, 0.04);
-    width: 52px;
-    height: 52px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.dice-rolling { 
-    animation: diceSpin 0.3s infinite linear; 
-    border-color: var(--primary); 
-}
-
-@keyframes diceSpin { 
-    0% { transform: rotate(0deg); } 
-    100% { transform: rotate(360deg); } 
-}
-
-.game-controls { 
-    display: flex; 
-    gap: 8px; 
-}
-
-.game-input {
-    background: #0b0f19;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
     border: 1px solid var(--card-border);
-    border-radius: 12px;
-    color: #fff;
-    padding: 0 12px;
-    font-size: 15px;
-    font-weight: 600;
-    width: 80px;
-    text-align: center;
-    outline: none;
 }
 
-.btn-game { 
-    flex-grow: 1; 
-}
+.dice-box { font-size: 32px; background: rgba(255, 255, 255, 0.04); width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 8px; }
 
-/* ==========================================
-   НИЖНЕЕ МЕНЮ НАВИГАЦИИ
-   ========================================== */
+.game-controls { display: flex; gap: 6px; }
+.game-input { background: #0b0f19; border: 1px solid var(--card-border); border-radius: 10px; color: #fff; padding: 0 10px; font-size: 14px; font-weight: 600; width: 70px; text-align: center; outline: none; }
+.btn-game { flex-grow: 1; }
+
 .nav-bar {
     position: fixed;
     bottom: 0;
@@ -479,59 +257,27 @@ body {
     transform: translateX(-50%);
     width: 100%;
     max-width: 480px;
-    background: rgba(11, 15, 25, 0.92);
-    backdrop-filter: blur(15px);
+    background: rgba(11, 15, 25, 0.95);
+    backdrop-filter: blur(10px);
     border-top: 1px solid var(--card-border);
     display: flex;
     justify-content: space-around;
-    padding: 8px 8px 14px 8px;
+    padding: 6px 6px 12px 6px;
     z-index: 1000;
 }
 
-.nav-item {
-    background: transparent;
-    border: none;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    color: var(--hint-color);
-    cursor: pointer;
-    flex: 1;
-    transition: color 0.2s;
-}
+.nav-item { background: transparent; border: none; display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--hint-color); cursor: pointer; flex: 1; }
+.nav-icon { font-size: 17px; }
+.nav-label { font-size: 9px; font-weight: 500; }
+.nav-item.active { color: #c084fc; }
 
-.nav-icon { 
-    font-size: 19px; 
-}
-
-.nav-label { 
-    font-size: 10px; 
-    font-weight: 500; 
-}
-
-.nav-item.active { 
-    color: #c084fc; 
-}
-
-/* ==========================================
-   ПАНЕЛЬ АДМИНИСТРАТОРА
-   ========================================== */
+/* Админ-панель */
 .admin-panel {
     display: none;
     background: rgba(239, 68, 68, 0.1);
     border: 1px dashed var(--danger);
-    border-radius: 14px;
-    padding: 14px;
+    border-radius: 12px;
+    padding: 10px;
     margin-top: 4px;
 }
-
-.admin-header { 
-    font-size: 13px; 
-    font-weight: 700; 
-    color: var(--danger); 
-    margin-bottom: 4px; 
-    display: flex; 
-    align-items: center; 
-    gap: 6px; 
-}
+.admin-header { font-size: 12px; font-weight: 700; color: var(--danger); margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
