@@ -19,10 +19,10 @@
 }
 
 /* ==========================================
-   КОСМИЧЕСКИЙ ФОН И ПАДАЮЩИЕ ЗВЕЗДЫ
+   ФОН КАК НА КАРТИНКЕ (ФИОЛЕТОВО-РОЗОВЫЙ КОСМОС)
    ========================================== */
 body {
-    background: linear-gradient(135deg, #050811 0%, #0f172a 50%, #1e1b4b 100%) !important;
+    background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 35%, #ec4899 70%, #3b82f6 100%) !important;
     color: var(--text-main);
     padding: 16px;
     display: flex;
@@ -31,33 +31,6 @@ body {
     min-height: 100vh;
     overflow-x: hidden;
     position: relative;
-}
-
-.stars-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-    z-index: 999;
-    overflow: hidden;
-}
-
-.star-bg {
-    position: absolute;
-    background: #ffffff;
-    border-radius: 50%;
-    animation: fall linear infinite;
-    opacity: 0.9;
-    box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
-}
-
-@keyframes fall {
-    0% { transform: translateY(-20px) translateX(0); opacity: 0; }
-    20% { opacity: 1; }
-    80% { opacity: 0.8; }
-    100% { transform: translateY(105vh) translateX(20px); opacity: 0; }
 }
 
 /* ==========================================
@@ -70,7 +43,7 @@ body {
     flex-direction: column;
     padding-bottom: 90px;
     position: relative;
-    z-index: 1000;
+    z-index: 10;
 }
 
 .tab-content {
@@ -90,7 +63,7 @@ body {
 }
 
 /* ==========================================
-   ВХОДНЫЕ ДАННЫЕ И ШАПКА
+   ШАПКА И ПРОФИЛЬ
    ========================================== */
 .header-card {
     background: linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(29, 78, 216, 0.9) 100%);
