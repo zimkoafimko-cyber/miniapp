@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BelCrypto Hub</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=9.0">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=11.0">
 </head>
 <body>
 
@@ -14,7 +14,7 @@
         <!-- Шапка профиля и баланс -->
         <div class="header-card">
             <div class="balance-info">
-                <h2>ВАШ БАЛАНС</h2>
+                <h2>Ваш баланс</h2>
                 <div class="balance-amount">
                     <span id="balance">0</span> <span class="star-icon">⭐</span>
                 </div>
@@ -51,12 +51,12 @@
 
             <div class="mobile-box">
                 <h4>👥 Реферальная система</h4>
-                <p>Получайте <strong>+2 ⭐</strong> за каждого друга!</p>
+                <p>Получайте <strong>+2 ⭐</strong> за каждого приглашенного друга!</p>
                 <input type="text" id="ref-link" readonly>
-                <button class="btn-primary" onclick="copyRefLink()">Скопировать реф. ссылку</button>
+                <button class="btn-primary" onclick="copyRefLink()">🔗 Скопировать ссылку</button>
             </div>
 
-            <div style="text-align: center; margin-top: 4px;">
+            <div style="text-align: center; margin-top: 6px;">
                 <a href="/admin.html" class="admin-link">🔐 Админ-панель</a>
             </div>
         </div>
@@ -65,17 +65,17 @@
         <div id="tasks" class="tab-content">
             <div class="screen-title-box">
                 <h2>Задания</h2>
-                <p>Подпишитесь на канал и получите награду</p>
+                <p>Выполняйте задания и получайте награды</p>
             </div>
 
             <div id="tasks-list">
                 <div class="task-card">
                     <div class="task-info-block">
-                        <h4>Подписаться на Telegram</h4>
+                        <h4>Подписаться на Telegram канал</h4>
                         <p>Награда: <strong>+10 ⭐</strong></p>
                     </div>
                     <div class="task-btns">
-                        <a href="https://t.me/belcryptoo" target="_blank" class="btn-primary btn-sub" onclick="openChannel()">Канал</a>
+                        <a href="https://t.me/belcryptoo" target="_blank" class="btn-primary btn-sub">Канал</a>
                         <button class="btn-primary btn-success" id="check-btn-task_tg" onclick="verifyTask('task_tg', 10)">Проверить</button>
                     </div>
                 </div>
@@ -86,29 +86,35 @@
         <div id="wallet" class="tab-content">
             <div class="screen-title-box">
                 <h2>Кошелек</h2>
-                <p>Ваши накопленные звезды</p>
+                <p>Управление вашими звёздами</p>
             </div>
             <div class="wallet-main-card">
                 <div class="wallet-balance-title">Доступно к выводу</div>
                 <div class="wallet-balance-val"><span id="wallet-balance">0</span> ⭐</div>
+                
+                <!-- Указан твой телеграм -->
+                <div class="wallet-target-tg">
+                    Куда выводим: <span class="tg-tag">@AlinaResseler</span>
+                </div>
+                
                 <div class="wallet-limit-info">Минимум для вывода: 50 ⭐</div>
             </div>
-            <button class="btn-primary btn-success btn-lg">Вывести звезды</button>
+            <button class="btn-primary btn-success btn-lg" onclick="withdrawStars()">Вывести звёзды</button>
         </div>
 
         <!-- Вкладка Игры -->
         <div id="games" class="tab-content">
             <div class="screen-title-box">
                 <h2>Игровая зона</h2>
-                <p>Умножайте свои звезды</p>
+                <p>Испытайте удачу и умножайте баланс</p>
             </div>
 
             <!-- Игра 1: Crash (Ракета) -->
             <div class="game-card">
-                <div class="game-title">🚀 Ракета (Crash)</div>
+                <div class="game-title">🚀 Космическая Ракета (Crash)</div>
                 <div class="crash-screen">
                     <div class="crash-multiplier" id="crash-mult">1.00x</div>
-                    <div class="rocket-container">
+                    <div class="rocket-container" id="rocket-container-obj">
                         <div class="rocket-obj" id="rocket-icon">🚀</div>
                         <div class="rocket-fire" id="rocket-fire"></div>
                     </div>
@@ -117,12 +123,12 @@
                     <input type="number" id="crash-bet" class="game-input" value="10" min="1">
                     <button class="btn-primary btn-game" id="crash-btn" onclick="toggleCrashGame()">Запустить</button>
                 </div>
-                <div class="status-msg" id="crash-status">Сделайте ставку и запустите ракету!</div>
+                <div class="status-msg" id="crash-status">Сделайте ставку и поймай множитель!</div>
             </div>
 
             <!-- Игра 2: Кости (Dice) -->
             <div class="game-card">
-                <div class="game-title">🎲 Кости (Сумма > 7)</div>
+                <div class="game-title">🎲 Счастливые Кости (Сумма > 7)</div>
                 <div class="dice-screen">
                     <div class="dice-box" id="dice-1">🎲</div>
                     <div class="dice-box" id="dice-2">🎲</div>
@@ -131,7 +137,7 @@
                     <input type="number" id="dice-bet" class="game-input" value="10" min="1">
                     <button class="btn-primary btn-game btn-success" onclick="playDice()">Бросить</button>
                 </div>
-                <div class="status-msg" id="dice-status">Выиграйте x2 при сумме очков больше 7!</div>
+                <div class="status-msg" id="dice-status">Шанс выиграть x2 при сумме очков больше 7!</div>
             </div>
         </div>
 
