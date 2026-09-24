@@ -13,11 +13,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const balanceEls = document.querySelectorAll('#balance, #wallet-balance');
         balanceEls.forEach(el => { if (el) el.innerText = balance; });
 
-        const nameEl = document.getElementById('user-nicename');
-        if (nameEl) nameEl.innerText = username;
+        const nameEls = document.querySelectorAll('#user-nicename, #profile-name');
+        nameEls.forEach(el => { if (el) el.innerText = username; });
 
-        const avatarEl = document.getElementById('user-initial');
-        if (avatarEl) avatarEl.innerText = username.charAt(0).toUpperCase();
+        const avatarEls = document.querySelectorAll('#user-initial, #profile-initial');
+        avatarEls.forEach(el => { if (el) el.innerText = username.charAt(0).toUpperCase(); });
+
+        const profileIdInput = document.getElementById('profile-id-input');
+        if (profileIdInput) {
+            profileIdInput.value = userId;
+        }
 
         const refCountEl = document.getElementById('ref-count');
         if (refCountEl) refCountEl.innerText = referralCount;
@@ -46,6 +51,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (refLinkInput) {
             navigator.clipboard.writeText(refLinkInput.value);
             alert('📋 Реферальная ссылка скопирована!');
+        }
+    };
+
+    window.copyUserId = function() {
+        const profileIdInput = document.getElementById('profile-id-input');
+        if (profileIdInput) {
+            navigator.clipboard.writeText(profileIdInput.value);
+            alert('📋 Ваш ID успешно скопирован в буфер обмена!');
         }
     };
 
@@ -108,9 +121,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (fire) fire.classList.add('fire-active');
             if (status) status.innerText = '🚀 Ракета набирает высоту...';
 
-            // Генерируем случайное число от 0 до 100
-            // Шанс 35% означает, что в 35% случаев ракета улетит высоко (до 3.5x - 5x),
-            // а в 65% случаев сорвется почти сразу (на 1.02x - 1.20x)
             const isLucky = Math.random() * 100 < 35;
             const crashPoint = isLucky ? (2.0 + Math.random() * 3.0) : (1.02 + Math.random() * 0.18);
 
@@ -178,19 +188,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dice1) dice1.classList.remove('dice-rolling');
             if (dice2) dice2.classList.remove('dice-rolling');
 
-            // Шанс выигрыша ровно 30% (30 из 100)
             const isWin = Math.random() * 100 < 30;
             let roll1, roll2, sum;
 
             if (isWin) {
-                // Принудительно генерируем комбинацию, где сумма строго больше 7 (например, 8, 9, 10, 11, 12)
                 do {
                     roll1 = Math.floor(Math.random() * 6) + 1;
                     roll2 = Math.floor(Math.random() * 6) + 1;
                     sum = roll1 + roll2;
                 } while (sum <= 7);
             } else {
-                // Принудительно генерируем комбинацию, где сумма 7 или меньше
                 do {
                     roll1 = Math.floor(Math.random() * 6) + 1;
                     roll2 = Math.floor(Math.random() * 6) + 1;
