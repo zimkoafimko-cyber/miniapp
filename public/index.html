@@ -1,175 +1,149 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Задания с проверкой</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=5.0">
-    <style>
-        .task-card {
-            background: rgba(255, 255, 255, 0.07);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            padding: 14px;
-            border-radius: 14px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .task-info h4 { margin: 0 0 4px 0; font-size: 14px; color: #fff; }
-        .task-info p { margin: 0; font-size: 11px; color: #cbd5e1; }
-        .task-actions { display: flex; gap: 6px; }
-        .task-btn {
-            background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
-            border: none;
-            padding: 8px 12px;
-            border-radius: 8px;
-            color: white;
-            font-weight: 700;
-            font-size: 11px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-        }
-        .task-btn.check-btn {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            display: none;
-        }
-        .task-btn.completed {
-            background: rgba(255, 255, 255, 0.15);
-            color: #94a3b8;
-            cursor: default;
-            display: inline-block !important;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BelCrypto Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=8.0">
 </head>
 <body>
-
-    <div class="app-container">
-
-        <!-- Шапка профиля и баланс -->
-        <div class="header-card">
-            <div class="balance-info">
-                <h2>ВАШ БАЛАНС</h2>
-                <div class="balance-amount">
-                    <span id="balance">0</span> <span class="star-icon">⭐</span>
-                </div>
-            </div>
-            <div class="user-profile-badge">
-                <div class="user-avatar" id="user-initial">U</div>
-                <div class="user-name" id="user-nicename">Игрок</div>
-            </div>
-        </div>
-
-        <!-- Главная вкладка -->
-        <div id="home" class="tab-content active">
-            <div class="screen-title-box">
-                <h2>Главная панель</h2>
-                <p>Зарабатывайте звезды за выполнение заданий</p>
-            </div>
-
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon gold-glow">⚡</div>
-                    <div class="stat-info">
-                        <span class="stat-value">1x</span>
-                        <span class="stat-label">Множитель</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">👥</div>
-                    <div class="stat-info">
-                        <span class="stat-value">0</span>
-                        <span class="stat-label">Рефералы</span>
-                    </div>
-                </div>
-            </div>
-
-            <div style="text-align: center; margin-top: 25px;">
-                <a href="/admin.html" style="color: #cbd5e1; font-size: 12px; font-weight: 600; text-decoration: none; background: rgba(255,255,255,0.08); padding: 10px 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); display: inline-block;">
-                    🔐 Войти в админ-панель
-                </a>
-            </div>
-        </div>
-
-        <!-- ВКЛАДКА: ЗАДАНИЯ С ПРОВЕРКОЙ -->
-        <div id="tasks" class="tab-content">
-            <div class="screen-title-box">
-                <h2>Задания с проверкой</h2>
-                <p>Подпишитесь и нажмите «Проверить»</p>
-            </div>
-
-            <div id="tasks-list">
-                <!-- Задание 1 -->
-                <div class="task-card" data-task-id="task_1">
-                    <div class="task-info">
-                        <h4>Подписаться на канал</h4>
-                        <p>Награда: <strong>+10 ⭐</strong></p>
-                    </div>
-                    <div class="task-actions">
-                        <a href="https://t.me/" target="_blank" class="task-btn go-btn" onclick="startCheck('task_1')">Подписаться</a>
-                        <button class="task-btn check-btn" onclick="verifyTask('task_1', 10)">Проверить</button>
-                    </div>
-                </div>
-
-                <!-- Задание 2 -->
-                <div class="task-card" data-task-id="task_2">
-                    <div class="task-info">
-                        <h4>Посетить сайт партнера</h4>
-                        <p>Награда: <strong>+15 ⭐</strong></p>
-                    </div>
-                    <div class="task-actions">
-                        <a href="https://google.com" target="_blank" class="task-btn go-btn" onclick="startCheck('task_2')">Перейти</a>
-                        <button class="task-btn check-btn" onclick="verifyTask('task_2', 15)">Проверить</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Вкладка Кошелек -->
-        <div id="wallet" class="tab-content">
-            <div class="screen-title-box">
-                <h2>Кошелек</h2>
-                <p>Ваши накопленные звезды</p>
-            </div>
-            <div class="wallet-main-card" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 14px; text-align: center; margin-bottom: 15px;">
-                <div style="font-size: 13px; color: #94a3b8;">Доступно к выводу</div>
-                <div style="font-size: 28px; font-weight: 800; margin: 5px 0;"><span id="wallet-balance">0</span> ⭐</div>
-            </div>
-        </div>
-
-        <!-- Вкладка Игры -->
-        <div id="games" class="tab-content">
-            <div class="screen-title-box">
-                <h2>Игры</h2>
-                <p>Скоро здесь появятся мини-игры</p>
-            </div>
-        </div>
-
-        <!-- Нижняя навигация -->
-        <nav class="nav-bar">
-            <button class="nav-item active" data-tab="home">
-                <span class="nav-icon">🏠</span>
-                <span class="nav-label">Главная</span>
-            </button>
-            <button class="nav-item" data-tab="tasks">
-                <span class="nav-icon">📋</span>
-                <span class="nav-label">Задания</span>
-            </button>
-            <button class="nav-item" data-tab="wallet">
-                <span class="nav-icon">👛</span>
-                <span class="nav-label">Кошелек</span>
-            </button>
-            <button class="nav-item" data-tab="games">
-                <span class="nav-icon">🎮</span>
-                <span class="nav-label">Игры</span>
-            </button>
-        </nav>
-
-    </div>
-
-    <script src="app.js"></script>
+<div class="app-container">
+<!-- Шапка профиля и баланс -->
+<div class="header-card">
+<div class="balance-info">
+<h2>Ваш баланс</h2>
+<div class="balance-amount">
+<span id="balance">0</span> <span class="star-icon">⭐</span>
+</div>
+</div>
+<div class="user-profile-badge">
+<div class="user-avatar" id="user-initial">U</div>
+<div class="user-name" id="user-nicename">Игрок</div>
+</div>
+</div>
+<!-- Главная вкладка -->
+<div id="home" class="tab-content active">
+<div class="screen-title-box">
+<h2>Главная панель</h2>
+<p>Зарабатывайте звезды и приглашайте друзей</p>
+</div>
+<div class="stats-grid">
+<div class="stat-card">
+<div class="stat-icon gold-glow">⚡</div>
+<div class="stat-info">
+<span class="stat-value">1x</span>
+<span class="stat-label">Множитель</span>
+</div>
+</div>
+<div class="stat-card">
+<div class="stat-icon">👥</div>
+<div class="stat-info">
+<span class="stat-value" id="ref-count">0</span>
+<span class="stat-label">Рефералы</span>
+</div>
+</div>
+</div>
+<div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 14px; border-radius: 12px; text-align: center; box-shadow: 0 6px 15px rgba(0,0,0,0.2);">
+<h4 style="margin: 0 0 6px 0; font-size: 14px; color: #fff; font-family: 'Orbitron', sans-serif;">👥 Реферальная система</h4>
+<p style="margin: 0 0 10px 0; font-size: 11px; color: var(--hint-color); font-weight: 600;">Получайте <strong style="color: var(--gold);">+2 ⭐</strong> за каждого друга!</p>
+<input type="text" id="ref-link" readonly style="width: 100%; padding: 10px; background: #0b0f19; border: 1px solid var(--card-border); border-radius: 10px; color: #fff; font-size: 11px; text-align: center; box-sizing: border-box; margin-bottom: 8px; outline: none; font-family: 'Orbitron', sans-serif;">
+<button class="btn-primary" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);" onclick="copyRefLink()">Скопировать ссылку</button>
+</div>
+<div style="text-align: center; margin-top: 5px;">
+<a href="/admin.html" style="color: var(--hint-color); font-size: 11px; font-weight: 700; text-decoration: none; background: rgba(255,255,255,0.06); padding: 10px 20px; border-radius: 20px; border: 1px solid var(--card-border); display: inline-block; font-family: 'Orbitron', sans-serif;">
+🔐 Войти в админ-панель
+</a>
+</div>
+</div>
+<!-- Вкладка: Задания -->
+<div id="tasks" class="tab-content">
+<div class="screen-title-box">
+<h2>Задания</h2>
+<p>Подпишитесь на канал и получите награду</p>
+</div>
+<div id="tasks-list">
+<div class="task-card" data-task-id="task_tg">
+<div>
+<h4 style="margin: 0 0 4px 0; font-size: 13px; color: #fff; font-weight: 800;">Подписаться на @belcryptoo</h4>
+<p style="margin: 0; font-size: 11px; color: var(--hint-color); font-weight: 600;">Награда: <strong style="color: var(--gold);">+10 ⭐</strong></p>
+</div>
+<div style="display: flex; gap: 6px;">
+<a href="https://t.me/belcryptoo" target="_blank" class="btn-primary go-btn" style="padding: 8px 12px; font-size: 11px; text-decoration: none; display: inline-block; text-align: center;" onclick="startCheck('task_tg')">Подписаться</a>
+<button class="btn-primary check-btn" style="padding: 8px 12px; font-size: 11px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); display: none;" onclick="verifyTask('task_tg', 10)">Проверить</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Вкладка Кошелек -->
+<div id="wallet" class="tab-content">
+<div class="screen-title-box">
+<h2>Кошелек</h2>
+<p>Ваши накопленные звезды</p>
+</div>
+<div class="wallet-main-card">
+<div class="wallet-balance-title">Доступно к выводу</div>
+<div class="wallet-balance-val"><span id="wallet-balance">0</span> ⭐</div>
+<div class="wallet-limit-info">Минимум для вывода: 50 ⭐</div>
+</div>
+<button class="btn-primary btn-success">Вывести звезды</button>
+</div>
+<!-- Вкладка: Игры -->
+<div id="games" class="tab-content">
+<div class="screen-title-box">
+<h2>Игровая зона</h2>
+<p>Умножайте свои звезды</p>
+</div>
+<!-- Игра 1: Crash (Ракета) -->
+<div class="game-card">
+<div style="font-size: 13px; font-weight: 900; font-family: 'Orbitron', sans-serif; color: #fff;">🚀 Ракета (Crash)</div>
+<div class="crash-screen">
+<div class="crash-multiplier" id="crash-mult">1.00x</div>
+<div class="rocket-container">
+<div class="rocket-obj" id="rocket-icon">🚀</div>
+<div class="rocket-fire" id="rocket-fire"></div>
+</div>
+</div>
+<div class="game-controls">
+<input type="number" id="crash-bet" class="game-input" value="5" min="1">
+<button class="btn-primary btn-game" id="crash-btn" onclick="toggleCrashGame()">Запустить</button>
+</div>
+<div class="status-msg" id="crash-status">Сделайте ставку и запустите ракету!</div>
+</div>
+<!-- Игра 2: Кости (Dice) -->
+<div class="game-card">
+<div style="font-size: 13px; font-weight: 900; font-family: 'Orbitron', sans-serif; color: #fff;">🎲 Кости (Больше 7)</div>
+<div class="dice-screen">
+<div class="dice-box" id="dice-1">🎲</div>
+<div class="dice-box" id="dice-2">🎲</div>
+</div>
+<div class="game-controls">
+<input type="number" id="dice-bet" class="game-input" value="5" min="1">
+<button class="btn-primary btn-game btn-success" onclick="playDice()">Бросить</button>
+</div>
+<div class="status-msg" id="dice-status">Сумма костей больше 7 — выигрыш x2!</div>
+</div>
+</div>
+<!-- Нижняя навигация -->
+<nav class="nav-bar">
+<button class="nav-item active" data-tab="home">
+<span class="nav-icon">🏠</span>
+<span class="nav-label">Главная</span>
+</button>
+<button class="nav-item" data-tab="tasks">
+<span class="nav-icon">📋</span>
+<span class="nav-label">Задания</span>
+</button>
+<button class="nav-item" data-tab="wallet">
+<span class="nav-icon">👛</span>
+<span class="nav-label">Кошелек</span>
+</button>
+<button class="nav-item" data-tab="games">
+<span class="nav-icon">🎮</span>
+<span class="nav-label">Игры</span>
+</button>
+</nav>
+</div>
+<script src="app.js"></script>
 </body>
 </html>
