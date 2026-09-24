@@ -2,7 +2,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const userId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 'guest_user';
     const username = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || 'Игрок';
 
-    let balance = Number(localStorage.getItem('user_balance_' + userId)) || 0;
+    // Ключ для хранения баланса именно для этого пользователя
+    const balanceKey = 'user_balance_' + userId;
+
+    // Принудительно очищаем старое значение 100 при первом запуске нового кода
+    if (localStorage.getItem(balanceKey) === '100') {
+        localStorage.setItem(balanceKey, '0');
+    }
+
+    // Теперь стартовый баланс строго 0 (если в памяти ничего не было сохранено)
+    let balance = Number(localStorage.getItem(balanceKey)) || 0;
     let referralCount = Number(localStorage.getItem('user_refs_' + userId)) || 0;
 
     function updateUI() {
@@ -34,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        localStorage.setItem('user_balance_' + userId, balance);
+        localStorage.setItem(balanceKey, balance);
     }
 
     window.copyRefLink = function() {
@@ -72,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
         alert(`✅ Заявка на вывод отправлена на аккаунт @AlinaResseler!\nСумма: ${balance} ⭐`);
     };
 
-    // === ИГРА: КРАШ (РАКЕТА) С ПЛАВНОЙ АНИМАЦИЕЙ ===
+    // === ИГРА: КРАШ (РАКЕТА) ===
     let crashInterval = null;
     let currentMultiplier = 1.00;
     let isPlayingCrash = false;
@@ -110,7 +119,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentMultiplier += 0.05;
                 if (multDisplay) multDisplay.innerText = currentMultiplier.toFixed(2) + 'x';
                 
-                // Эффект небольшого покачивания ракеты при полете
                 if (rocketObj) {
                     const randomOffset = (Math.random() - 0.5) * 6;
                     rocketObj.style.transform = `translateY(-${(currentMultiplier - 1) * 15}px) translateX(${randomOffset}px)`;
@@ -147,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // === ИГРА: КОСТИ С АНИМАЦИЕЙ ВРАЩЕНИЯ ===
+    // === ИГРА: КОСТИ ===
     window.playDice = function() {
         const betInput = document.getElementById('dice-bet');
         const status = document.getElementById('dice-status');
@@ -164,7 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateUI();
         if (status) status.innerText = '🎲 Бросаем кости...';
 
-        // Включаем класс анимации тряски костей
         if (dice1) dice1.classList.add('dice-rolling');
         if (dice2) dice2.classList.add('dice-rolling');
 
